@@ -1,0 +1,141 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Função para verificar se o usuário está autenticado
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Função para verificar se o usuário pertence à empresa
+    function belongsToCompany(empresaId) {
+      return isAuthenticated() && 
+             request.auth.token.empresaId == empresaId;
+    }
+    
+    // Função para verificar se o usuário tem permissão específica
+    function hasPermission(empresaId, permission) {
+      return belongsToCompany(empresaId) && 
+             get(/databases/$(database)/documents/empresas/$(empresaId)/usuarios/$(request.auth.uid)).data.permissoes[permission] == true;
+    }
+    
+    // Função para verificar se o usuário é administrador
+    function isAdmin(empresaId) {
+      return belongsToCompany(empresaId) && 
+             get(/databases/$(database)/documents/empresas/$(empresaId)/usuarios/$(request.auth.uid)).data.acesso.funcao == "Administrador";
+    }
+    
+    // Função para verificar se o usuário é gerente ou administrador
+    function isManagerOrAdmin(empresaId) {
+      let userDoc = get(/databases/$(database)/documents/empresas/$(empresaId)/usuarios/$(request.auth.uid)).data;
+      return belongsToCompany(empresaId) && 
+             (userDoc.acesso.funcao == "Administrador" || userDoc.acesso.funcao == "Gerente");
+    }
+    
+    // Função para verificar se o usuário pode acessar dados financeiros
+    function canAccessFinancial(empresaId) {
+      let userDoc = get(/databases/$(database)/documents/empresas/$(empresaId)/usuarios/$(request.auth.uid)).data;
+      return belongsToCompany(empresaId) && 
+             (userDoc.acesso.funcao in ["Administrador", "Gerente", "Financeiro"]);
+    }
+    
+    // Regras para empresas
+    match /empresas/{empresaId} {
+      // Dados da empresa
+      match /dados {
+        allow read: if belongsToCompany(empresaId);
+        allow write: if isAdmin(empresaId);
+      }
+      
+      // Quartos
+      match /quartos/{quartoId} {
+        allow read: if belongsToCompany(empresaId);
+        allow create: if hasPermission(empresaId, "quartos");
+        allow update: if hasPermission(empresaId, "quartos");
+        allow delete: if isManagerOrAdmin(empresaId);
+      }
+      
+      // Reservas
+      match /reservas/{reservaId} {
+        allow read: if belongsToCompany(empresaId);
+        allow create: if hasPermission(empresaId, "vendas");
+        allow update: if hasPermission(empresaId, "vendas") || isManagerOrAdmin(empresaId);
+        allow delete: if isManagerOrAdmin(empresaId);
+      }
+      
+      // Contratos corporativos
+      match /contratos/{contratoId} {
+        allow read: if belongsToCompany(empresaId);
+        allow create: if hasPermission(empresaId, "faturas") || isManagerOrAdmin(empresaId);
+        allow update: if hasPermission(empresaId, "faturas") || isManagerOrAdmin(empresaId);
+        allow delete: if isAdmin(empresaId);
+      }
+      
+      // Faturas
+      match /faturas/{faturaId} {
+        allow read: if canAccessFinancial(empresaId);
+        allow create: if hasPermission(empresaId, "faturas") || isManagerOrAdmin(empresaId);
+        allow update: if hasPermission(empresaId, "faturas") || isManagerOrAdmin(empresaId);
+        allow delete: if isAdmin(empresaId);
+      }
+      
+      // Despesas
+      match /despesas/{despesaId} {
+        allow read: if canAccessFinancial(empresaId);
+        allow create: if hasPermission(empresaId, "despesas") || isManagerOrAdmin(empresaId);
+        allow update: if hasPermission(empresaId, "despesas") || isManagerOrAdmin(empresaId);
+        allow delete: if isManagerOrAdmin(empresaId);
+      }
+      
+      // Fluxo de caixa
+      match /fluxoCaixa/{transacaoId} {
+        allow read: if canAccessFinancial(empresaId);
+        allow create: if canAccessFinancial(empresaId);
+        allow update: if canAccessFinancial(empresaId);
+        allow delete: if isAdmin(empresaId);
+      }
+      
+      // Usuários
+      match /usuarios/{userId} {
+        // Usuários podem ler seus próprios dados
+        allow read: if belongsToCompany(empresaId) && 
+                       (request.auth.uid == userId || hasPermission(empresaId, "usuarios"));
+        
+        // Apenas administradores podem criar/editar usuários
+        allow create: if isAdmin(empresaId);
+        allow update: if isAdmin(empresaId) || 
+                         (request.auth.uid == userId && 
+                          !("permissoes" in resource.data) && 
+                          !("acesso.funcao" in resource.data));
+        
+        // Apenas administradores podem excluir usuários (exceto a si mesmo)
+        allow delete: if isAdmin(empresaId) && request.auth.uid != userId;
+      }
+      
+      // Configurações
+      match /configuracoes/{configId} {
+        allow read: if belongsToCompany(empresaId);
+        allow write: if isAdmin(empresaId);
+      }
+    }
+    
+    // Regras especiais para criação de empresa (durante cadastro)
+    match /empresas/{empresaId}/dados {
+      allow create: if isAuthenticated() && 
+                       request.auth.uid == resource.data.auditoria.criadoPor;
+    }
+    
+    // Regras para logs de auditoria (apenas leitura para administradores)
+    match /logs/{logId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if false; // Logs são imutáveis
+    }
+    
+    // Regras padrão - negar tudo que não foi explicitamente permitido
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

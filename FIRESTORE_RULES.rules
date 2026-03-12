@@ -1,0 +1,103 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Função auxiliar para verificar se o usuário está autenticado
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Função auxiliar para verificar se o usuário é admin
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.email == 'arielpolita@gmail.com';
+    }
+    
+    // Função auxiliar para verificar se o usuário pertence à empresa
+    function isEmpresaMember(empresaId) {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/empresas/$(empresaId)).data.usuarios.hasAny([request.auth.uid]);
+    }
+    
+    // Função auxiliar para verificar se o usuário é proprietário da empresa
+    function isEmpresaOwner(empresaId) {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/empresas/$(empresaId)).data.proprietario == request.auth.uid;
+    }
+    
+    // Regras para a coleção de usuários
+    match /usuarios/{userId} {
+      // Permitir leitura apenas do próprio documento ou se for admin
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      
+      // Permitir criação apenas do próprio documento
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      
+      // Permitir atualização apenas do próprio documento ou se for admin
+      allow update: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      
+      // Não permitir exclusão (apenas admin pode fazer isso manualmente)
+      allow delete: if isAdmin();
+    }
+    
+    // Regras para a coleção de empresas
+    match /empresas/{empresaId} {
+      // Permitir leitura se for membro da empresa ou admin
+      allow read: if isEmpresaMember(empresaId) || isAdmin();
+      
+      // Permitir criação apenas se o usuário estiver autenticado
+      allow create: if isAuthenticated() && 
+                       request.resource.data.proprietario == request.auth.uid &&
+                       request.resource.data.usuarios.hasAny([request.auth.uid]) &&
+                       request.resource.data.statusPagamento == 'trial' &&
+                       request.resource.data.diasTrial == 3;
+      
+      // Permitir atualização apenas se for proprietário ou admin
+      // Admin pode atualizar statusPagamento, outros campos apenas o proprietário
+      allow update: if isAdmin() || 
+                       (isEmpresaOwner(empresaId) && 
+                        request.resource.data.statusPagamento == resource.data.statusPagamento);
+      
+      // Não permitir exclusão (apenas admin pode fazer isso manualmente)
+      allow delete: if isAdmin();
+      
+      // Regras para subcoleções da empresa
+      
+      // Quartos
+      match /quartos/{quartoId} {
+        allow read: if isEmpresaMember(empresaId) || isAdmin();
+        allow write: if isEmpresaMember(empresaId) || isAdmin();
+      }
+      
+      // Reservas
+      match /reservas/{reservaId} {
+        allow read: if isEmpresaMember(empresaId) || isAdmin();
+        allow write: if isEmpresaMember(empresaId) || isAdmin();
+      }
+      
+      // Hóspedes
+      match /hospedes/{hospedeId} {
+        allow read: if isEmpresaMember(empresaId) || isAdmin();
+        allow write: if isEmpresaMember(empresaId) || isAdmin();
+      }
+      
+      // Transações financeiras
+      match /transacoes/{transacaoId} {
+        allow read: if isEmpresaMember(empresaId) || isAdmin();
+        allow write: if isEmpresaMember(empresaId) || isAdmin();
+      }
+      
+      // Usuários da empresa (subcoleção)
+      match /usuarios/{usuarioId} {
+        allow read: if isEmpresaMember(empresaId) || isAdmin();
+        allow write: if isEmpresaOwner(empresaId) || isAdmin();
+      }
+    }
+    
+    // Negar acesso a qualquer outro documento não especificado
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

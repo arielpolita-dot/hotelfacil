@@ -1,0 +1,324 @@
+{
+  "empresas": {
+    "empresa_id_exemplo": {
+      "dados": {
+        "nome": "Hotel Teste",
+        "cnpj": "12.345.678/0001-90",
+        "endereco": {
+          "rua": "Rua das Flores, 123",
+          "cidade": "São Paulo",
+          "estado": "SP",
+          "cep": "01234-567",
+          "pais": "Brasil"
+        },
+        "telefone": "(11) 99999-9999",
+        "email": "contato@hotelteste.com",
+        "plano": "premium",
+        "dataCriacao": "2024-01-01T00:00:00Z",
+        "status": "ativo"
+      },
+      "quartos": {
+        "quarto_id_1": {
+          "numero": "101",
+          "tipo": "standard",
+          "andar": 1,
+          "capacidade": 2,
+          "preco": 150.00,
+          "status": "disponivel",
+          "descricao": "Quarto standard com vista para o jardim",
+          "caracteristicas": {
+            "wifi": true,
+            "arCondicionado": true,
+            "tv": true,
+            "frigobar": false,
+            "banheira": false,
+            "varanda": false,
+            "estacionamento": false,
+            "cafe": false
+          },
+          "imagens": [
+            "https://exemplo.com/quarto101_1.jpg",
+            "https://exemplo.com/quarto101_2.jpg"
+          ],
+          "dataCriacao": "2024-01-01T00:00:00Z",
+          "dataAtualizacao": "2024-01-01T00:00:00Z"
+        },
+        "quarto_id_2": {
+          "numero": "201",
+          "tipo": "deluxe",
+          "andar": 2,
+          "capacidade": 3,
+          "preco": 250.00,
+          "status": "ocupado",
+          "descricao": "Quarto deluxe com varanda e vista para o mar",
+          "caracteristicas": {
+            "wifi": true,
+            "arCondicionado": true,
+            "tv": true,
+            "frigobar": true,
+            "banheira": true,
+            "varanda": true,
+            "estacionamento": true,
+            "cafe": true
+          },
+          "imagens": [
+            "https://exemplo.com/quarto201_1.jpg"
+          ],
+          "dataCriacao": "2024-01-01T00:00:00Z",
+          "dataAtualizacao": "2024-01-01T00:00:00Z"
+        }
+      },
+      "reservas": {
+        "reserva_id_1": {
+          "quartoId": "quarto_id_1",
+          "hospede": {
+            "nome": "João Silva",
+            "email": "joao@email.com",
+            "telefone": "(11) 99999-9999",
+            "documento": "123.456.789-00",
+            "endereco": {
+              "rua": "Rua A, 456",
+              "cidade": "São Paulo",
+              "estado": "SP",
+              "cep": "01234-567"
+            }
+          },
+          "dataCheckIn": "2024-11-15T14:00:00Z",
+          "dataCheckOut": "2024-11-18T12:00:00Z",
+          "valor": 450.00,
+          "status": "confirmada",
+          "observacoes": "Chegada após 18h",
+          "dataCriacao": "2024-11-01T10:00:00Z",
+          "dataAtualizacao": "2024-11-01T10:00:00Z",
+          "criadoPor": "usuario_id_1"
+        },
+        "reserva_id_2": {
+          "quartoId": "quarto_id_2",
+          "hospede": {
+            "nome": "Maria Santos",
+            "email": "maria@email.com",
+            "telefone": "(11) 88888-8888",
+            "documento": "987.654.321-00"
+          },
+          "dataCheckIn": "2024-11-10T14:00:00Z",
+          "dataCheckOut": "2024-11-14T12:00:00Z",
+          "valor": 1000.00,
+          "status": "em_andamento",
+          "observacoes": "",
+          "dataCriacao": "2024-10-25T15:30:00Z",
+          "dataAtualizacao": "2024-11-10T14:00:00Z",
+          "criadoPor": "usuario_id_1"
+        }
+      },
+      "contratos": {
+        "contrato_id_1": {
+          "empresa": {
+            "nome": "Empresa ABC Ltda",
+            "cnpj": "12.345.678/0001-90",
+            "contato": "João Silva",
+            "email": "contato@empresaabc.com",
+            "telefone": "(11) 99999-9999",
+            "endereco": {
+              "rua": "Av. Paulista, 1000",
+              "cidade": "São Paulo",
+              "estado": "SP",
+              "cep": "01310-100"
+            }
+          },
+          "tipo": "trimestral",
+          "valorMensal": 15000.00,
+          "valorTotal": 45000.00,
+          "dataInicio": "2024-01-01T00:00:00Z",
+          "dataFim": "2024-12-31T23:59:59Z",
+          "periodicidadeFatura": "mensal",
+          "proximaFatura": "2024-11-01T00:00:00Z",
+          "quartosInclusos": ["quarto_id_1", "quarto_id_2"],
+          "status": "ativo",
+          "observacoes": "Contrato renovável automaticamente",
+          "dataCriacao": "2024-01-01T00:00:00Z",
+          "dataAtualizacao": "2024-01-01T00:00:00Z",
+          "criadoPor": "usuario_id_1"
+        }
+      },
+      "faturas": {
+        "fatura_id_1": {
+          "contratoId": "contrato_id_1",
+          "numero": "FAT-2024-001",
+          "valor": 15000.00,
+          "dataVencimento": "2024-11-01T23:59:59Z",
+          "dataPagamento": null,
+          "status": "pendente",
+          "observacoes": "Fatura referente ao mês de outubro/2024",
+          "dataCriacao": "2024-10-01T00:00:00Z",
+          "dataAtualizacao": "2024-10-01T00:00:00Z",
+          "criadoPor": "usuario_id_1"
+        }
+      },
+      "despesas": {
+        "despesa_id_1": {
+          "categoria": "energia",
+          "descricao": "Conta de energia elétrica - Outubro/2024",
+          "valor": 1200.00,
+          "data": "2024-10-15T00:00:00Z",
+          "tipo": "fixa",
+          "responsavel": "João Silva",
+          "fornecedor": "Companhia Elétrica",
+          "numeroNota": "NF-123456",
+          "observacoes": "Pagamento em dia",
+          "dataCriacao": "2024-10-15T10:00:00Z",
+          "dataAtualizacao": "2024-10-15T10:00:00Z",
+          "criadoPor": "usuario_id_1"
+        },
+        "despesa_id_2": {
+          "categoria": "limpeza",
+          "descricao": "Produtos de limpeza e higiene",
+          "valor": 450.00,
+          "data": "2024-10-20T00:00:00Z",
+          "tipo": "variavel",
+          "responsavel": "Maria Santos",
+          "fornecedor": "Distribuidora Clean",
+          "numeroNota": "NF-789012",
+          "observacoes": "",
+          "dataCriacao": "2024-10-20T14:30:00Z",
+          "dataAtualizacao": "2024-10-20T14:30:00Z",
+          "criadoPor": "usuario_id_2"
+        }
+      },
+      "fluxoCaixa": {
+        "transacao_id_1": {
+          "tipo": "entrada",
+          "categoria": "hospedagem",
+          "descricao": "Reserva - João Silva",
+          "valor": 450.00,
+          "data": "2024-11-01T00:00:00Z",
+          "reservaId": "reserva_id_1",
+          "observacoes": "Pagamento à vista",
+          "dataCriacao": "2024-11-01T10:00:00Z",
+          "criadoPor": "usuario_id_1"
+        },
+        "transacao_id_2": {
+          "tipo": "saida",
+          "categoria": "energia",
+          "descricao": "Conta de energia elétrica",
+          "valor": 1200.00,
+          "data": "2024-10-15T00:00:00Z",
+          "despesaId": "despesa_id_1",
+          "observacoes": "",
+          "dataCriacao": "2024-10-15T10:00:00Z",
+          "criadoPor": "usuario_id_1"
+        }
+      },
+      "usuarios": {
+        "usuario_id_1": {
+          "nome": "João Silva",
+          "email": "joao@hotelteste.com",
+          "telefone": "(11) 99999-9999",
+          "funcao": "administrador",
+          "status": "ativo",
+          "permissoes": {
+            "dashboard": true,
+            "disponibilidade": true,
+            "quartos": true,
+            "vendas": true,
+            "faturas": true,
+            "despesas": true,
+            "fluxoCaixa": true,
+            "usuarios": true,
+            "configuracoes": true
+          },
+          "dataCriacao": "2024-01-01T00:00:00Z",
+          "dataUltimoLogin": "2024-11-11T08:00:00Z",
+          "criadoPor": "sistema"
+        },
+        "usuario_id_2": {
+          "nome": "Maria Santos",
+          "email": "maria@hotelteste.com",
+          "telefone": "(11) 88888-8888",
+          "funcao": "gerente",
+          "status": "ativo",
+          "permissoes": {
+            "dashboard": true,
+            "disponibilidade": true,
+            "quartos": true,
+            "vendas": true,
+            "faturas": true,
+            "despesas": true,
+            "fluxoCaixa": true,
+            "usuarios": false,
+            "configuracoes": false
+          },
+          "dataCriacao": "2024-02-01T00:00:00Z",
+          "dataUltimoLogin": "2024-11-10T09:30:00Z",
+          "criadoPor": "usuario_id_1"
+        },
+        "usuario_id_3": {
+          "nome": "Carlos Oliveira",
+          "email": "carlos@hotelteste.com",
+          "telefone": "(11) 77777-7777",
+          "funcao": "recepcionista",
+          "status": "ativo",
+          "permissoes": {
+            "dashboard": true,
+            "disponibilidade": true,
+            "quartos": false,
+            "vendas": true,
+            "faturas": false,
+            "despesas": false,
+            "fluxoCaixa": false,
+            "usuarios": false,
+            "configuracoes": false
+          },
+          "dataCriacao": "2024-03-01T00:00:00Z",
+          "dataUltimoLogin": "2024-11-11T07:45:00Z",
+          "criadoPor": "usuario_id_1"
+        }
+      },
+      "configuracoes": {
+        "geral": {
+          "nomeHotel": "Hotel Teste",
+          "logo": "https://exemplo.com/logo.png",
+          "tema": "azul",
+          "idioma": "pt-BR",
+          "moeda": "BRL",
+          "timezone": "America/Sao_Paulo"
+        },
+        "notificacoes": {
+          "emailReservas": true,
+          "emailFaturas": true,
+          "emailDespesas": false,
+          "whatsappReservas": false
+        },
+        "integracao": {
+          "sistemaContabil": null,
+          "gateway_pagamento": null,
+          "api_externa": null
+        }
+      },
+      "auditoria": {
+        "log_id_1": {
+          "acao": "criar_reserva",
+          "usuario": "usuario_id_1",
+          "detalhes": {
+            "reservaId": "reserva_id_1",
+            "hospede": "João Silva",
+            "quarto": "101"
+          },
+          "timestamp": "2024-11-01T10:00:00Z",
+          "ip": "192.168.1.100"
+        },
+        "log_id_2": {
+          "acao": "atualizar_quarto",
+          "usuario": "usuario_id_2",
+          "detalhes": {
+            "quartoId": "quarto_id_1",
+            "campo": "status",
+            "valorAnterior": "disponivel",
+            "valorNovo": "ocupado"
+          },
+          "timestamp": "2024-11-01T14:00:00Z",
+          "ip": "192.168.1.101"
+        }
+      }
+    }
+  }
+}
