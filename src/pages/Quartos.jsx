@@ -1,598 +1,309 @@
-import React, { useState, useEffect } from 'react';
-import { useHotel } from '../context/HybridHotelContext';
-import { 
-  Plus, 
-  Search, 
-  Filter, 
-  Edit3, 
-  Trash2, 
-  Bed, 
-  Wifi, 
-  Car, 
-  Coffee,
-  Tv,
-  Wind,
-  Bath,
-  Users,
-  DollarSign,
-  MapPin,
-  Star,
-  Eye,
-  EyeOff
-} from 'lucide-react';
+import { useState } from 'react';
+import { useHotel } from '../context/HotelFirestoreContext';
+import { Plus, BedDouble, Pencil, Trash2, X, Search, Filter } from 'lucide-react';
 
-function Quartos() {
-  const { quartos, adicionarQuarto, atualizarQuarto, removerQuarto } = useHotel();
-  const [showModal, setShowModal] = useState(false);
-  const [editingQuarto, setEditingQuarto] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterTipo, setFilterTipo] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
-  
-  const [formData, setFormData] = useState({
-    numero: '',
-    tipo: 'Standard',
-    andar: '',
-    capacidade: 2,
-    preco: '',
-    status: 'Disponível',
-    descricao: '',
-    caracteristicas: {
-      wifi: true,
-      arCondicionado: true,
-      tv: true,
-      frigobar: false,
-      banheira: false,
-      varanda: false,
-      estacionamento: false,
-      cafe: false
-    },
-    imagens: []
-  });
+const STATUS_CFG = {
+  disponivel: { label: 'Disponível', cls: 'bg-emerald-100 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
+  ocupado:    { label: 'Ocupado',    cls: 'bg-blue-100 text-blue-700 border-blue-200',         dot: 'bg-blue-500' },
+  reservado:  { label: 'Reservado',  cls: 'bg-violet-100 text-violet-700 border-violet-200',   dot: 'bg-violet-500' },
+  manutencao: { label: 'Manutenção', cls: 'bg-amber-100 text-amber-700 border-amber-200',      dot: 'bg-amber-500' },
+  limpeza:    { label: 'Limpeza',    cls: 'bg-sky-100 text-sky-700 border-sky-200',            dot: 'bg-sky-500' },
+};
 
-  const tiposQuarto = ['Standard', 'Deluxe', 'Suíte', 'Presidencial', 'Triplo', 'Família'];
-  const statusOptions = ['Disponível', 'Ocupado', 'Manutenção', 'Limpeza', 'Fora de Serviço'];
+const TIPOS = ['Standard', 'Superior', 'Deluxe', 'Suite', 'Suite Presidencial', 'Familiar'];
+const STATUS_LIST = Object.keys(STATUS_CFG);
 
-  const caracteristicasDisponiveis = [
-    { key: 'wifi', label: 'Wi-Fi', icon: Wifi },
-    { key: 'arCondicionado', label: 'Ar Condicionado', icon: Wind },
-    { key: 'tv', label: 'TV', icon: Tv },
-    { key: 'frigobar', label: 'Frigobar', icon: Coffee },
-    { key: 'banheira', label: 'Banheira', icon: Bath },
-    { key: 'varanda', label: 'Varanda', icon: MapPin },
-    { key: 'estacionamento', label: 'Estacionamento', icon: Car },
-    { key: 'cafe', label: 'Café da Manhã', icon: Coffee }
-  ];
+const EMPTY = { numero: '', tipo: 'Standard', capacidade: 2, precoDiaria: '', status: 'disponivel', descricao: '', andar: '' };
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    
-    if (name.startsWith('caracteristicas.')) {
-      const caracteristica = name.split('.')[1];
-      setFormData(prev => ({
-        ...prev,
-        caracteristicas: {
-          ...prev.caracteristicas,
-          [caracteristica]: checked
-        }
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: type === 'checkbox' ? checked : value
-      }));
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    try {
-      const quartoData = {
-        ...formData,
-        numero: parseInt(formData.numero),
-        andar: parseInt(formData.andar),
-        capacidade: parseInt(formData.capacidade),
-        preco: parseFloat(formData.preco),
-        id: editingQuarto?.id || Date.now().toString()
-      };
-
-      if (editingQuarto) {
-        await atualizarQuarto(editingQuarto.id, quartoData);
-      } else {
-        await adicionarQuarto(quartoData);
-      }
-
-      resetForm();
-      setShowModal(false);
-    } catch (error) {
-      console.error('Erro ao salvar quarto:', error);
-    }
-  };
-
-  const handleEdit = (quarto) => {
-    console.log('Editando quarto:', quarto);
-    console.log('Abrindo modal...');
-    
-    try {
-      setEditingQuarto(quarto);
-      console.log('EditingQuarto definido');
-      
-      setFormData({
-        numero: quarto.numero?.toString() || '',
-        tipo: quarto.tipo || 'Standard',
-        andar: quarto.andar?.toString() || '1',
-        capacidade: quarto.capacidade || 2,
-        preco: quarto.preco?.toString() || '0',
-        status: quarto.status || 'Disponível',
-        descricao: quarto.descricao || '',
-        caracteristicas: quarto.caracteristicas || {
-          wifi: true,
-          arCondicionado: true,
-          tv: true,
-          frigobar: false,
-          banheira: false,
-          varanda: false,
-          estacionamento: false,
-          cafe: false
-        },
-        imagens: quarto.imagens || []
-      });
-      console.log('FormData definido');
-      
-      setShowModal(true);
-      console.log('Modal deve estar aberto agora');
-    } catch (error) {
-      console.error('Erro ao editar quarto:', error);
-    }
-  };
-
-  const handleDelete = async (quartoId) => {
-    if (window.confirm('Tem certeza que deseja excluir este quarto?')) {
-      try {
-        await removerQuarto(quartoId);
-      } catch (error) {
-        console.error('Erro ao excluir quarto:', error);
-      }
-    }
-  };
-
-  const resetForm = () => {
-    setFormData({
-      numero: '',
-      tipo: 'Standard',
-      andar: '',
-      capacidade: 2,
-      preco: '',
-      status: 'Disponível',
-      descricao: '',
-      caracteristicas: {
-        wifi: true,
-        arCondicionado: true,
-        tv: true,
-        frigobar: false,
-        banheira: false,
-        varanda: false,
-        estacionamento: false,
-        cafe: false
-      },
-      imagens: []
-    });
-    setEditingQuarto(null);
-  };
-
-  const filteredQuartos = quartos.filter(quarto => {
-    const matchesSearch = quarto.numero.toString().includes(searchTerm) || 
-                         quarto.tipo.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesTipo = !filterTipo || quarto.tipo === filterTipo;
-    const matchesStatus = !filterStatus || quarto.status === filterStatus;
-    
-    return matchesSearch && matchesTipo && matchesStatus;
-  });
-
-  const getStatusColor = (status) => {
-    const colors = {
-      'Disponível': 'bg-green-100 text-green-800',
-      'Ocupado': 'bg-red-100 text-red-800',
-      'Manutenção': 'bg-yellow-100 text-yellow-800',
-      'Limpeza': 'bg-blue-100 text-blue-800',
-      'Fora de Serviço': 'bg-gray-100 text-gray-800'
-    };
-    return colors[status] || 'bg-gray-100 text-gray-800';
-  };
-
-  const getTipoColor = (tipo) => {
-    const colors = {
-      'Standard': 'bg-blue-500',
-      'Deluxe': 'bg-purple-500',
-      'Suíte': 'bg-green-500',
-      'Presidencial': 'bg-yellow-500',
-      'Triplo': 'bg-indigo-500',
-      'Família': 'bg-pink-500'
-    };
-    return colors[tipo] || 'bg-gray-500';
-  };
-
+function Modal({ title, onClose, children }) {
   return (
-    <div className="p-3 lg:p-6">
-      {/* Header */}
-      <div className="pt-12 lg:pt-0 mb-4 lg:mb-6">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          <div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">Gestão de Quartos</h1>
-            <p className="text-gray-600 text-sm lg:text-base">Cadastre e gerencie os quartos do hotel</p>
-          </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-3 lg:px-4 py-2 rounded-lg flex items-center gap-2 transition-colors text-sm lg:text-base"
-          >
-            <Plus className="h-4 w-4 lg:h-5 lg:w-5" />
-            Novo Quarto
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-5 border-b border-slate-100">
+          <h2 className="text-base font-bold text-slate-900">{title}</h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 transition p-1 rounded-lg hover:bg-slate-100">
+            <X className="h-5 w-5" />
           </button>
         </div>
+        <div className="p-5">{children}</div>
       </div>
-
-      {/* Estatísticas */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6 mb-4 lg:mb-6">
-        <div className="bg-white p-3 lg:p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs lg:text-sm font-medium text-gray-600">Total de Quartos</p>
-              <p className="text-xl lg:text-2xl font-bold text-gray-900">{quartos.length}</p>
-            </div>
-            <Bed className="h-6 w-6 lg:h-8 lg:w-8 text-blue-600" />
-          </div>
-        </div>
-        
-        <div className="bg-white p-3 lg:p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs lg:text-sm font-medium text-gray-600">Disponíveis</p>
-              <p className="text-xl lg:text-2xl font-bold text-green-600">
-                {quartos.filter(q => q.status === 'Disponível').length}
-              </p>
-            </div>
-            <div className="h-6 w-6 lg:h-8 lg:w-8 bg-green-100 rounded-full flex items-center justify-center">
-              <div className="h-3 w-3 lg:h-4 lg:w-4 bg-green-600 rounded-full"></div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white p-3 lg:p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs lg:text-sm font-medium text-gray-600">Ocupados</p>
-              <p className="text-xl lg:text-2xl font-bold text-red-600">
-                {quartos.filter(q => q.status === 'Ocupado').length}
-              </p>
-            </div>
-            <div className="h-6 w-6 lg:h-8 lg:w-8 bg-red-100 rounded-full flex items-center justify-center">
-              <div className="h-3 w-3 lg:h-4 lg:w-4 bg-red-600 rounded-full"></div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white p-3 lg:p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs lg:text-sm font-medium text-gray-600">Preço Médio</p>
-              <p className="text-xl lg:text-2xl font-bold text-blue-600">
-                R$ {quartos.length > 0 ? (quartos.reduce((acc, q) => acc + q.preco, 0) / quartos.length).toFixed(0) : '0'}
-              </p>
-            </div>
-            <DollarSign className="h-6 w-6 lg:h-8 lg:w-8 text-blue-600" />
-          </div>
-        </div>
-      </div>
-
-      {/* Filtros */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border mb-6">
-        <div className="flex flex-wrap gap-4">
-          <div className="flex-1 min-w-64">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <input
-                type="text"
-                placeholder="Buscar por número ou tipo..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-          
-          <select
-            value={filterTipo}
-            onChange={(e) => setFilterTipo(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">Todos os Tipos</option>
-            {tiposQuarto.map(tipo => (
-              <option key={tipo} value={tipo}>{tipo}</option>
-            ))}
-          </select>
-          
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">Todos os Status</option>
-            {statusOptions.map(status => (
-              <option key={status} value={status}>{status}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Lista de Quartos */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredQuartos.map((quarto) => (
-          <div key={quarto.id} className="bg-white rounded-lg shadow-sm border overflow-hidden hover:shadow-md transition-shadow">
-            {/* Header do Card */}
-            <div className={`${getTipoColor(quarto.tipo)} p-4 text-white`}>
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="text-lg font-bold">Quarto {quarto.numero}</h3>
-                  <p className="text-sm opacity-90">{quarto.tipo}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm opacity-90">Andar {quarto.andar}</p>
-                  <p className="text-lg font-bold">R$ {quarto.preco}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Conteúdo do Card */}
-            <div className="p-4">
-              <div className="flex justify-between items-center mb-3">
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(quarto.status)}`}>
-                  {quarto.status}
-                </span>
-                <div className="flex items-center gap-1 text-gray-600">
-                  <Users className="h-4 w-4" />
-                  <span className="text-sm">{quarto.capacidade} pessoas</span>
-                </div>
-              </div>
-
-              {quarto.descricao && (
-                <p className="text-gray-600 text-sm mb-3 line-clamp-2">{quarto.descricao}</p>
-              )}
-
-              {/* Características */}
-              <div className="flex flex-wrap gap-2 mb-4">
-                {Object.entries(quarto.caracteristicas || {}).map(([key, value]) => {
-                  if (!value) return null;
-                  const caracteristica = caracteristicasDisponiveis.find(c => c.key === key);
-                  if (!caracteristica) return null;
-                  const Icon = caracteristica.icon;
-                  
-                  return (
-                    <div key={key} className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded text-xs">
-                      <Icon className="h-3 w-3" />
-                      <span>{caracteristica.label}</span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Ações */}
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleEdit(quarto)}
-                  className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
-                >
-                  <Edit3 className="h-4 w-4" />
-                  Editar
-                </button>
-                <button
-                  onClick={() => handleDelete(quarto.id)}
-                  className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Excluir
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {filteredQuartos.length === 0 && (
-        <div className="text-center py-12">
-          <Bed className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum quarto encontrado</h3>
-          <p className="text-gray-500 mb-4">
-            {quartos.length === 0 
-              ? 'Comece cadastrando o primeiro quarto do hotel'
-              : 'Tente ajustar os filtros de busca'
-            }
-          </p>
-          {quartos.length === 0 && (
-            <button
-              onClick={() => setShowModal(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center gap-2"
-            >
-              <Plus className="h-5 w-5" />
-              Cadastrar Primeiro Quarto
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Modal de Cadastro/Edição */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b">
-              <h2 className="text-xl font-bold text-gray-800">
-                {editingQuarto ? 'Editar Quarto' : 'Novo Quarto'}
-              </h2>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
-              {/* Informações Básicas */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Número do Quarto *
-                  </label>
-                  <input
-                    type="number"
-                    name="numero"
-                    value={formData.numero}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tipo de Quarto *
-                  </label>
-                  <select
-                    name="tipo"
-                    value={formData.tipo}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    {tiposQuarto.map(tipo => (
-                      <option key={tipo} value={tipo}>{tipo}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Andar *
-                  </label>
-                  <input
-                    type="number"
-                    name="andar"
-                    value={formData.andar}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Capacidade *
-                  </label>
-                  <input
-                    type="number"
-                    name="capacidade"
-                    value={formData.capacidade}
-                    onChange={handleInputChange}
-                    min="1"
-                    max="10"
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Preço por Noite (R$) *
-                  </label>
-                  <input
-                    type="number"
-                    name="preco"
-                    value={formData.preco}
-                    onChange={handleInputChange}
-                    step="0.01"
-                    min="0"
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Status *
-                  </label>
-                  <select
-                    name="status"
-                    value={formData.status}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    {statusOptions.map(status => (
-                      <option key={status} value={status}>{status}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Descrição */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Descrição
-                </label>
-                <textarea
-                  name="descricao"
-                  value={formData.descricao}
-                  onChange={handleInputChange}
-                  rows="3"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Descreva as características especiais do quarto..."
-                />
-              </div>
-
-              {/* Características */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Características e Comodidades
-                </label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {caracteristicasDisponiveis.map((caracteristica) => {
-                    const Icon = caracteristica.icon;
-                    return (
-                      <label key={caracteristica.key} className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          name={`caracteristicas.${caracteristica.key}`}
-                          checked={formData.caracteristicas[caracteristica.key]}
-                          onChange={handleInputChange}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <Icon className="h-4 w-4 text-gray-600" />
-                        <span className="text-sm text-gray-700">{caracteristica.label}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Botões */}
-              <div className="flex gap-3 pt-4 border-t">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowModal(false);
-                    resetForm();
-                  }}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  {editingQuarto ? 'Atualizar' : 'Cadastrar'} Quarto
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
 
-export default Quartos;
+function Field({ label, children }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-slate-700 mb-1.5">{label}</label>
+      {children}
+    </div>
+  );
+}
+
+const inputCls = "w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
+const selectCls = "w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
+
+export default function Quartos() {
+  const { quartos, adicionarQuarto, atualizarQuarto, removerQuarto, loading } = useHotel();
+  const [modal, setModal] = useState(null); // null | 'novo' | 'editar' | 'excluir'
+  const [form, setForm] = useState(EMPTY);
+  const [editId, setEditId] = useState(null);
+  const [excluirId, setExcluirId] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [busca, setBusca] = useState('');
+  const [filtroStatus, setFiltroStatus] = useState('todos');
+
+  const set = (f) => (e) => setForm(p => ({ ...p, [f]: e.target.value }));
+
+  const abrirNovo = () => { setForm(EMPTY); setModal('novo'); };
+  const abrirEditar = (q) => { setForm({ ...q }); setEditId(q.id); setModal('editar'); };
+  const abrirExcluir = (id) => { setExcluirId(id); setModal('excluir'); };
+  const fechar = () => { setModal(null); setEditId(null); setExcluirId(null); };
+
+  const salvar = async () => {
+    if (!form.numero || !form.precoDiaria) return;
+    setSaving(true);
+    try {
+      const dados = { ...form, precoDiaria: parseFloat(form.precoDiaria), capacidade: parseInt(form.capacidade) };
+      if (modal === 'novo') await adicionarQuarto(dados);
+      else await atualizarQuarto(editId, dados);
+      fechar();
+    } catch (e) { console.error(e); }
+    setSaving(false);
+  };
+
+  const confirmarExcluir = async () => {
+    setSaving(true);
+    try { await removerQuarto(excluirId); fechar(); } catch (e) { console.error(e); }
+    setSaving(false);
+  };
+
+  const quartosFiltrados = quartos.filter(q => {
+    const matchBusca = !busca || q.numero?.toString().includes(busca) || q.tipo?.toLowerCase().includes(busca.toLowerCase());
+    const matchStatus = filtroStatus === 'todos' || q.status === filtroStatus;
+    return matchBusca && matchStatus;
+  });
+
+  const countStatus = (s) => quartos.filter(q => q.status === s).length;
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900">Quartos</h2>
+          <p className="text-sm text-slate-500 mt-0.5">{quartos.length} quartos cadastrados</p>
+        </div>
+        <button
+          onClick={abrirNovo}
+          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition shadow-sm shadow-blue-600/20"
+        >
+          <Plus className="h-4 w-4" />
+          Novo Quarto
+        </button>
+      </div>
+
+      {/* Filtros rápidos */}
+      <div className="flex flex-wrap gap-2">
+        {['todos', ...STATUS_LIST].map(s => {
+          const cfg = STATUS_CFG[s];
+          const count = s === 'todos' ? quartos.length : countStatus(s);
+          return (
+            <button
+              key={s}
+              onClick={() => setFiltroStatus(s)}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
+                filtroStatus === s
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300'
+              }`}
+            >
+              {cfg && <div className={`w-1.5 h-1.5 rounded-full ${filtroStatus === s ? 'bg-white' : cfg.dot}`} />}
+              {cfg ? cfg.label : 'Todos'} ({count})
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Busca */}
+      <div className="relative max-w-xs">
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+        <input
+          type="text"
+          value={busca}
+          onChange={e => setBusca(e.target.value)}
+          placeholder="Buscar por número ou tipo..."
+          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+        />
+      </div>
+
+      {/* Grid de quartos */}
+      {loading ? (
+        <div className="flex items-center justify-center h-48">
+          <div className="w-8 h-8 border-[3px] border-blue-600 border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : quartosFiltrados.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+          <BedDouble className="h-12 w-12 mb-3 opacity-30" />
+          <p className="text-sm font-medium">Nenhum quarto encontrado</p>
+          <p className="text-xs mt-1">Tente ajustar os filtros ou cadastre um novo quarto</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {quartosFiltrados.map(q => {
+            const cfg = STATUS_CFG[q.status] || STATUS_CFG.disponivel;
+            return (
+              <div key={q.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col gap-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-lg font-bold text-slate-900">Quarto {q.numero}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{q.tipo} · {q.andar ? `${q.andar}° andar` : ''}</p>
+                  </div>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${cfg.dot.replace('bg-', 'bg-').replace('500', '100')}`}>
+                    <BedDouble className={`h-5 w-5 ${cfg.dot.replace('bg-', 'text-')}`} />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${cfg.dot}`} />
+                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${cfg.cls}`}>{cfg.label}</span>
+                </div>
+
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-500">Capacidade</span>
+                  <span className="font-semibold text-slate-900">{q.capacidade} pax</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-500">Diária</span>
+                  <span className="font-bold text-blue-600">
+                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(q.precoDiaria || 0)}
+                  </span>
+                </div>
+
+                {q.descricao && (
+                  <p className="text-xs text-slate-400 line-clamp-2">{q.descricao}</p>
+                )}
+
+                <div className="flex gap-2 mt-auto pt-2 border-t border-slate-50">
+                  <button
+                    onClick={() => abrirEditar(q)}
+                    className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-blue-600 bg-slate-50 hover:bg-blue-50 py-2 rounded-xl transition"
+                  >
+                    <Pencil className="h-3.5 w-3.5" /> Editar
+                  </button>
+                  <button
+                    onClick={() => abrirExcluir(q.id)}
+                    className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-red-600 bg-slate-50 hover:bg-red-50 py-2 rounded-xl transition"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" /> Excluir
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Modal Novo / Editar */}
+      {(modal === 'novo' || modal === 'editar') && (
+        <Modal title={modal === 'novo' ? 'Novo Quarto' : 'Editar Quarto'} onClose={fechar}>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Número *">
+                <input type="text" value={form.numero} onChange={set('numero')} placeholder="Ex: 101" className={inputCls} />
+              </Field>
+              <Field label="Andar">
+                <input type="text" value={form.andar} onChange={set('andar')} placeholder="Ex: 1" className={inputCls} />
+              </Field>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Tipo">
+                <select value={form.tipo} onChange={set('tipo')} className={selectCls}>
+                  {TIPOS.map(t => <option key={t}>{t}</option>)}
+                </select>
+              </Field>
+              <Field label="Capacidade (pax)">
+                <input type="number" min="1" value={form.capacidade} onChange={set('capacidade')} className={inputCls} />
+              </Field>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Diária (R$) *">
+                <input type="number" min="0" step="0.01" value={form.precoDiaria} onChange={set('precoDiaria')} placeholder="0,00" className={inputCls} />
+              </Field>
+              <Field label="Status">
+                <select value={form.status} onChange={set('status')} className={selectCls}>
+                  {STATUS_LIST.map(s => <option key={s} value={s}>{STATUS_CFG[s].label}</option>)}
+                </select>
+              </Field>
+            </div>
+            {/* Período de manutenção — aparece apenas quando status = manutencao */}
+            {form.status === 'manutencao' && (
+              <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-3">
+                <p className="text-xs font-bold text-gray-600 uppercase tracking-wide flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-gray-800 inline-block"></span>
+                  Período de Manutenção
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Inicio da Manutenção">
+                    <input
+                      type="date"
+                      value={form.manutencaoInicio || ''}
+                      onChange={set('manutencaoInicio')}
+                      className={inputCls}
+                    />
+                  </Field>
+                  <Field label="Fim da Manutenção">
+                    <input
+                      type="date"
+                      value={form.manutencaoFim || ''}
+                      onChange={set('manutencaoFim')}
+                      className={inputCls}
+                    />
+                  </Field>
+                </div>
+                <Field label="Motivo da Manutenção">
+                  <input
+                    type="text"
+                    value={form.manutencaoMotivo || ''}
+                    onChange={set('manutencaoMotivo')}
+                    placeholder="Ex: Reparo no ar-condicionado, pintura..."
+                    className={inputCls}
+                  />
+                </Field>
+              </div>
+            )}
+
+            <Field label="Descrição">
+              <textarea value={form.descricao} onChange={set('descricao')} rows={3} placeholder="Comodidades, características..." className={inputCls + ' resize-none'} />
+            </Field>
+            <div className="flex gap-3 pt-2">
+              <button onClick={fechar} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">Cancelar</button>
+              <button onClick={salvar} disabled={saving} className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition disabled:opacity-50">
+                {saving ? 'Salvando...' : 'Salvar'}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Modal Excluir */}
+      {modal === 'excluir' && (
+        <Modal title="Excluir Quarto" onClose={fechar}>
+          <div className="text-center py-4">
+            <div className="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Trash2 className="h-7 w-7 text-red-600" />
+            </div>
+            <p className="text-slate-700 font-medium mb-1">Tem certeza que deseja excluir este quarto?</p>
+            <p className="text-sm text-slate-500 mb-6">Esta ação não pode ser desfeita.</p>
+            <div className="flex gap-3">
+              <button onClick={fechar} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">Cancelar</button>
+              <button onClick={confirmarExcluir} disabled={saving} className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition disabled:opacity-50">
+                {saving ? 'Excluindo...' : 'Excluir'}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}

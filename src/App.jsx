@@ -1,8 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { HybridHotelProvider } from './context/HybridHotelContext';
+import { HotelProvider } from './context/HotelFirestoreContext';
 import Login from './components/ui/Login';
-import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Disponibilidade from './pages/Disponibilidade';
@@ -12,103 +11,97 @@ import Faturas from './pages/Faturas';
 import Despesas from './pages/Despesas';
 import Usuarios from './pages/Usuarios';
 import FluxoCaixa from './pages/FluxoCaixa';
-import TrialExpired from './components/TrialExpired';
-import AdminPanel from './pages/AdminPanel';
-import { useState } from 'react';
-import TrialBanner from './components/TrialBanner';
+import DRE from './pages/DRE';
+import Configuracoes from './pages/Configuracoes';
+import Fornecedores from './pages/Fornecedores';
+import { Component } from 'react';
 
-console.log('App renderizado');
+// Error Boundary para capturar erros silenciosos do React
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, info) {
+    console.error('React Error Boundary:', error, info);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-red-100 p-8 max-w-md w-full text-center">
+            <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl">⚠️</span>
+            </div>
+            <h2 className="text-lg font-bold text-slate-900 mb-2">Algo deu errado</h2>
+            <p className="text-sm text-slate-500 mb-4">{this.state.error?.message || 'Erro desconhecido'}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 transition"
+            >
+              Recarregar página
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
-// Componente wrapper para verificar trial
 function AppContent() {
-  const { currentUser, empresaAtual, trialStatus, loading, logout, isAdmin } = useAuth();
-  const [showTrialBanner, setShowTrialBanner] = useState(true);
+  const { currentUser, loading } = useAuth();
 
-  // Se ainda está carregando, mostrar loading
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-blue-950">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando...</p>
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-300 font-medium text-sm">Carregando sistema...</p>
         </div>
       </div>
     );
   }
 
-  // Se não está logado, mostrar tela de login
   if (!currentUser) {
     return <Login />;
   }
 
-  // Se é admin, permitir acesso ao painel administrativo
-  if (isAdmin()) {
-    return (
-      <Router>
-        <Routes>
-          <Route path="/admin" element={<AdminPanel />} />
-          <Route path="/*" element={
-            <HybridHotelProvider>
-              <Layout>
-                <Routes>
-                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                  <Route path="/disponibilidade" element={<ProtectedRoute><Disponibilidade /></ProtectedRoute>} />
-                  <Route path="/quartos" element={<ProtectedRoute><Quartos /></ProtectedRoute>} />
-                  <Route path="/vendas" element={<ProtectedRoute><Vendas /></ProtectedRoute>} />
-                  <Route path="/faturas" element={<ProtectedRoute><Faturas /></ProtectedRoute>} />
-                  <Route path="/despesas" element={<ProtectedRoute><Despesas /></ProtectedRoute>} />
-                  <Route path="/usuarios" element={<ProtectedRoute><Usuarios /></ProtectedRoute>} />
-                  <Route path="/fluxo-caixa" element={<ProtectedRoute><FluxoCaixa /></ProtectedRoute>} />
-                </Routes>
-              </Layout>
-            </HybridHotelProvider>
-          } />
-        </Routes>
-      </Router>
-    );
-  }
-
-  // Verificar status do trial para usuários normais
-  if (trialStatus?.status === 'expired') {
-    return <TrialExpired empresaNome={empresaAtual?.nome} onLogout={logout} />;
-  }
-
-  // Se está em trial ativo, mostrar banner
-  const mostrarBanner = trialStatus?.status === 'active' && showTrialBanner;
-
   return (
-    <Router>
-      <HybridHotelProvider>
-        {mostrarBanner && (
-          <TrialBanner 
-            diasRestantes={trialStatus.diasRestantes} 
-            onClose={() => setShowTrialBanner(false)} 
-          />
-        )}
+    <ErrorBoundary>
+      <HotelProvider>
         <Layout>
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/disponibilidade" element={<ProtectedRoute><Disponibilidade /></ProtectedRoute>} />
-            <Route path="/quartos" element={<ProtectedRoute><Quartos /></ProtectedRoute>} />
-            <Route path="/vendas" element={<ProtectedRoute><Vendas /></ProtectedRoute>} />
-            <Route path="/faturas" element={<ProtectedRoute><Faturas /></ProtectedRoute>} />
-            <Route path="/despesas" element={<ProtectedRoute><Despesas /></ProtectedRoute>} />
-            <Route path="/usuarios" element={<ProtectedRoute><Usuarios /></ProtectedRoute>} />
-            <Route path="/fluxo-caixa" element={<ProtectedRoute><FluxoCaixa /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/disponibilidade" element={<Disponibilidade />} />
+            <Route path="/quartos" element={<Quartos />} />
+            <Route path="/vendas" element={<Vendas />} />
+            <Route path="/faturas" element={<Faturas />} />
+            <Route path="/despesas" element={<Despesas />} />
+            <Route path="/usuarios" element={<Usuarios />} />
+            <Route path="/fluxo-caixa" element={<FluxoCaixa />} />
+            <Route path="/dre" element={<DRE />} />
+            <Route path="/configuracoes" element={<Configuracoes />} />
+            <Route path="/fornecedores" element={<Fornecedores />} />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Layout>
-      </HybridHotelProvider>
-    </Router>
+      </HotelProvider>
+    </ErrorBoundary>
   );
 }
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <Router>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </Router>
   );
 }
 

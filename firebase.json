@@ -4,6 +4,7 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
+    "site": "hotelfacil-850d1",
     "public": "dist",
     "ignore": [
       "firebase.json",

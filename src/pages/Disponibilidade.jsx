@@ -1,287 +1,221 @@
-import React, { useState, useMemo } from 'react';
-import { useHotel } from '../context/HybridHotelContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Calendar, Filter } from 'lucide-react';
-import { calcularTaxaOcupacao, coresStatus } from '../data/mockData';
+import { toDate, toDateString } from '../utils/dateUtils';
+import { useState, useMemo } from 'react';
+import { useHotel } from '../context/HotelFirestoreContext';
+import { ChevronLeft, ChevronRight, BedDouble, ShoppingCart } from 'lucide-react';
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, getDay } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
-function Disponibilidade() {
-  const { quartos, disponibilidade, atualizarStatusQuarto } = useHotel();
-  const [dataInicio, setDataInicio] = useState(new Date());
-  const [filtroTipo, setFiltroTipo] = useState('todos');
+// Cores por status conforme solicitado:
+// verde = livre/disponível
+// vermelho = reserva confirmada
+// azul = check-in (hóspede hospedado)
+// amarelo = overbook
+// laranja = checkout
+const STATUS_CFG = {
+  disponivel:  { label: 'Disponível',  cls: 'bg-emerald-500',  text: 'text-white', light: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  confirmada:  { label: 'Confirmada',  cls: 'bg-red-500',      text: 'text-white', light: 'bg-red-50 text-red-700 border-red-200' },
+  'check-in':  { label: 'Check-in',   cls: 'bg-blue-500',     text: 'text-white', light: 'bg-blue-50 text-blue-700 border-blue-200' },
+  checkin:     { label: 'Check-in',   cls: 'bg-blue-500',     text: 'text-white', light: 'bg-blue-50 text-blue-700 border-blue-200' },
+  overbook:    { label: 'Overbook',    cls: 'bg-yellow-400',   text: 'text-slate-900', light: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
+  checkout:    { label: 'Limpeza',    cls: 'bg-slate-400',    text: 'text-white', light: 'bg-slate-100 text-slate-600 border-slate-300' },
+  manutencao:  { label: 'Manutenção', cls: 'bg-gray-900',    text: 'text-white', light: 'bg-gray-100 text-gray-700 border-gray-300' },
+  limpeza:     { label: 'Limpeza',    cls: 'bg-slate-400',    text: 'text-white', light: 'bg-slate-100 text-slate-600 border-slate-300' },
+};
 
-  // Gerar array de datas para exibição (30 dias)
-  const datas = useMemo(() => {
-    const datasArray = [];
-    for (let i = 0; i < 30; i++) {
-      const data = new Date(dataInicio);
-      data.setDate(dataInicio.getDate() + i);
-      datasArray.push(data);
-    }
-    return datasArray;
-  }, [dataInicio]);
+// Legenda exibida no topo (apenas os status relevantes para o calendário)
+const LEGENDA_ITEMS = ['disponivel', 'confirmada', 'check-in', 'overbook', 'checkout', 'manutencao'];
 
-  // Filtrar quartos por tipo
-  const quartosFiltrados = useMemo(() => {
-    if (filtroTipo === 'todos') return quartos;
-    return quartos.filter(quarto => quarto.tipo === filtroTipo);
-  }, [quartos, filtroTipo]);
+const DIAS_SEMANA = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 
-  // Navegar entre períodos
-  const navegarPeriodo = (direcao) => {
-    const novaData = new Date(dataInicio);
-    novaData.setDate(dataInicio.getDate() + (direcao * 7)); // Navegar por semanas
-    setDataInicio(novaData);
-  };
+export default function Disponibilidade() {
+  const { quartos, reservas, loading } = useHotel();
+  const [mesAtual, setMesAtual] = useState(new Date());
 
-  // Obter status do quarto em uma data específica
-  const obterStatusQuarto = (quartoId, data) => {
-    const dataStr = data.toISOString().split('T')[0];
-    return disponibilidade[dataStr]?.[quartoId] || 'disponivel';
-  };
+  const diasDoMes = useMemo(() => {
+    const inicio = startOfMonth(mesAtual);
+    const fim = endOfMonth(mesAtual);
+    return eachDayOfInterval({ start: inicio, end: fim });
+  }, [mesAtual]);
 
-  // Alternar status do quarto (para demonstração)
-  const alternarStatusQuarto = (quartoId, data) => {
-    const dataStr = data.toISOString().split('T')[0];
-    const statusAtual = obterStatusQuarto(quartoId, data);
-    
-    let novoStatus;
-    switch (statusAtual) {
-      case 'disponivel':
-        novoStatus = 'ocupado';
-        break;
-      case 'ocupado':
-        novoStatus = 'reserva_dupla';
-        break;
-      case 'reserva_dupla':
-        novoStatus = 'disponivel';
-        break;
-      default:
-        novoStatus = 'disponivel';
-    }
-    
-    // Atualizar no contexto (simulação)
-    console.log(`Alterando quarto ${quartoId} na data ${dataStr} para ${novoStatus}`);
-  };
-
-  // Calcular estatísticas do período
-  const estatisticas = useMemo(() => {
-    const totalCelulas = datas.length * quartosFiltrados.length;
-    let ocupadas = 0;
-    let reservasDuplas = 0;
-
-    datas.forEach(data => {
-      quartosFiltrados.forEach(quarto => {
-        const status = obterStatusQuarto(quarto.id, data);
-        if (status === 'ocupado') ocupadas++;
-        if (status === 'reserva_dupla') reservasDuplas++;
-      });
+  // Retorna o status de um quarto em um dia específico
+  const getStatusDia = (quarto, dia) => {
+    // Verificar todas as reservas ativas para este quarto neste dia
+    const reservasAtivas = reservas.filter(r => {
+      if (r.quartoId !== quarto.id && r.numeroQuarto?.toString() !== quarto.numero?.toString()) return false;
+      if (r.status === 'cancelada') return false;
+      const ci = toDate(r.dataCheckIn);
+      const co = toDate(r.dataCheckOut);
+      if (!ci || !co) return false;
+      return dia >= ci && dia < co;
     });
 
-    return {
-      totalCelulas,
-      ocupadas,
-      reservasDuplas,
-      disponiveis: totalCelulas - ocupadas - reservasDuplas,
-      taxaOcupacao: Math.round(((ocupadas + reservasDuplas) / totalCelulas) * 100)
-    };
-  }, [datas, quartosFiltrados, disponibilidade]);
+    if (reservasAtivas.length === 0) {
+      // Sem reserva: verificar status do quarto
+      if (quarto.status === 'manutencao') {
+        // Se tiver período definido, só mostra preto dentro do intervalo
+        const ini = quarto.manutencaoInicio ? new Date(quarto.manutencaoInicio + 'T00:00:00') : null;
+        const fim = quarto.manutencaoFim   ? new Date(quarto.manutencaoFim   + 'T23:59:59') : null;
+        if (ini && fim) {
+          if (dia >= ini && dia <= fim) return 'manutencao';
+          return 'disponivel';
+        }
+        return 'manutencao'; // sem período = quarto todo em manutenção
+      }
+      if (quarto.status === 'limpeza') return 'limpeza';
+      return 'disponivel';
+    }
+
+    if (reservasAtivas.length > 1) return 'overbook';
+
+    const r = reservasAtivas[0];
+    const s = r.status?.toLowerCase();
+    if (s === 'check-in' || s === 'checkin') return 'check-in';
+    if (s === 'checkout' || s === 'check-out') return 'checkout';
+    if (s === 'confirmada') return 'confirmada';
+    return 'confirmada';
+  };
+
+  const getReservaDia = (quarto, dia) => {
+    return reservas.find(r => {
+      if (r.quartoId !== quarto.id && r.numeroQuarto?.toString() !== quarto.numero?.toString()) return false;
+      if (r.status === 'cancelada') return false;
+      const ci = toDate(r.dataCheckIn);
+      const co = toDate(r.dataCheckOut);
+      if (!ci || !co) return false;
+      return dia >= ci && dia < co;
+    });
+  };
+
+  // Contagem de quartos por status hoje
+  const stats = useMemo(() => {
+    const hoje = new Date();
+    hoje.setHours(12, 0, 0, 0);
+    const counts = {};
+    quartos.forEach(q => {
+      const s = getStatusDia(q, hoje);
+      counts[s] = (counts[s] || 0) + 1;
+    });
+    return counts;
+  }, [quartos, reservas]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-[3px] border-blue-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6 fade-in">
-      {/* Cabeçalho */}
-      <div className="flex justify-between items-start">
+    <div className="space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Disponibilidade</h1>
-          <p className="text-gray-600 mt-2">Visualização de disponibilidade dos quartos</p>
+          <h2 className="text-xl font-bold text-slate-900">Disponibilidade</h2>
+          <p className="text-sm text-slate-500 mt-0.5">Calendário de ocupação dos quartos</p>
         </div>
-        
-        {/* Controles de navegação */}
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navegarPeriodo(-1)}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-sm font-medium px-3">
-              {dataInicio.toLocaleDateString('pt-BR')} - {datas[datas.length - 1]?.toLocaleDateString('pt-BR')}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navegarPeriodo(1)}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          <select
-            value={filtroTipo}
-            onChange={(e) => setFiltroTipo(e.target.value)}
-            className="form-input w-32"
-          >
-            <option value="todos">Todos</option>
-            <option value="standard">Standard</option>
-            <option value="deluxe">Deluxe</option>
-            <option value="triplo">Triplo</option>
-          </select>
+        {/* Navegação de mês */}
+        <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-2.5 shadow-sm">
+          <button onClick={() => setMesAtual(m => subMonths(m, 1))} className="text-slate-500 hover:text-slate-900 transition p-1 rounded-lg hover:bg-slate-100">
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <span className="text-sm font-bold text-slate-900 min-w-[140px] text-center capitalize">
+            {format(mesAtual, 'MMMM yyyy', { locale: ptBR })}
+          </span>
+          <button onClick={() => setMesAtual(m => addMonths(m, 1))} className="text-slate-500 hover:text-slate-900 transition p-1 rounded-lg hover:bg-slate-100">
+            <ChevronRight className="h-4 w-4" />
+          </button>
         </div>
       </div>
 
-      {/* Estatísticas do período */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="card-hover">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-blue-600">{estatisticas.taxaOcupacao}%</div>
-            <p className="text-sm text-gray-600">Taxa de Ocupação</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="card-hover">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-green-600">{estatisticas.disponiveis}</div>
-            <p className="text-sm text-gray-600">Disponíveis</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="card-hover">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-red-600">{estatisticas.ocupadas}</div>
-            <p className="text-sm text-gray-600">Ocupados</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="card-hover">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-yellow-600">{estatisticas.reservasDuplas}</div>
-            <p className="text-sm text-gray-600">Reservas Duplas</p>
-          </CardContent>
-        </Card>
+      {/* Legenda + stats */}
+      <div className="flex flex-wrap gap-2">
+        {LEGENDA_ITEMS.map(key => {
+          const cfg = STATUS_CFG[key];
+          return (
+            <div key={key} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border ${cfg.light}`}>
+              <div className={`w-2.5 h-2.5 rounded-full ${cfg.cls}`} />
+              {cfg.label} ({stats[key] || 0})
+            </div>
+          );
+        })}
       </div>
-
-      {/* Legenda */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Legenda</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-6">
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 rounded" style={{ backgroundColor: coresStatus.disponivel }}></div>
-              <span className="text-sm">Disponível</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 rounded" style={{ backgroundColor: coresStatus.ocupado }}></div>
-              <span className="text-sm">Não disponível</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 rounded" style={{ backgroundColor: coresStatus.reserva_dupla }}></div>
-              <span className="text-sm">Reserva dupla</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Grid de disponibilidade */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>
-              {dataInicio.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })} - {' '}
-              {datas[datas.length - 1]?.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
-            </CardTitle>
-            <div className="text-sm text-gray-600">
-              Taxa de Ocupação: {estatisticas.taxaOcupacao}%
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            {/* Cabeçalho com datas */}
-            <div className="availability-grid" style={{ gridTemplateColumns: `200px repeat(${datas.length}, minmax(40px, 1fr))` }}>
-              {/* Célula vazia para alinhamento */}
-              <div className="availability-cell bg-gray-100 font-semibold">
-                TIPO DE SUÍTE
-              </div>
-              
-              {/* Datas */}
-              {datas.map((data, index) => {
-                const taxaDia = calcularTaxaOcupacao(data, disponibilidade);
-                return (
-                  <div key={index} className="availability-cell bg-yellow-100 flex flex-col text-center">
-                    <div className="text-xs font-semibold">
-                      {data.toLocaleDateString('pt-BR', { weekday: 'short' })}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-100">
+                <th className="text-left py-3 px-4 text-xs font-bold text-slate-600 sticky left-0 bg-slate-50 z-10 min-w-[100px]">Quarto</th>
+                {diasDoMes.map(dia => (
+                  <th key={dia.toISOString()} className={`py-2 px-0.5 text-center min-w-[34px]`}>
+                    <div className={`text-[10px] font-medium ${isToday(dia) ? 'text-blue-600' : 'text-slate-400'}`}>
+                      {DIAS_SEMANA[getDay(dia)]}
                     </div>
-                    <div className="text-xs">
-                      {data.getDate()}-{data.toLocaleDateString('pt-BR', { month: 'short' })}
+                    <div className={`text-xs font-bold mt-0.5 ${isToday(dia) ? 'w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto' : 'text-slate-600'}`}>
+                      {format(dia, 'd')}
                     </div>
-                    <div className="text-xs font-bold">
-                      {taxaDia}%
-                    </div>
-                  </div>
-                );
-              })}
-
-              {/* Linhas de quartos */}
-              {quartosFiltrados.map((quarto) => (
-                <React.Fragment key={quarto.id}>
-                  {/* Informações do quarto */}
-                  <div className="availability-cell bg-gray-50 text-left p-2">
-                    <div className="font-semibold text-sm">{quarto.numero}</div>
-                    <div className="text-xs text-gray-600 capitalize">
-                      {quarto.tipo} {quarto.caracteristicas.join(', ')}
-                    </div>
-                  </div>
-                  
-                  {/* Status por data */}
-                  {datas.map((data, dateIndex) => {
-                    const status = obterStatusQuarto(quarto.id, data);
-                    return (
-                      <div
-                        key={`${quarto.id}-${dateIndex}`}
-                        className="availability-cell cursor-pointer"
-                        style={{ backgroundColor: coresStatus[status] }}
-                        onClick={() => alternarStatusQuarto(quarto.id, data)}
-                        title={`Quarto ${quarto.numero} - ${data.toLocaleDateString('pt-BR')} - ${status}`}
-                      >
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {quartos.map(quarto => (
+                <tr key={quarto.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                  <td className="py-2.5 px-4 sticky left-0 bg-white hover:bg-slate-50/50 z-10">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <BedDouble className="h-3.5 w-3.5 text-blue-600" />
                       </div>
+                      <div>
+                        <p className="font-bold text-slate-900">{quarto.numero}</p>
+                        <p className="text-[10px] text-slate-400">{quarto.tipo}</p>
+                      </div>
+                    </div>
+                  </td>
+                  {diasDoMes.map(dia => {
+                    const status = getStatusDia(quarto, dia);
+                    const reserva = getReservaDia(quarto, dia);
+                    const cfg = STATUS_CFG[status] || STATUS_CFG.disponivel;
+                    const isCI = reserva && isSameDay(dia, toDate(reserva.dataCheckIn));
+                    // Pagamento registrado = formaPagamento preenchido e diferente de 'a_definir'
+                    const temPagamento = reserva &&
+                      reserva.formaPagamento &&
+                      reserva.formaPagamento !== 'a_definir';
+                    // Mostrar carrinho apenas no último dia da reserva (checkout)
+                    const isCO = reserva && isSameDay(dia, toDate(reserva.dataCheckOut));
+                    return (
+                      <td key={dia.toISOString()} className="py-1.5 px-0.5">
+                        <div
+                          title={reserva
+                            ? `${reserva.nomeHospede || reserva.hospede?.nome || 'Hóspede'} — ${cfg.label}${temPagamento ? ' • Pago' : ''}`
+                            : cfg.label
+                          }
+                          className={`h-7 rounded-md ${cfg.cls} ${cfg.text} flex items-center justify-center cursor-default transition-opacity hover:opacity-80 ${isToday(dia) ? 'ring-2 ring-blue-600 ring-offset-1' : ''}`}
+                        >
+                          {/* Carrinho apenas no dia do checkout quando há pagamento */}
+                          {isCO && temPagamento && (
+                            <ShoppingCart className="h-3 w-3" />
+                          )}
+                        </div>
+                      </td>
                     );
                   })}
-                </React.Fragment>
+                </tr>
               ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-      {/* Taxa de ocupação por data */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Taxa de Ocupação por Data</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-7 gap-2">
-            {datas.slice(0, 14).map((data, index) => {
-              const taxa = calcularTaxaOcupacao(data, disponibilidade);
-              return (
-                <div key={index} className="text-center p-2 bg-gray-50 rounded">
-                  <div className="text-xs text-gray-600">
-                    {data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
-                  </div>
-                  <div className="text-lg font-bold text-blue-600">
-                    {taxa}%
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+      {quartos.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+          <BedDouble className="h-12 w-12 mb-3 opacity-30" />
+          <p className="text-sm font-medium">Nenhum quarto cadastrado</p>
+          <p className="text-xs mt-1">Cadastre quartos para visualizar a disponibilidade</p>
+        </div>
+      )}
     </div>
   );
 }
-
-export default Disponibilidade;

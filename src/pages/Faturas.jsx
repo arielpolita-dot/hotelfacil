@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useHotel } from '../context/HybridHotelContext';
+import { useHotel } from '../context/HotelFirestoreContext';
 import { 
   Plus, 
   Search, 
@@ -187,8 +187,11 @@ function Faturas() {
   };
 
   const filteredFaturas = faturas.filter(fatura => {
-    const matchesSearch = fatura.empresaCliente.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         fatura.cnpj.includes(searchTerm);
+    const searchLower = searchTerm.toLowerCase();
+    const matchesSearch = !searchTerm ||
+      (fatura.empresaCliente || '').toLowerCase().includes(searchLower) || 
+      (fatura.cnpj || '').includes(searchTerm) ||
+      (fatura.descricao || '').toLowerCase().includes(searchLower);
     const matchesStatus = !filterStatus || fatura.status === filterStatus;
     const matchesTipo = !filterTipo || fatura.tipoContrato === filterTipo;
     
@@ -318,7 +321,7 @@ function Faturas() {
             <div>
               <p className="text-sm font-medium text-gray-600">Receita Mensal</p>
               <p className="text-2xl font-bold text-blue-600">
-                R$ {estatisticas.receitaMensal.toLocaleString()}
+                R$ {(estatisticas.receitaMensal || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </p>
             </div>
             <DollarSign className="h-8 w-8 text-blue-600" />
@@ -393,7 +396,7 @@ function Faturas() {
                   </div>
                   <div className="text-right">
                     <p className="text-sm opacity-90">{fatura.tipoContrato}</p>
-                    <p className="text-lg font-bold">R$ {fatura.valorMensal.toLocaleString()}/mês</p>
+                    <p className="text-lg font-bold">R$ {(fatura.valorMensal || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/mês</p>
                   </div>
                 </div>
               </div>
@@ -407,7 +410,7 @@ function Faturas() {
                   </span>
                   <div className="text-right">
                     <p className="text-sm text-gray-600">Valor Total</p>
-                    <p className="font-bold text-gray-900">R$ {fatura.valorTotal.toLocaleString()}</p>
+                    <p className="font-bold text-gray-900">R$ {(fatura.valorTotal || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
                   </div>
                 </div>
 
@@ -415,7 +418,7 @@ function Faturas() {
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <Calendar className="h-4 w-4" />
-                    <span>Período: {new Date(fatura.dataInicio).toLocaleDateString()} - {new Date(fatura.dataFim).toLocaleDateString()}</span>
+                    <span>Período: {fatura.dataInicio ? new Date(fatura.dataInicio).toLocaleDateString('pt-BR') : '-'} - {fatura.dataFim ? new Date(fatura.dataFim).toLocaleDateString('pt-BR') : '-'}</span>
                   </div>
                   
                   <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -425,7 +428,7 @@ function Faturas() {
                   
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <CalendarDays className="h-4 w-4" />
-                    <span>Próxima Fatura: {new Date(fatura.proximaFatura).toLocaleDateString()}</span>
+                    <span>Próxima Fatura: {fatura.proximaFatura ? new Date(fatura.proximaFatura).toLocaleDateString('pt-BR') : '-'}</span>
                   </div>
                   
                   <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -726,13 +729,13 @@ function Faturas() {
                   <div>
                     <p className="text-sm text-gray-600">Valor Total do Contrato</p>
                     <p className="text-lg font-bold text-green-600">
-                      R$ {calcularValorTotal().toLocaleString()}
+                      R$ {(calcularValorTotal() || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Próxima Fatura</p>
                     <p className="text-lg font-bold text-orange-600">
-                      {formData.proximaFatura ? new Date(formData.proximaFatura).toLocaleDateString() : '-'}
+                      {formData.proximaFatura ? new Date(formData.proximaFatura).toLocaleDateString('pt-BR') : '-'}
                     </p>
                   </div>
                 </div>

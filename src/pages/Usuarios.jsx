@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useHotel } from '../context/HybridHotelContext';
+import { useHotel } from '../context/HotelFirestoreContext';
 import { useAuth } from '../context/AuthContext';
 import { 
   Plus, 
@@ -508,13 +508,13 @@ function Usuarios() {
                   
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <Calendar className="h-4 w-4" />
-                    <span>Criado em: {new Date(usuario.dataCriacao).toLocaleDateString()}</span>
+                    <span>Criado em: {usuario.dataCriacao ? new Date(usuario.dataCriacao).toLocaleDateString('pt-BR') : '-'}</span>
                   </div>
                   
                   {usuario.ultimoLogin && (
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <CheckCircle className="h-4 w-4" />
-                      <span>Último login: {new Date(usuario.ultimoLogin).toLocaleDateString()}</span>
+                      <span>Último login: {usuario.ultimoLogin ? new Date(usuario.ultimoLogin).toLocaleDateString('pt-BR') : '-'}</span>
                     </div>
                   )}
                 </div>

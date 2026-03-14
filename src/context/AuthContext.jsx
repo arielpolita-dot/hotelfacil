@@ -4,7 +4,8 @@ import {
   signInWithEmailAndPassword, 
   signOut, 
   onAuthStateChanged,
-  updateProfile
+  updateProfile,
+  sendPasswordResetEmail
 } from 'firebase/auth';
 import { 
   doc, 
@@ -157,6 +158,17 @@ export function AuthProvider({ children }) {
   }
 
   // Função para fazer logout
+  // Função para recuperar senha
+  async function recuperarSenha(email) {
+    try {
+      setError(null);
+      await sendPasswordResetEmail(auth, email);
+    } catch (error) {
+      setError(getErrorMessage(error.code));
+      throw error;
+    }
+  }
+
   async function logout() {
     try {
       setError(null);
@@ -359,6 +371,7 @@ export function AuthProvider({ children }) {
     login,
     criarConta,
     logout,
+    recuperarSenha,
     selecionarEmpresa,
     ativarEmpresa,
     listarTodasEmpresas,
