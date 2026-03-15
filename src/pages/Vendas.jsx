@@ -478,15 +478,88 @@ export default function Vendas() {
           <p className="text-sm font-medium">Nenhuma reserva encontrada</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <>
+        {/* ── MOBILE: Cards ── */}
+        <div className="md:hidden space-y-3">
+          {reservasFiltradas.map(r => {
+            const ci = toDate(r.dataCheckIn);
+            const co = toDate(r.dataCheckOut);
+            const statusKey = r.status?.toLowerCase();
+            const cfg = STATUS_CFG[statusKey] || STATUS_CFG.confirmada;
+            return (
+              <div key={r.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+                {/* Header do card */}
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <BedDouble className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-slate-900 text-sm leading-tight">{r.nomeHospede || r.hospede?.nome || '—'}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">{r.telefone || r.hospede?.telefone || ''}</p>
+                    </div>
+                  </div>
+                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${cfg.cls}`}>{cfg.label}</span>
+                </div>
+
+                {/* Detalhes */}
+                <div className="grid grid-cols-3 gap-2 mb-3">
+                  <div className="bg-slate-50 rounded-xl p-2 text-center">
+                    <p className="text-xs text-slate-400 mb-0.5">Quarto</p>
+                    <p className="font-bold text-slate-800 text-sm">{r.numeroQuarto || r.quartoNumero || r.quartoId || '—'}</p>
+                  </div>
+                  <div className="bg-slate-50 rounded-xl p-2 text-center">
+                    <p className="text-xs text-slate-400 mb-0.5">Check-in</p>
+                    <p className="font-semibold text-slate-700 text-xs">{ci && !isNaN(ci) ? format(ci, 'dd/MM/yy', { locale: ptBR }) : '—'}</p>
+                  </div>
+                  <div className="bg-slate-50 rounded-xl p-2 text-center">
+                    <p className="text-xs text-slate-400 mb-0.5">Check-out</p>
+                    <p className="font-semibold text-slate-700 text-xs">{co && !isNaN(co) ? format(co, 'dd/MM/yy', { locale: ptBR }) : '—'}</p>
+                  </div>
+                </div>
+
+                {/* Footer: valor + ações */}
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                  <p className="font-bold text-slate-900 text-base">{fmt(r.valorTotal || r.valor)}</p>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => abrirEditar(r)} title="Editar" className="w-9 h-9 flex items-center justify-center rounded-xl text-blue-600 bg-blue-50 hover:bg-blue-100 transition">
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => abrirPagamento(r)} title="Pagamento" className="w-9 h-9 flex items-center justify-center rounded-xl text-violet-600 bg-violet-50 hover:bg-violet-100 transition">
+                      <ShoppingCart className="h-4 w-4" />
+                    </button>
+                    {r.status === 'confirmada' && (
+                      <button onClick={() => atualizarStatus(r.id, 'check-in')} title="Check-in" className="w-9 h-9 flex items-center justify-center rounded-xl text-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition">
+                        <LogIn className="h-4 w-4" />
+                      </button>
+                    )}
+                    {(r.status === 'check-in' || r.status === 'checkin') && (
+                      <button onClick={() => atualizarStatus(r.id, 'checkout')} title="Check-out" className="w-9 h-9 flex items-center justify-center rounded-xl text-orange-500 bg-orange-50 hover:bg-orange-100 transition">
+                        <LogOut className="h-4 w-4" />
+                      </button>
+                    )}
+                    {(r.status === 'confirmada' || r.status === 'check-in' || r.status === 'checkin') && (
+                      <button onClick={() => atualizarStatus(r.id, 'cancelada')} title="Cancelar" className="w-9 h-9 flex items-center justify-center rounded-xl text-red-400 bg-red-50 hover:bg-red-100 transition">
+                        <Ban className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* ── DESKTOP: Tabela ── */}
+        <div className="hidden md:block bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50">
                   <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Hóspede</th>
                   <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Quarto</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide hidden md:table-cell">Check-in</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide hidden md:table-cell">Check-out</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Check-in</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Check-out</th>
                   <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</th>
                   <th className="text-right py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Valor</th>
                   <th className="py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide text-center">Ações</th>
@@ -512,10 +585,10 @@ export default function Vendas() {
                           <span className="font-medium text-slate-700">{r.numeroQuarto || r.quartoNumero || r.quartoId}</span>
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-slate-600 hidden md:table-cell">
+                      <td className="py-3 px-4 text-slate-600">
                         {ci && !isNaN(ci) ? format(ci, 'dd/MM/yyyy', { locale: ptBR }) : '—'}
                       </td>
-                      <td className="py-3 px-4 text-slate-600 hidden md:table-cell">
+                      <td className="py-3 px-4 text-slate-600">
                         {co && !isNaN(co) ? format(co, 'dd/MM/yyyy', { locale: ptBR }) : '—'}
                       </td>
                       <td className="py-3 px-4">
@@ -526,53 +599,24 @@ export default function Vendas() {
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center justify-center gap-1">
-                          {/* Editar */}
-                          <button
-                            onClick={() => abrirEditar(r)}
-                            title="Editar reserva"
-                            className="w-8 h-8 flex items-center justify-center rounded-lg text-blue-600 hover:bg-blue-50 transition"
-                          >
+                          <button onClick={() => abrirEditar(r)} title="Editar reserva" className="w-8 h-8 flex items-center justify-center rounded-lg text-blue-600 hover:bg-blue-50 transition">
                             <Pencil className="h-4 w-4" />
                           </button>
-
-                          {/* Pagamento */}
-                          <button
-                            onClick={() => abrirPagamento(r)}
-                            title="Registrar pagamento"
-                            className="w-8 h-8 flex items-center justify-center rounded-lg text-violet-600 hover:bg-violet-50 transition"
-                          >
+                          <button onClick={() => abrirPagamento(r)} title="Registrar pagamento" className="w-8 h-8 flex items-center justify-center rounded-lg text-violet-600 hover:bg-violet-50 transition">
                             <ShoppingCart className="h-4 w-4" />
                           </button>
-
-                          {/* Check-in (só para confirmada) */}
                           {r.status === 'confirmada' && (
-                            <button
-                              onClick={() => atualizarStatus(r.id, 'check-in')}
-                              title="Fazer Check-in"
-                              className="w-8 h-8 flex items-center justify-center rounded-lg text-emerald-600 hover:bg-emerald-50 transition"
-                            >
+                            <button onClick={() => atualizarStatus(r.id, 'check-in')} title="Fazer Check-in" className="w-8 h-8 flex items-center justify-center rounded-lg text-emerald-600 hover:bg-emerald-50 transition">
                               <LogIn className="h-4 w-4" />
                             </button>
                           )}
-
-                          {/* Check-out (só para check-in) */}
                           {(r.status === 'check-in' || r.status === 'checkin') && (
-                            <button
-                              onClick={() => atualizarStatus(r.id, 'checkout')}
-                              title="Fazer Check-out"
-                              className="w-8 h-8 flex items-center justify-center rounded-lg text-orange-500 hover:bg-orange-50 transition"
-                            >
+                            <button onClick={() => atualizarStatus(r.id, 'checkout')} title="Fazer Check-out" className="w-8 h-8 flex items-center justify-center rounded-lg text-orange-500 hover:bg-orange-50 transition">
                               <LogOut className="h-4 w-4" />
                             </button>
                           )}
-
-                          {/* Cancelar (confirmada ou check-in) */}
                           {(r.status === 'confirmada' || r.status === 'check-in' || r.status === 'checkin') && (
-                            <button
-                              onClick={() => atualizarStatus(r.id, 'cancelada')}
-                              title="Cancelar reserva"
-                              className="w-8 h-8 flex items-center justify-center rounded-lg text-red-400 hover:bg-red-50 transition"
-                            >
+                            <button onClick={() => atualizarStatus(r.id, 'cancelada')} title="Cancelar reserva" className="w-8 h-8 flex items-center justify-center rounded-lg text-red-400 hover:bg-red-50 transition">
                               <Ban className="h-4 w-4" />
                             </button>
                           )}
@@ -585,6 +629,7 @@ export default function Vendas() {
             </table>
           </div>
         </div>
+        </>
       )}
 
       {/* ─── Modal: Formulário de Reserva ─────────────────────────────────── */}
