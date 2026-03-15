@@ -57,10 +57,15 @@ function AppContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-blue-950">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-300 font-medium text-sm">Carregando sistema...</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#2563EB]">
+        <div className="flex flex-col items-center gap-6">
+          <img
+            src="/icon-512.png"
+            alt="Hotel Fácil"
+            className="w-32 h-32 rounded-3xl shadow-2xl"
+          />
+          <p className="text-white font-semibold text-lg tracking-wide">Hotel Fácil</p>
+          <div className="w-8 h-8 border-[3px] border-white border-t-transparent rounded-full animate-spin"></div>
         </div>
       </div>
     );
