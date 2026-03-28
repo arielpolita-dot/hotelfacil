@@ -4,3 +4,4 @@ dist/
 check*.cjs
 fix_*.cjs
 seed.cjs
+.env.local
