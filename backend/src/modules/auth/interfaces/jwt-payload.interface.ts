@@ -1,14 +1,23 @@
-export interface JwtPayload {
-  sub: string;
-  email: string;
-  empresaId: string;
-  role: string;
-  type: 'access' | 'refresh';
-}
-
 export class AuthUser {
   id: string;
   email: string;
+  name?: string;
+  avatar?: string;
+  projectId?: string;
   empresaId: string;
   role: string;
+}
+
+export interface TokenResponse {
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+  expires_in: number;
+  user: {
+    id: string;
+    email: string;
+    name?: string;
+    avatar?: string;
+    projectId?: string;
+  };
 }
