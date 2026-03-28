@@ -53,10 +53,10 @@ vi.mock('recharts', () => ({
   Line: () => <div />,
 }));
 
-import Quartos from '../Quartos';
-import Fornecedores from '../Fornecedores';
-import FluxoCaixa from '../FluxoCaixa';
-import Disponibilidade from '../Disponibilidade';
+import Quartos from '../quartos/Quartos';
+import Fornecedores from '../fornecedores/Fornecedores';
+import FluxoCaixa from '../financeiro/FluxoCaixa';
+import Disponibilidade from '../disponibilidade/Disponibilidade';
 
 const wrap = (ui) => <BrowserRouter>{ui}</BrowserRouter>;
 

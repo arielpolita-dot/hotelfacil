@@ -1,16 +1,16 @@
 import { useState, useMemo } from 'react';
-import { useHotel } from '../context/HotelContext';
-import { useAuth } from '../context/AuthContext';
+import { useHotel } from '../../context/HotelContext';
+import { useAuth } from '../../context/AuthContext';
 import { Plus, Search, CalendarCheck } from 'lucide-react';
-import { STATUS_CFG, STATUS_FILTROS } from './vendas/constants';
-import { useReservaForm } from './vendas/useReservaForm';
-import { ReservaMobileCard } from './vendas/ReservaMobileCard';
-import { ReservaDesktopRow } from './vendas/ReservaDesktopRow';
-import { ReservaFormModal } from './vendas/ReservaFormModal';
-import { PagamentoModal } from './vendas/PagamentoModal';
-import { ReciboModal } from './vendas/ReciboModal';
-import { BancoModal } from './vendas/BancoModal';
-import { CancelamentoModal } from './vendas/CancelamentoModal';
+import { STATUS_CFG, STATUS_FILTROS } from './constants';
+import { useReservaForm } from './useReservaForm';
+import { ReservaMobileCard } from './ReservaMobileCard';
+import { ReservaDesktopRow } from './ReservaDesktopRow';
+import { ReservaFormModal } from './ReservaFormModal';
+import { PagamentoModal } from './PagamentoModal';
+import { ReciboModal } from './ReciboModal';
+import { BancoModal } from './BancoModal';
+import { CancelamentoModal } from './CancelamentoModal';
 
 export default function Vendas() {
   const { quartos, reservas, bancos, adicionarReserva, atualizarReserva, adicionarFatura, adicionarBanco, atualizarBanco, removerBanco, loading } = useHotel();

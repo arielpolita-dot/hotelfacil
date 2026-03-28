@@ -1,12 +1,12 @@
-import { toDate, toDateString } from '../utils/dateUtils';
+import { toDate, toDateString } from '../../utils/dateUtils';
 import { useState, useMemo } from 'react';
-import { useHotel } from '../context/HotelContext';
+import { useHotel } from '../../context/HotelContext';
 import { TrendingUp, TrendingDown, DollarSign, ArrowUpRight, ArrowDownRight, Plus, X } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { formatCurrency } from '../utils/formatters';
-import { inputCls, selectCls } from '../styles/formClasses';
+import { formatCurrency } from '../../utils/formatters';
+import { inputCls, selectCls } from '../../styles/formClasses';
 
 const EMPTY = { tipo: 'entrada', descricao: '', valor: '', data: new Date().toISOString().split('T')[0], categoria: 'Outros', observacoes: '' };
 

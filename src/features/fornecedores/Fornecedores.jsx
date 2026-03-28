@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
-import { useHotel } from '../context/HotelContext';
+import { useHotel } from '../../context/HotelContext';
 import {
   Plus, Search, Edit2, Trash2, X, Building2, Phone, Mail, MapPin, User, FileText
 } from 'lucide-react';
-import { maskCPF, maskCNPJ, maskPhone } from '../utils/masks';
+import { maskCPF, maskCNPJ, maskPhone } from '../../utils/masks';
 
 const EMPTY_FORM = {
   nome: '', tipo: 'juridica', cnpj: '', cpf: '', email: '', telefone: '',

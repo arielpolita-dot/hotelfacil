@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
-import { useHotel } from '../context/HotelContext';
-import { toDate } from '../utils/dateUtils';
+import { useHotel } from '../../context/HotelContext';
+import { toDate } from '../../utils/dateUtils';
 import { TrendingUp, TrendingDown, DollarSign, BarChart2 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -8,9 +8,9 @@ import {
 } from 'recharts';
 import { format, getYear } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { formatCurrency } from '../utils/formatters';
-import { Card, LinhaGrupo, pct } from './dre/DRECard';
-import { useDREData } from './dre/useDREData';
+import { formatCurrency } from '../../utils/formatters';
+import { Card, LinhaGrupo, pct } from './DRECard';
+import { useDREData } from './useDREData';
 
 export default function DRE() {
   const { reservas, despesas, fluxoCaixa, loading } = useHotel();

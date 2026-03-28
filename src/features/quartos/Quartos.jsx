@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
-import { useHotel } from '../context/HotelContext';
+import { useHotel } from '../../context/HotelContext';
 import { Plus, BedDouble, Pencil, Trash2, X, Search, Filter } from 'lucide-react';
-import { formatCurrency } from '../utils/formatters';
-import { inputCls, selectCls } from '../styles/formClasses';
+import { formatCurrency } from '../../utils/formatters';
+import { inputCls, selectCls } from '../../styles/formClasses';
 
 const STATUS_CFG = {
   disponivel: { label: 'Disponível', cls: 'bg-emerald-100 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },

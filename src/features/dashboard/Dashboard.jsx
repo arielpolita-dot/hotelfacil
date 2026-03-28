@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
-import { useHotel } from '../context/HotelContext';
+import { useHotel } from '../../context/HotelContext';
 import {
   BedDouble, CalendarCheck, DollarSign, TrendingUp,
   ArrowUpRight, ArrowDownRight, Clock, BarChart2
@@ -7,12 +7,12 @@ import {
 import { format, isToday, isTomorrow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { formatCurrency } from '../utils/formatters';
-import { toDate } from '../utils/dateUtils';
-import { useDashboardStats } from './dashboard/useDashboardStats';
-import { ReminderModal } from './dashboard/ReminderModal';
-import { RoomUsageCards } from './dashboard/RoomUsageCards';
-import { BillsTable } from './dashboard/BillsTable';
+import { formatCurrency } from '../../utils/formatters';
+import { toDate } from '../../utils/dateUtils';
+import { useDashboardStats } from './useDashboardStats';
+import { ReminderModal } from './ReminderModal';
+import { RoomUsageCards } from './RoomUsageCards';
+import { BillsTable } from './BillsTable';
 
 const STATUS_CFG = {
   disponivel: { label: 'Disponível', bar: 'bg-emerald-500', dot: 'bg-emerald-500' },

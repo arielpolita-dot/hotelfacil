@@ -1,23 +1,23 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { HotelProvider } from './context/HotelContext';
-import Login from './components/ui/Login';
+import Login from './components/auth/Login';
 import Layout from './components/Layout';
 import { Component, lazy, Suspense } from 'react';
 import { LoadingSpinner } from './components/ds';
 
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const Disponibilidade = lazy(() => import('./pages/Disponibilidade'));
-const Quartos = lazy(() => import('./pages/Quartos'));
-const Vendas = lazy(() => import('./pages/Vendas'));
-const Faturas = lazy(() => import('./pages/Faturas'));
-const Despesas = lazy(() => import('./pages/Despesas'));
-const Usuarios = lazy(() => import('./pages/Usuarios'));
-const FluxoCaixa = lazy(() => import('./pages/FluxoCaixa'));
-const DRE = lazy(() => import('./pages/DRE'));
-const Configuracoes = lazy(() => import('./pages/Configuracoes'));
-const Fornecedores = lazy(() => import('./pages/Fornecedores'));
-const AdminPanel = lazy(() => import('./pages/AdminPanel'));
+const Dashboard = lazy(() => import('./features/dashboard/Dashboard'));
+const Disponibilidade = lazy(() => import('./features/disponibilidade/Disponibilidade'));
+const Quartos = lazy(() => import('./features/quartos/Quartos'));
+const Vendas = lazy(() => import('./features/reservas/Reservas'));
+const Faturas = lazy(() => import('./features/faturas/Faturas'));
+const Despesas = lazy(() => import('./features/despesas/Despesas'));
+const Usuarios = lazy(() => import('./features/usuarios/Usuarios'));
+const FluxoCaixa = lazy(() => import('./features/financeiro/FluxoCaixa'));
+const DRE = lazy(() => import('./features/financeiro/DRE'));
+const Configuracoes = lazy(() => import('./features/configuracoes/Configuracoes'));
+const Fornecedores = lazy(() => import('./features/fornecedores/Fornecedores'));
+const AdminPanel = lazy(() => import('./features/admin/AdminPanel'));
 
 // Error Boundary para capturar erros silenciosos do React
 class ErrorBoundary extends Component {

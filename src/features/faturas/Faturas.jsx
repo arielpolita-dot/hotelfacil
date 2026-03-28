@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { useHotel } from '../context/HotelContext';
+import { useHotel } from '../../context/HotelContext';
 import {
   Plus, Search, Edit3, Trash2, Calendar, DollarSign, FileText,
   Clock, CheckCircle, AlertCircle, XCircle, Send, Users, CreditCard, CalendarDays
 } from 'lucide-react';
-import { useFaturaForm, tiposContrato, statusOptions } from './faturas/useFaturaForm';
-import { FaturaFormModal } from './faturas/FaturaFormModal';
+import { useFaturaForm, tiposContrato, statusOptions } from './useFaturaForm';
+import { FaturaFormModal } from './FaturaFormModal';
 
 function Faturas() {
   const { faturas = [], adicionarFatura, atualizarFatura, removerFatura, quartos } = useHotel();

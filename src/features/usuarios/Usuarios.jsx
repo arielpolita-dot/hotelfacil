@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { useHotel } from '../context/HotelContext';
-import { useAuth } from '../context/AuthContext';
+import { useHotel } from '../../context/HotelContext';
+import { useAuth } from '../../context/AuthContext';
 import {
   Plus, Search, Edit3, Trash2, User, Phone, Calendar,
   CheckCircle, XCircle, AlertCircle, Users
 } from 'lucide-react';
-import { roles, statusOptions, permissoesDisponiveis, getPermissoesPorRole } from './usuarios/permissions';
-import { UsuarioFormModal } from './usuarios/UsuarioFormModal';
+import { roles, statusOptions, permissoesDisponiveis, getPermissoesPorRole } from './permissions';
+import { UsuarioFormModal } from './UsuarioFormModal';
 
 function Usuarios() {
   const { usuarios = [], adicionarUsuario, atualizarUsuario, removerUsuario } = useHotel();

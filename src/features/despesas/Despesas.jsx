@@ -1,13 +1,13 @@
 import { useState, useMemo } from 'react';
-import { useHotel } from '../context/HotelContext';
+import { useHotel } from '../../context/HotelContext';
 import { Plus, Trash2, Search, TrendingDown, Printer, CalendarDays } from 'lucide-react';
 import { format, isToday, isYesterday, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { formatCurrency } from '../utils/formatters';
-import { toDate } from '../utils/dateUtils';
-import { Modal } from '../components/ds';
-import { DespesaFormModal, CATEGORIAS, STATUS_LIST, STATUS_CFG } from './despesas/DespesaFormModal';
-import { printDespesasReport } from './despesas/DespesaPrintReport';
+import { formatCurrency } from '../../utils/formatters';
+import { toDate } from '../../utils/dateUtils';
+import { Modal } from '../../components/ds';
+import { DespesaFormModal, CATEGORIAS, STATUS_LIST, STATUS_CFG } from './DespesaFormModal';
+import { printDespesasReport } from './DespesaPrintReport';
 
 const EMPTY = { descricao: '', categoria: 'Outros', valor: '', data: new Date().toISOString().split('T')[0], status: 'pendente', fornecedor: '', observacoes: '' };
 
