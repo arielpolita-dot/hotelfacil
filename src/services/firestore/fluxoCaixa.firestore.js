@@ -5,6 +5,7 @@ import {
   onSnapshot,
   query,
   orderBy,
+  limit,
   serverTimestamp,
   Timestamp
 } from 'firebase/firestore';
@@ -14,7 +15,7 @@ import { validateId } from '../../utils/validators';
 export function onFluxoCaixa(empresaId, callback) {
   validateId(empresaId, 'empresaId');
   return onSnapshot(
-    query(collection(db, 'empresas', empresaId, 'fluxoCaixa'), orderBy('data', 'desc')),
+    query(collection(db, 'empresas', empresaId, 'fluxoCaixa'), orderBy('data', 'desc'), limit(1000)),
     snap => callback(snap.docs.map(d => {
       const data = d.data();
       return {

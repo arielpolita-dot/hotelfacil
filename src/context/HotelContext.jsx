@@ -69,8 +69,14 @@ export function HotelProvider({ children }) {
     setLoading(true);
     setError(null);
 
-    seedDadosIniciais(empresaId).catch(console.error);
-    seedBancosIniciais(empresaId).catch(console.error);
+    const seedKey = `seeded_${empresaId}`;
+    if (!localStorage.getItem(seedKey)) {
+      Promise.all([
+        seedDadosIniciais(empresaId),
+        seedBancosIniciais(empresaId),
+      ]).then(() => localStorage.setItem(seedKey, 'true'))
+        .catch(console.error);
+    }
 
     const unsubs = [
       onQuartos(empresaId, data => { setQuartos(data); setLoading(false); }),

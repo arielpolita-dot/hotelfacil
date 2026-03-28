@@ -6,6 +6,7 @@ import {
   onSnapshot,
   query,
   orderBy,
+  limit,
   serverTimestamp,
   writeBatch,
   Timestamp
@@ -33,7 +34,7 @@ export async function getReservas(empresaId) {
 export function onReservas(empresaId, callback) {
   validateId(empresaId, 'empresaId');
   return onSnapshot(
-    query(collection(db, 'empresas', empresaId, 'reservas'), orderBy('criadoEm', 'desc')),
+    query(collection(db, 'empresas', empresaId, 'reservas'), orderBy('criadoEm', 'desc'), limit(500)),
     snap => callback(snap.docs.map(d => {
       const data = d.data();
       return {

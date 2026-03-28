@@ -1,6 +1,7 @@
 import { toDate, toDateString } from '../utils/dateUtils';
 import { useState, useMemo } from 'react';
 import { useHotel } from '../context/HotelContext';
+import { useReservaMap } from './disponibilidade/useReservaMap';
 import { ChevronLeft, ChevronRight, BedDouble, ShoppingCart } from 'lucide-react';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, getDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -30,6 +31,7 @@ const DIAS_SEMANA = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 export default function Disponibilidade() {
   const { quartos, reservas, loading } = useHotel();
   const [mesAtual, setMesAtual] = useState(new Date());
+  const reservaMap = useReservaMap(reservas);
 
   const diasDoMes = useMemo(() => {
     const inicio = startOfMonth(mesAtual);
@@ -37,53 +39,37 @@ export default function Disponibilidade() {
     return eachDayOfInterval({ start: inicio, end: fim });
   }, [mesAtual]);
 
-  // Retorna o status de um quarto em um dia específico
+  // O(1) lookup: resolve status + reserva for a quarto on a given day
   const getStatusDia = (quarto, dia) => {
-    // Verificar todas as reservas ativas para este quarto neste dia
-    const reservasAtivas = reservas.filter(r => {
-      if (r.quartoId !== quarto.id && r.numeroQuarto?.toString() !== quarto.numero?.toString()) return false;
-      if (r.status === 'cancelada') return false;
-      const ci = toDate(r.dataCheckIn);
-      const co = toDate(r.dataCheckOut);
-      if (!ci || !co) return false;
-      return dia >= ci && dia < co;
-    });
+    const dateStr = toDateString(dia);
+    const entry = reservaMap.get(`${quarto.id}:${dateStr}`);
 
-    if (reservasAtivas.length === 0) {
-      // Sem reserva: verificar status do quarto
+    if (!entry) {
       if (quarto.status === 'manutencao') {
-        // Se tiver período definido, só mostra preto dentro do intervalo
         const ini = quarto.manutencaoInicio ? new Date(quarto.manutencaoInicio + 'T00:00:00') : null;
         const fim = quarto.manutencaoFim   ? new Date(quarto.manutencaoFim   + 'T23:59:59') : null;
         if (ini && fim) {
           if (dia >= ini && dia <= fim) return 'manutencao';
           return 'disponivel';
         }
-        return 'manutencao'; // sem período = quarto todo em manutenção
+        return 'manutencao';
       }
       if (quarto.status === 'limpeza') return 'limpeza';
       return 'disponivel';
     }
 
-    if (reservasAtivas.length > 1) return 'overbook';
+    if (entry._overbook) return 'overbook';
 
-    const r = reservasAtivas[0];
-    const s = r.status?.toLowerCase();
+    const s = entry.status?.toLowerCase();
     if (s === 'check-in' || s === 'checkin') return 'check-in';
     if (s === 'checkout' || s === 'check-out') return 'checkout';
-    if (s === 'confirmada') return 'confirmada';
     return 'confirmada';
   };
 
   const getReservaDia = (quarto, dia) => {
-    return reservas.find(r => {
-      if (r.quartoId !== quarto.id && r.numeroQuarto?.toString() !== quarto.numero?.toString()) return false;
-      if (r.status === 'cancelada') return false;
-      const ci = toDate(r.dataCheckIn);
-      const co = toDate(r.dataCheckOut);
-      if (!ci || !co) return false;
-      return dia >= ci && dia < co;
-    });
+    const dateStr = toDateString(dia);
+    const entry = reservaMap.get(`${quarto.id}:${dateStr}`);
+    return entry && !entry._overbook ? entry : null;
   };
 
   // Contagem de quartos por status hoje
@@ -96,7 +82,7 @@ export default function Disponibilidade() {
       counts[s] = (counts[s] || 0) + 1;
     });
     return counts;
-  }, [quartos, reservas]);
+  }, [quartos, reservaMap]);
 
   if (loading) {
     return (

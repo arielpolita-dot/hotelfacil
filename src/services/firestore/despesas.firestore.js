@@ -7,6 +7,7 @@ import {
   onSnapshot,
   query,
   orderBy,
+  limit,
   serverTimestamp,
   writeBatch,
   Timestamp
@@ -32,7 +33,7 @@ export async function getDespesas(empresaId) {
 export function onDespesas(empresaId, callback) {
   validateId(empresaId, 'empresaId');
   return onSnapshot(
-    query(collection(db, 'empresas', empresaId, 'despesas'), orderBy('data', 'desc')),
+    query(collection(db, 'empresas', empresaId, 'despesas'), orderBy('data', 'desc'), limit(500)),
     snap => callback(snap.docs.map(d => {
       const data = d.data();
       return {
