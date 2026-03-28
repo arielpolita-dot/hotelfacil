@@ -25,6 +25,11 @@ async function bootstrap() {
   // Graceful shutdown
   app.enableShutdownHooks();
 
+  // Global prefix
+  app.setGlobalPrefix('api', {
+    exclude: ['health', 'health/live', 'health/ready'],
+  });
+
   // Validation
   app.useGlobalPipes(
     new ValidationPipe({
