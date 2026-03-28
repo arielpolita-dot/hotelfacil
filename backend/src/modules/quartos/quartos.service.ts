@@ -8,12 +8,14 @@ import { Repository } from 'typeorm';
 import { Quarto } from './entities/quarto.entity';
 import { CreateQuartoDto } from './dto/create-quarto.dto';
 import { UpdateQuartoDto } from './dto/update-quarto.dto';
+import { HotelWebSocketGateway } from '../websocket/websocket.gateway';
 
 @Injectable()
 export class QuartosService {
   constructor(
     @InjectRepository(Quarto)
     private readonly repo: Repository<Quarto>,
+    private readonly wsGateway: HotelWebSocketGateway,
   ) {}
 
   async findAll(empresaId: string): Promise<Quarto[]> {
@@ -47,7 +49,10 @@ export class QuartosService {
       empresaId,
     });
 
-    return this.repo.save(quarto);
+    const saved = await this.repo.save(quarto);
+    this.wsGateway.emitToEmpresa(empresaId, 'quartos:changed');
+
+    return saved;
   }
 
   async update(
@@ -58,7 +63,10 @@ export class QuartosService {
     await this.findOne(empresaId, id);
     await this.repo.update({ id, empresaId }, dto);
 
-    return this.findOne(empresaId, id);
+    const updated = await this.findOne(empresaId, id);
+    this.wsGateway.emitToEmpresa(empresaId, 'quartos:changed');
+
+    return updated;
   }
 
   async remove(
@@ -67,5 +75,6 @@ export class QuartosService {
   ): Promise<void> {
     await this.findOne(empresaId, id);
     await this.repo.delete({ id, empresaId });
+    this.wsGateway.emitToEmpresa(empresaId, 'quartos:changed');
   }
 }

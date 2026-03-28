@@ -15,6 +15,7 @@ import { Quarto } from '../quartos/entities/quarto.entity';
 import { FluxoCaixa } from '../fluxo-caixa/entities/fluxo-caixa.entity';
 import { CreateReservaDto } from './dto/create-reserva.dto';
 import { UpdateReservaDto } from './dto/update-reserva.dto';
+import { HotelWebSocketGateway } from '../websocket/websocket.gateway';
 
 @Injectable()
 export class ReservasService {
@@ -22,6 +23,7 @@ export class ReservasService {
     @InjectRepository(Reserva)
     private readonly repo: Repository<Reserva>,
     private readonly dataSource: DataSource,
+    private readonly wsGateway: HotelWebSocketGateway,
   ) {}
 
   async findAll(empresaId: string): Promise<Reserva[]> {
@@ -52,35 +54,41 @@ export class ReservasService {
     empresaId: string,
     dto: CreateReservaDto,
   ): Promise<Reserva> {
-    return this.dataSource.transaction(async (manager) => {
-      const reserva = manager.create(Reserva, {
-        ...dto,
-        empresaId,
-        status: dto.status ?? StatusReserva.CONFIRMADA,
-      });
-      const saved = await manager.save(reserva);
+    const result = await this.dataSource.transaction(
+      async (manager) => {
+        const reserva = manager.create(Reserva, {
+          ...dto,
+          empresaId,
+          status: dto.status ?? StatusReserva.CONFIRMADA,
+        });
+        const saved = await manager.save(reserva);
 
-      await manager.update(
-        Quarto,
-        { id: dto.quartoId, empresaId },
-        { status: StatusQuarto.OCUPADO },
-      );
+        await manager.update(
+          Quarto,
+          { id: dto.quartoId, empresaId },
+          { status: StatusQuarto.OCUPADO },
+        );
 
-      const fluxo = manager.create(FluxoCaixa, {
-        empresaId,
-        tipo: TipoFluxoCaixa.ENTRADA,
-        categoria: 'Hospedagem',
-        descricao: `Hospedagem - ${dto.nomeHospede}`,
-        valor: dto.valorTotal,
-        reservaId: saved.id,
-        data: dto.dataCheckout
-          ? new Date(dto.dataCheckout)
-          : new Date(),
-      });
-      await manager.save(fluxo);
+        const fluxo = manager.create(FluxoCaixa, {
+          empresaId,
+          tipo: TipoFluxoCaixa.ENTRADA,
+          categoria: 'Hospedagem',
+          descricao: `Hospedagem - ${dto.nomeHospede}`,
+          valor: dto.valorTotal,
+          reservaId: saved.id,
+          data: dto.dataCheckout
+            ? new Date(dto.dataCheckout)
+            : new Date(),
+        });
+        await manager.save(fluxo);
 
-      return saved;
-    });
+        return saved;
+      },
+    );
+
+    this.emitReservaEvents(empresaId);
+
+    return result;
   }
 
   async update(
@@ -91,7 +99,10 @@ export class ReservasService {
     await this.findOne(empresaId, id);
     await this.repo.update({ id, empresaId }, dto as any);
 
-    return this.findOne(empresaId, id);
+    const updated = await this.findOne(empresaId, id);
+    this.emitReservaEvents(empresaId);
+
+    return updated;
   }
 
   async checkout(
@@ -100,21 +111,27 @@ export class ReservasService {
   ): Promise<Reserva> {
     const reserva = await this.findOne(empresaId, id);
 
-    return this.dataSource.transaction(async (manager) => {
-      await manager.update(
-        Reserva,
-        { id, empresaId },
-        { status: StatusReserva.CONCLUIDA },
-      );
+    const result = await this.dataSource.transaction(
+      async (manager) => {
+        await manager.update(
+          Reserva,
+          { id, empresaId },
+          { status: StatusReserva.CONCLUIDA },
+        );
 
-      await manager.update(
-        Quarto,
-        { id: reserva.quartoId, empresaId },
-        { status: StatusQuarto.LIMPEZA },
-      );
+        await manager.update(
+          Quarto,
+          { id: reserva.quartoId, empresaId },
+          { status: StatusQuarto.LIMPEZA },
+        );
 
-      return this.findOne(empresaId, id);
-    });
+        return this.findOne(empresaId, id);
+      },
+    );
+
+    this.emitReservaEvents(empresaId);
+
+    return result;
   }
 
   async cancel(
@@ -123,21 +140,27 @@ export class ReservasService {
   ): Promise<Reserva> {
     const reserva = await this.findOne(empresaId, id);
 
-    return this.dataSource.transaction(async (manager) => {
-      await manager.update(
-        Reserva,
-        { id, empresaId },
-        { status: StatusReserva.CANCELADA },
-      );
+    const result = await this.dataSource.transaction(
+      async (manager) => {
+        await manager.update(
+          Reserva,
+          { id, empresaId },
+          { status: StatusReserva.CANCELADA },
+        );
 
-      await manager.update(
-        Quarto,
-        { id: reserva.quartoId, empresaId },
-        { status: StatusQuarto.DISPONIVEL },
-      );
+        await manager.update(
+          Quarto,
+          { id: reserva.quartoId, empresaId },
+          { status: StatusQuarto.DISPONIVEL },
+        );
 
-      return this.findOne(empresaId, id);
-    });
+        return this.findOne(empresaId, id);
+      },
+    );
+
+    this.emitReservaEvents(empresaId);
+
+    return result;
   }
 
   async remove(
@@ -146,5 +169,21 @@ export class ReservasService {
   ): Promise<void> {
     await this.findOne(empresaId, id);
     await this.repo.delete({ id, empresaId });
+    this.emitReservaEvents(empresaId);
+  }
+
+  private emitReservaEvents(empresaId: string): void {
+    this.wsGateway.emitToEmpresa(
+      empresaId,
+      'reservas:changed',
+    );
+    this.wsGateway.emitToEmpresa(
+      empresaId,
+      'quartos:changed',
+    );
+    this.wsGateway.emitToEmpresa(
+      empresaId,
+      'fluxoCaixa:changed',
+    );
   }
 }

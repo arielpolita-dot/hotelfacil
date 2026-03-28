@@ -10,6 +10,7 @@ import { Despesa } from './entities/despesa.entity';
 import { FluxoCaixa } from '../fluxo-caixa/entities/fluxo-caixa.entity';
 import { CreateDespesaDto } from './dto/create-despesa.dto';
 import { UpdateDespesaDto } from './dto/update-despesa.dto';
+import { HotelWebSocketGateway } from '../websocket/websocket.gateway';
 
 @Injectable()
 export class DespesasService {
@@ -17,6 +18,7 @@ export class DespesasService {
     @InjectRepository(Despesa)
     private readonly repo: Repository<Despesa>,
     private readonly dataSource: DataSource,
+    private readonly wsGateway: HotelWebSocketGateway,
   ) {}
 
   async findAll(empresaId: string): Promise<Despesa[]> {
@@ -45,26 +47,32 @@ export class DespesasService {
     empresaId: string,
     dto: CreateDespesaDto,
   ): Promise<Despesa> {
-    return this.dataSource.transaction(async (manager) => {
-      const despesa = manager.create(Despesa, {
-        ...dto,
-        empresaId,
-      });
-      const saved = await manager.save(despesa);
+    const result = await this.dataSource.transaction(
+      async (manager) => {
+        const despesa = manager.create(Despesa, {
+          ...dto,
+          empresaId,
+        });
+        const saved = await manager.save(despesa);
 
-      const fluxo = manager.create(FluxoCaixa, {
-        empresaId,
-        tipo: TipoFluxoCaixa.SAIDA,
-        categoria: dto.categoria,
-        descricao: dto.descricao,
-        valor: dto.valor,
-        despesaId: saved.id,
-        data: new Date(dto.data),
-      });
-      await manager.save(fluxo);
+        const fluxo = manager.create(FluxoCaixa, {
+          empresaId,
+          tipo: TipoFluxoCaixa.SAIDA,
+          categoria: dto.categoria,
+          descricao: dto.descricao,
+          valor: dto.valor,
+          despesaId: saved.id,
+          data: new Date(dto.data),
+        });
+        await manager.save(fluxo);
 
-      return saved;
-    });
+        return saved;
+      },
+    );
+
+    this.emitDespesaEvents(empresaId);
+
+    return result;
   }
 
   async update(
@@ -75,7 +83,10 @@ export class DespesasService {
     await this.findOne(empresaId, id);
     await this.repo.update({ id, empresaId }, dto as any);
 
-    return this.findOne(empresaId, id);
+    const updated = await this.findOne(empresaId, id);
+    this.emitDespesaEvents(empresaId);
+
+    return updated;
   }
 
   async remove(
@@ -84,5 +95,17 @@ export class DespesasService {
   ): Promise<void> {
     await this.findOne(empresaId, id);
     await this.repo.delete({ id, empresaId });
+    this.emitDespesaEvents(empresaId);
+  }
+
+  private emitDespesaEvents(empresaId: string): void {
+    this.wsGateway.emitToEmpresa(
+      empresaId,
+      'despesas:changed',
+    );
+    this.wsGateway.emitToEmpresa(
+      empresaId,
+      'fluxoCaixa:changed',
+    );
   }
 }

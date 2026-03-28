@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { Banco } from './entities/banco.entity';
 import { CreateBancoDto } from './dto/create-banco.dto';
 import { UpdateBancoDto } from './dto/update-banco.dto';
+import { HotelWebSocketGateway } from '../websocket/websocket.gateway';
 
 const DEFAULT_BANKS = [
   { nome: 'Banco do Brasil', codigo: '001' },
@@ -26,6 +27,7 @@ export class BancosService {
   constructor(
     @InjectRepository(Banco)
     private readonly bancoRepo: Repository<Banco>,
+    private readonly wsGateway: HotelWebSocketGateway,
   ) {}
 
   async findAll(empresaId: string): Promise<Banco[]> {
@@ -56,7 +58,13 @@ export class BancosService {
       empresaId,
     });
 
-    return this.bancoRepo.save(banco);
+    const saved = await this.bancoRepo.save(banco);
+    this.wsGateway.emitToEmpresa(
+      empresaId,
+      'bancos:changed',
+    );
+
+    return saved;
   }
 
   async update(
@@ -68,13 +76,23 @@ export class BancosService {
 
     Object.assign(banco, dto);
 
-    return this.bancoRepo.save(banco);
+    const updated = await this.bancoRepo.save(banco);
+    this.wsGateway.emitToEmpresa(
+      empresaId,
+      'bancos:changed',
+    );
+
+    return updated;
   }
 
   async remove(empresaId: string, id: string): Promise<void> {
     const banco = await this.findOne(empresaId, id);
 
     await this.bancoRepo.remove(banco);
+    this.wsGateway.emitToEmpresa(
+      empresaId,
+      'bancos:changed',
+    );
   }
 
   async seed(empresaId: string): Promise<Banco[]> {

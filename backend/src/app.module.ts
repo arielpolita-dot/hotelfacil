@@ -13,6 +13,7 @@ import { BancosModule } from './modules/bancos/bancos.module';
 import { DespesasModule } from './modules/despesas/despesas.module';
 import { FluxoCaixaModule } from './modules/fluxo-caixa/fluxo-caixa.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { WebSocketModule } from './modules/websocket/websocket.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     DespesasModule,
     FluxoCaixaModule,
     DashboardModule,
+    WebSocketModule,
   ],
 })
 export class AppModule {}

@@ -6,6 +6,7 @@ import { Permissao } from './entities/permissao.entity';
 import { EmpresaUsuario } from '../empresas/entities/empresa-usuario.entity';
 import { UsuariosController } from './usuarios.controller';
 import { UsuariosService } from './usuarios.service';
+import { WebSocketModule } from '../websocket/websocket.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { UsuariosService } from './usuarios.service';
       EmpresaUsuario,
       Permissao,
     ]),
+    WebSocketModule,
   ],
   controllers: [UsuariosController],
   providers: [UsuariosService],

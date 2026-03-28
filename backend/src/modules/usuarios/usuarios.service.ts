@@ -13,6 +13,7 @@ import { EmpresaUsuario } from '../empresas/entities/empresa-usuario.entity';
 import { Permissao } from './entities/permissao.entity';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
+import { HotelWebSocketGateway } from '../websocket/websocket.gateway';
 
 const BCRYPT_ROUNDS = 12;
 
@@ -26,6 +27,7 @@ export class UsuariosService {
     @InjectRepository(Permissao)
     private readonly permissaoRepo: Repository<Permissao>,
     private readonly dataSource: DataSource,
+    private readonly wsGateway: HotelWebSocketGateway,
   ) {}
 
   async findAll(empresaId: string) {
@@ -80,47 +82,59 @@ export class UsuariosService {
       throw new ConflictException('Email ja cadastrado');
     }
 
-    return this.dataSource.transaction(async (manager) => {
-      const senhaHash = await bcrypt.hash(dto.senha, BCRYPT_ROUNDS);
+    const result = await this.dataSource.transaction(
+      async (manager) => {
+        const senhaHash = await bcrypt.hash(
+          dto.senha,
+          BCRYPT_ROUNDS,
+        );
 
-      const usuario = manager.create(Usuario, {
-        nome: dto.nome,
-        email: dto.email.toLowerCase(),
-        senhaHash,
-        telefone: dto.telefone,
-        role: dto.role,
-        observacoes: dto.observacoes,
-      });
-      await manager.save(usuario);
+        const usuario = manager.create(Usuario, {
+          nome: dto.nome,
+          email: dto.email.toLowerCase(),
+          senhaHash,
+          telefone: dto.telefone,
+          role: dto.role,
+          observacoes: dto.observacoes,
+        });
+        await manager.save(usuario);
 
-      const empresaUsuario = manager.create(EmpresaUsuario, {
-        empresaId,
-        usuarioId: usuario.id,
-        role: dto.role,
-      });
-      await manager.save(empresaUsuario);
+        const empresaUsuario = manager.create(EmpresaUsuario, {
+          empresaId,
+          usuarioId: usuario.id,
+          role: dto.role,
+        });
+        await manager.save(empresaUsuario);
 
-      const permissao = manager.create(Permissao, {
-        empresaUsuarioId: empresaUsuario.id,
-        dashboard: dto.dashboard ?? true,
-        disponibilidade: dto.disponibilidade ?? true,
-        quartos: dto.quartos ?? false,
-        vendas: dto.vendas ?? false,
-        faturas: dto.faturas ?? false,
-        despesas: dto.despesas ?? false,
-        fluxoCaixa: dto.fluxoCaixa ?? false,
-        usuarios: dto.usuarios ?? false,
-        configuracoes: dto.configuracoes ?? false,
-      });
-      await manager.save(permissao);
+        const permissao = manager.create(Permissao, {
+          empresaUsuarioId: empresaUsuario.id,
+          dashboard: dto.dashboard ?? true,
+          disponibilidade: dto.disponibilidade ?? true,
+          quartos: dto.quartos ?? false,
+          vendas: dto.vendas ?? false,
+          faturas: dto.faturas ?? false,
+          despesas: dto.despesas ?? false,
+          fluxoCaixa: dto.fluxoCaixa ?? false,
+          usuarios: dto.usuarios ?? false,
+          configuracoes: dto.configuracoes ?? false,
+        });
+        await manager.save(permissao);
 
-      return {
-        id: usuario.id,
-        nome: usuario.nome,
-        email: usuario.email,
-        role: dto.role,
-      };
-    });
+        return {
+          id: usuario.id,
+          nome: usuario.nome,
+          email: usuario.email,
+          role: dto.role,
+        };
+      },
+    );
+
+    this.wsGateway.emitToEmpresa(
+      empresaId,
+      'usuarios:changed',
+    );
+
+    return result;
   }
 
   async update(
@@ -137,65 +151,78 @@ export class UsuariosService {
       throw new NotFoundException('Usuario nao encontrado');
     }
 
-    return this.dataSource.transaction(async (manager) => {
-      const updateData: Partial<Usuario> = {};
+    const result = await this.dataSource.transaction(
+      async (manager) => {
+        const updateData: Partial<Usuario> = {};
 
-      if (dto.nome) updateData.nome = dto.nome;
-      if (dto.email) updateData.email = dto.email.toLowerCase();
-      if (dto.telefone !== undefined) updateData.telefone = dto.telefone;
-      if (dto.status) updateData.status = dto.status;
-      if (dto.observacoes !== undefined) {
-        updateData.observacoes = dto.observacoes;
-      }
+        if (dto.nome) updateData.nome = dto.nome;
+        if (dto.email) {
+          updateData.email = dto.email.toLowerCase();
+        }
+        if (dto.telefone !== undefined) {
+          updateData.telefone = dto.telefone;
+        }
+        if (dto.status) updateData.status = dto.status;
+        if (dto.observacoes !== undefined) {
+          updateData.observacoes = dto.observacoes;
+        }
 
-      if (dto.senha) {
-        updateData.senhaHash = await bcrypt.hash(
-          dto.senha,
-          BCRYPT_ROUNDS,
-        );
-      }
+        if (dto.senha) {
+          updateData.senhaHash = await bcrypt.hash(
+            dto.senha,
+            BCRYPT_ROUNDS,
+          );
+        }
 
-      if (Object.keys(updateData).length > 0) {
-        await manager.update(Usuario, id, updateData);
-      }
+        if (Object.keys(updateData).length > 0) {
+          await manager.update(Usuario, id, updateData);
+        }
 
-      if (dto.role) {
-        await manager.update(EmpresaUsuario, eu.id, {
-          role: dto.role,
-        });
-      }
+        if (dto.role) {
+          await manager.update(EmpresaUsuario, eu.id, {
+            role: dto.role,
+          });
+        }
 
-      if (eu.permissao) {
-        const permUpdate: Partial<Permissao> = {};
-        const permFields = [
-          'dashboard',
-          'disponibilidade',
-          'quartos',
-          'vendas',
-          'faturas',
-          'despesas',
-          'fluxoCaixa',
-          'usuarios',
-          'configuracoes',
-        ] as const;
+        if (eu.permissao) {
+          const permUpdate: Partial<Permissao> = {};
+          const permFields = [
+            'dashboard',
+            'disponibilidade',
+            'quartos',
+            'vendas',
+            'faturas',
+            'despesas',
+            'fluxoCaixa',
+            'usuarios',
+            'configuracoes',
+          ] as const;
 
-        for (const field of permFields) {
-          if (dto[field] !== undefined) {
-            permUpdate[field] = dto[field];
+          for (const field of permFields) {
+            if (dto[field] !== undefined) {
+              permUpdate[field] = dto[field];
+            }
+          }
+
+          if (Object.keys(permUpdate).length > 0) {
+            await manager.update(
+              Permissao,
+              eu.permissao.id,
+              permUpdate,
+            );
           }
         }
 
-        if (Object.keys(permUpdate).length > 0) {
-          await manager.update(
-            Permissao,
-            eu.permissao.id,
-            permUpdate,
-          );
-        }
-      }
+        return this.findOne(empresaId, id);
+      },
+    );
 
-      return this.findOne(empresaId, id);
-    });
+    this.wsGateway.emitToEmpresa(
+      empresaId,
+      'usuarios:changed',
+    );
+
+    return result;
   }
 
   async remove(
@@ -218,5 +245,9 @@ export class UsuariosService {
     }
 
     await this.empresaUsuarioRepo.remove(eu);
+    this.wsGateway.emitToEmpresa(
+      empresaId,
+      'usuarios:changed',
+    );
   }
 }

@@ -8,12 +8,14 @@ import { Repository } from 'typeorm';
 import { Fornecedor } from './entities/fornecedor.entity';
 import { CreateFornecedorDto } from './dto/create-fornecedor.dto';
 import { UpdateFornecedorDto } from './dto/update-fornecedor.dto';
+import { HotelWebSocketGateway } from '../websocket/websocket.gateway';
 
 @Injectable()
 export class FornecedoresService {
   constructor(
     @InjectRepository(Fornecedor)
     private readonly fornecedorRepo: Repository<Fornecedor>,
+    private readonly wsGateway: HotelWebSocketGateway,
   ) {}
 
   async findAll(empresaId: string): Promise<Fornecedor[]> {
@@ -47,7 +49,13 @@ export class FornecedoresService {
       empresaId,
     });
 
-    return this.fornecedorRepo.save(fornecedor);
+    const saved = await this.fornecedorRepo.save(fornecedor);
+    this.wsGateway.emitToEmpresa(
+      empresaId,
+      'fornecedores:changed',
+    );
+
+    return saved;
   }
 
   async update(
@@ -59,12 +67,22 @@ export class FornecedoresService {
 
     Object.assign(fornecedor, dto);
 
-    return this.fornecedorRepo.save(fornecedor);
+    const updated = await this.fornecedorRepo.save(fornecedor);
+    this.wsGateway.emitToEmpresa(
+      empresaId,
+      'fornecedores:changed',
+    );
+
+    return updated;
   }
 
   async remove(empresaId: string, id: string): Promise<void> {
     const fornecedor = await this.findOne(empresaId, id);
 
     await this.fornecedorRepo.remove(fornecedor);
+    this.wsGateway.emitToEmpresa(
+      empresaId,
+      'fornecedores:changed',
+    );
   }
 }

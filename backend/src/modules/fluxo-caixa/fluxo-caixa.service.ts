@@ -4,12 +4,14 @@ import { Repository } from 'typeorm';
 
 import { FluxoCaixa } from './entities/fluxo-caixa.entity';
 import { CreateFluxoCaixaDto } from './dto/create-fluxo-caixa.dto';
+import { HotelWebSocketGateway } from '../websocket/websocket.gateway';
 
 @Injectable()
 export class FluxoCaixaService {
   constructor(
     @InjectRepository(FluxoCaixa)
     private readonly repo: Repository<FluxoCaixa>,
+    private readonly wsGateway: HotelWebSocketGateway,
   ) {}
 
   async findAll(empresaId: string): Promise<FluxoCaixa[]> {
@@ -28,6 +30,12 @@ export class FluxoCaixaService {
       empresaId,
     });
 
-    return this.repo.save(fluxo);
+    const saved = await this.repo.save(fluxo);
+    this.wsGateway.emitToEmpresa(
+      empresaId,
+      'fluxoCaixa:changed',
+    );
+
+    return saved;
   }
 }

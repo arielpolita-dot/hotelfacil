@@ -8,12 +8,14 @@ import { Repository } from 'typeorm';
 import { Fatura } from './entities/fatura.entity';
 import { CreateFaturaDto } from './dto/create-fatura.dto';
 import { UpdateFaturaDto } from './dto/update-fatura.dto';
+import { HotelWebSocketGateway } from '../websocket/websocket.gateway';
 
 @Injectable()
 export class FaturasService {
   constructor(
     @InjectRepository(Fatura)
     private readonly faturaRepo: Repository<Fatura>,
+    private readonly wsGateway: HotelWebSocketGateway,
   ) {}
 
   async findAll(empresaId: string): Promise<Fatura[]> {
@@ -44,7 +46,13 @@ export class FaturasService {
       empresaId,
     });
 
-    return this.faturaRepo.save(fatura);
+    const saved = await this.faturaRepo.save(fatura);
+    this.wsGateway.emitToEmpresa(
+      empresaId,
+      'faturas:changed',
+    );
+
+    return saved;
   }
 
   async update(
@@ -56,12 +64,22 @@ export class FaturasService {
 
     Object.assign(fatura, dto);
 
-    return this.faturaRepo.save(fatura);
+    const updated = await this.faturaRepo.save(fatura);
+    this.wsGateway.emitToEmpresa(
+      empresaId,
+      'faturas:changed',
+    );
+
+    return updated;
   }
 
   async remove(empresaId: string, id: string): Promise<void> {
     const fatura = await this.findOne(empresaId, id);
 
     await this.faturaRepo.remove(fatura);
+    this.wsGateway.emitToEmpresa(
+      empresaId,
+      'faturas:changed',
+    );
   }
 }
