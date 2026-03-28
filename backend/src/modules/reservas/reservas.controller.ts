@@ -10,6 +10,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
@@ -19,6 +20,7 @@ import { EmpresaGuard } from '../../common/guards/empresa.guard';
 import { ReservasService } from './reservas.service';
 import { CreateReservaDto } from './dto/create-reserva.dto';
 import { UpdateReservaDto } from './dto/update-reserva.dto';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 
 @ApiTags('reservas')
 @Controller('empresas/:empresaId/reservas')
@@ -29,8 +31,9 @@ export class ReservasController {
   @Get()
   findAll(
     @Param('empresaId', ParseUUIDPipe) empresaId: string,
+    @Query() pagination: PaginationDto,
   ) {
-    return this.service.findAll(empresaId);
+    return this.service.findAll(empresaId, pagination);
   }
 
   @Get(':id')

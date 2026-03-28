@@ -5,6 +5,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
@@ -13,6 +14,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { EmpresaGuard } from '../../common/guards/empresa.guard';
 import { FluxoCaixaService } from './fluxo-caixa.service';
 import { CreateFluxoCaixaDto } from './dto/create-fluxo-caixa.dto';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 
 @ApiTags('fluxo-caixa')
 @Controller('empresas/:empresaId/fluxo-caixa')
@@ -23,8 +25,9 @@ export class FluxoCaixaController {
   @Get()
   findAll(
     @Param('empresaId', ParseUUIDPipe) empresaId: string,
+    @Query() pagination: PaginationDto,
   ) {
-    return this.service.findAll(empresaId);
+    return this.service.findAll(empresaId, pagination);
   }
 
   @Post()

@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
@@ -18,6 +19,7 @@ import { EmpresaGuard } from '../../common/guards/empresa.guard';
 import { QuartosService } from './quartos.service';
 import { CreateQuartoDto } from './dto/create-quarto.dto';
 import { UpdateQuartoDto } from './dto/update-quarto.dto';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 
 @ApiTags('quartos')
 @Controller('empresas/:empresaId/quartos')
@@ -28,8 +30,9 @@ export class QuartosController {
   @Get()
   findAll(
     @Param('empresaId', ParseUUIDPipe) empresaId: string,
+    @Query() pagination: PaginationDto,
   ) {
-    return this.service.findAll(empresaId);
+    return this.service.findAll(empresaId, pagination);
   }
 
   @Get(':id')

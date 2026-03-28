@@ -8,6 +8,10 @@ import { Repository } from 'typeorm';
 import { Fatura } from './entities/fatura.entity';
 import { CreateFaturaDto } from './dto/create-fatura.dto';
 import { UpdateFaturaDto } from './dto/update-fatura.dto';
+import {
+  PaginationDto,
+  PaginatedResult,
+} from '../../common/dto/pagination.dto';
 import { HotelWebSocketGateway } from '../websocket/websocket.gateway';
 
 @Injectable()
@@ -18,11 +22,18 @@ export class FaturasService {
     private readonly wsGateway: HotelWebSocketGateway,
   ) {}
 
-  async findAll(empresaId: string): Promise<Fatura[]> {
-    return this.faturaRepo.find({
+  async findAll(
+    empresaId: string,
+    pagination: PaginationDto,
+  ): Promise<PaginatedResult<Fatura>> {
+    const { page = 1, limit = 20 } = pagination;
+    const [data, total] = await this.faturaRepo.findAndCount({
       where: { empresaId },
       order: { createdAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
     });
+    return new PaginatedResult(data, total, page, limit);
   }
 
   async findOne(empresaId: string, id: string): Promise<Fatura> {

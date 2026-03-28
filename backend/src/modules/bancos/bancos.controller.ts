@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -23,6 +24,7 @@ import { EmpresaGuard } from '../../common/guards/empresa.guard';
 import { BancosService } from './bancos.service';
 import { CreateBancoDto } from './dto/create-banco.dto';
 import { UpdateBancoDto } from './dto/update-banco.dto';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 
 @ApiTags('Bancos')
 @ApiBearerAuth()
@@ -36,8 +38,9 @@ export class BancosController {
   @ApiResponse({ status: 200, description: 'Lista de bancos' })
   findAll(
     @Param('empresaId', ParseUUIDPipe) empresaId: string,
+    @Query() pagination: PaginationDto,
   ) {
-    return this.bancosService.findAll(empresaId);
+    return this.bancosService.findAll(empresaId, pagination);
   }
 
   @Get(':id')

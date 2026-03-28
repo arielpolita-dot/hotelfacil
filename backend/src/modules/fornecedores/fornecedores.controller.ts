@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -23,6 +24,7 @@ import { EmpresaGuard } from '../../common/guards/empresa.guard';
 import { FornecedoresService } from './fornecedores.service';
 import { CreateFornecedorDto } from './dto/create-fornecedor.dto';
 import { UpdateFornecedorDto } from './dto/update-fornecedor.dto';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 
 @ApiTags('Fornecedores')
 @ApiBearerAuth()
@@ -41,8 +43,9 @@ export class FornecedoresController {
   })
   findAll(
     @Param('empresaId', ParseUUIDPipe) empresaId: string,
+    @Query() pagination: PaginationDto,
   ) {
-    return this.fornecedoresService.findAll(empresaId);
+    return this.fornecedoresService.findAll(empresaId, pagination);
   }
 
   @Get(':id')

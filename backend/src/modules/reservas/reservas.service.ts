@@ -15,6 +15,10 @@ import { Quarto } from '../quartos/entities/quarto.entity';
 import { FluxoCaixa } from '../fluxo-caixa/entities/fluxo-caixa.entity';
 import { CreateReservaDto } from './dto/create-reserva.dto';
 import { UpdateReservaDto } from './dto/update-reserva.dto';
+import {
+  PaginationDto,
+  PaginatedResult,
+} from '../../common/dto/pagination.dto';
 import { HotelWebSocketGateway } from '../websocket/websocket.gateway';
 
 @Injectable()
@@ -26,12 +30,19 @@ export class ReservasService {
     private readonly wsGateway: HotelWebSocketGateway,
   ) {}
 
-  async findAll(empresaId: string): Promise<Reserva[]> {
-    return this.repo.find({
+  async findAll(
+    empresaId: string,
+    pagination: PaginationDto,
+  ): Promise<PaginatedResult<Reserva>> {
+    const { page = 1, limit = 20 } = pagination;
+    const [data, total] = await this.repo.findAndCount({
       where: { empresaId },
       relations: ['quarto'],
       order: { dataCheckin: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
     });
+    return new PaginatedResult(data, total, page, limit);
   }
 
   async findOne(

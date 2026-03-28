@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -23,6 +24,7 @@ import { EmpresaGuard } from '../../common/guards/empresa.guard';
 import { FaturasService } from './faturas.service';
 import { CreateFaturaDto } from './dto/create-fatura.dto';
 import { UpdateFaturaDto } from './dto/update-fatura.dto';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 
 @ApiTags('Faturas')
 @ApiBearerAuth()
@@ -36,8 +38,9 @@ export class FaturasController {
   @ApiResponse({ status: 200, description: 'Lista de faturas' })
   findAll(
     @Param('empresaId', ParseUUIDPipe) empresaId: string,
+    @Query() pagination: PaginationDto,
   ) {
-    return this.faturasService.findAll(empresaId);
+    return this.faturasService.findAll(empresaId, pagination);
   }
 
   @Get(':id')

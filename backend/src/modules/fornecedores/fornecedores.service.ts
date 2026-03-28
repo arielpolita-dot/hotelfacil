@@ -8,6 +8,10 @@ import { Repository } from 'typeorm';
 import { Fornecedor } from './entities/fornecedor.entity';
 import { CreateFornecedorDto } from './dto/create-fornecedor.dto';
 import { UpdateFornecedorDto } from './dto/update-fornecedor.dto';
+import {
+  PaginationDto,
+  PaginatedResult,
+} from '../../common/dto/pagination.dto';
 import { HotelWebSocketGateway } from '../websocket/websocket.gateway';
 
 @Injectable()
@@ -18,11 +22,18 @@ export class FornecedoresService {
     private readonly wsGateway: HotelWebSocketGateway,
   ) {}
 
-  async findAll(empresaId: string): Promise<Fornecedor[]> {
-    return this.fornecedorRepo.find({
+  async findAll(
+    empresaId: string,
+    pagination: PaginationDto,
+  ): Promise<PaginatedResult<Fornecedor>> {
+    const { page = 1, limit = 20 } = pagination;
+    const [data, total] = await this.fornecedorRepo.findAndCount({
       where: { empresaId },
       order: { nome: 'ASC' },
+      skip: (page - 1) * limit,
+      take: limit,
     });
+    return new PaginatedResult(data, total, page, limit);
   }
 
   async findOne(

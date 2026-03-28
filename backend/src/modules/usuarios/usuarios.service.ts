@@ -13,6 +13,10 @@ import { EmpresaUsuario } from '../empresas/entities/empresa-usuario.entity';
 import { Permissao } from './entities/permissao.entity';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
+import {
+  PaginationDto,
+  PaginatedResult,
+} from '../../common/dto/pagination.dto';
 import { HotelWebSocketGateway } from '../websocket/websocket.gateway';
 
 const BCRYPT_ROUNDS = 12;
@@ -30,14 +34,18 @@ export class UsuariosService {
     private readonly wsGateway: HotelWebSocketGateway,
   ) {}
 
-  async findAll(empresaId: string) {
-    const empresaUsuarios = await this.empresaUsuarioRepo.find({
-      where: { empresaId },
-      relations: ['usuario', 'permissao'],
-      order: { createdAt: 'DESC' },
-    });
+  async findAll(empresaId: string, pagination: PaginationDto) {
+    const { page = 1, limit = 20 } = pagination;
+    const [empresaUsuarios, total] =
+      await this.empresaUsuarioRepo.findAndCount({
+        where: { empresaId },
+        relations: ['usuario', 'permissao'],
+        order: { createdAt: 'DESC' },
+        skip: (page - 1) * limit,
+        take: limit,
+      });
 
-    return empresaUsuarios.map((eu) => ({
+    const data = empresaUsuarios.map((eu) => ({
       id: eu.usuario.id,
       nome: eu.usuario.nome,
       email: eu.usuario.email,
@@ -48,6 +56,8 @@ export class UsuariosService {
       permissoes: eu.permissao,
       createdAt: eu.usuario.createdAt,
     }));
+
+    return new PaginatedResult(data, total, page, limit);
   }
 
   async findOne(empresaId: string, id: string) {

@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -25,6 +26,7 @@ import { AuthUser } from '../auth/interfaces/jwt-payload.interface';
 import { UsuariosService } from './usuarios.service';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 
 @ApiTags('Usuarios')
 @ApiBearerAuth()
@@ -40,8 +42,9 @@ export class UsuariosController {
   @ApiResponse({ status: 200, description: 'Lista de usuarios' })
   findAll(
     @Param('empresaId', ParseUUIDPipe) empresaId: string,
+    @Query() pagination: PaginationDto,
   ) {
-    return this.usuariosService.findAll(empresaId);
+    return this.usuariosService.findAll(empresaId, pagination);
   }
 
   @Get(':id')

@@ -8,6 +8,10 @@ import { Repository } from 'typeorm';
 import { Banco } from './entities/banco.entity';
 import { CreateBancoDto } from './dto/create-banco.dto';
 import { UpdateBancoDto } from './dto/update-banco.dto';
+import {
+  PaginationDto,
+  PaginatedResult,
+} from '../../common/dto/pagination.dto';
 import { HotelWebSocketGateway } from '../websocket/websocket.gateway';
 
 const DEFAULT_BANKS = [
@@ -30,11 +34,18 @@ export class BancosService {
     private readonly wsGateway: HotelWebSocketGateway,
   ) {}
 
-  async findAll(empresaId: string): Promise<Banco[]> {
-    return this.bancoRepo.find({
+  async findAll(
+    empresaId: string,
+    pagination: PaginationDto,
+  ): Promise<PaginatedResult<Banco>> {
+    const { page = 1, limit = 20 } = pagination;
+    const [data, total] = await this.bancoRepo.findAndCount({
       where: { empresaId },
       order: { nome: 'ASC' },
+      skip: (page - 1) * limit,
+      take: limit,
     });
+    return new PaginatedResult(data, total, page, limit);
   }
 
   async findOne(empresaId: string, id: string): Promise<Banco> {
@@ -101,7 +112,10 @@ export class BancosService {
     });
 
     if (existing > 0) {
-      return this.findAll(empresaId);
+      return this.bancoRepo.find({
+        where: { empresaId },
+        order: { nome: 'ASC' },
+      });
     }
 
     const bancos = DEFAULT_BANKS.map((bank) =>

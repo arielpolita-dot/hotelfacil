@@ -8,6 +8,10 @@ import { Repository } from 'typeorm';
 import { Quarto } from './entities/quarto.entity';
 import { CreateQuartoDto } from './dto/create-quarto.dto';
 import { UpdateQuartoDto } from './dto/update-quarto.dto';
+import {
+  PaginationDto,
+  PaginatedResult,
+} from '../../common/dto/pagination.dto';
 import { HotelWebSocketGateway } from '../websocket/websocket.gateway';
 
 @Injectable()
@@ -18,11 +22,18 @@ export class QuartosService {
     private readonly wsGateway: HotelWebSocketGateway,
   ) {}
 
-  async findAll(empresaId: string): Promise<Quarto[]> {
-    return this.repo.find({
+  async findAll(
+    empresaId: string,
+    pagination: PaginationDto,
+  ): Promise<PaginatedResult<Quarto>> {
+    const { page = 1, limit = 20 } = pagination;
+    const [data, total] = await this.repo.findAndCount({
       where: { empresaId },
       order: { numero: 'ASC' },
+      skip: (page - 1) * limit,
+      take: limit,
     });
+    return new PaginatedResult(data, total, page, limit);
   }
 
   async findOne(

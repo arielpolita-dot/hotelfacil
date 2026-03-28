@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
@@ -18,6 +19,7 @@ import { EmpresaGuard } from '../../common/guards/empresa.guard';
 import { DespesasService } from './despesas.service';
 import { CreateDespesaDto } from './dto/create-despesa.dto';
 import { UpdateDespesaDto } from './dto/update-despesa.dto';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 
 @ApiTags('despesas')
 @Controller('empresas/:empresaId/despesas')
@@ -28,8 +30,9 @@ export class DespesasController {
   @Get()
   findAll(
     @Param('empresaId', ParseUUIDPipe) empresaId: string,
+    @Query() pagination: PaginationDto,
   ) {
-    return this.service.findAll(empresaId);
+    return this.service.findAll(empresaId, pagination);
   }
 
   @Get(':id')
