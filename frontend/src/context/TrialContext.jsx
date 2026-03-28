@@ -1,13 +1,5 @@
 import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
-import {
-  doc,
-  getDoc,
-  getDocs,
-  updateDoc,
-  collection,
-  Timestamp
-} from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { api } from '../services/api/client';
 import { useAuth } from './AuthContext';
 import { useEmpresa } from './EmpresaContext';
 
@@ -21,41 +13,6 @@ export function useTrial() {
   return context;
 }
 
-async function verificarStatusTrial(empresaId) {
-  try {
-    const empresaRef = doc(db, 'empresas', empresaId);
-    const empresaDoc = await getDoc(empresaRef);
-
-    if (!empresaDoc.exists()) {
-      return { status: 'expired', diasRestantes: 0 };
-    }
-
-    const data = empresaDoc.data();
-
-    if (data.statusPagamento === 'pago') {
-      return { status: 'paid', diasRestantes: null };
-    }
-
-    const dataInicio = data.dataInicio?.toDate() || data.criadoEm?.toDate() || new Date();
-    const hoje = new Date();
-    const diasDecorridos = Math.floor((hoje - dataInicio) / (1000 * 60 * 60 * 24));
-    const diasTrial = data.diasTrial || 3;
-    const diasRestantes = diasTrial - diasDecorridos;
-
-    if (diasRestantes > 0) {
-      return { status: 'active', diasRestantes };
-    }
-
-    if (data.statusPagamento !== 'expirado') {
-      await updateDoc(empresaRef, { statusPagamento: 'expirado' });
-    }
-    return { status: 'expired', diasRestantes: 0 };
-  } catch (err) {
-    console.error('Erro ao verificar status do trial:', err);
-    return { status: 'expired', diasRestantes: 0 };
-  }
-}
-
 export function TrialProvider({ children }) {
   const { currentUser } = useAuth();
   const { empresaAtual } = useEmpresa();
@@ -66,38 +23,31 @@ export function TrialProvider({ children }) {
     return currentUser?.email === ADMIN_EMAIL;
   }, [currentUser]);
 
-  // Verificar trial quando empresa mudar
+  // Check trial when empresa changes
   useEffect(() => {
     if (!empresaAtual?.id) {
       setTrialStatus(null);
       return;
     }
-    verificarStatusTrial(empresaAtual.id).then(setTrialStatus);
+
+    api.get(`/api/empresas/${empresaAtual.id}/trial`)
+      .then(({ data }) => setTrialStatus(data))
+      .catch(() => setTrialStatus({ status: 'expired', diasRestantes: 0 }));
   }, [empresaAtual?.id]);
 
   const ativarEmpresa = useCallback(async (empresaId) => {
     if (!isAdmin()) {
       throw new Error('Apenas administradores podem ativar empresas');
     }
-    const empresaRef = doc(db, 'empresas', empresaId);
-    await updateDoc(empresaRef, {
-      statusPagamento: 'pago',
-      dataPagamento: Timestamp.now(),
-      ativo: true
-    });
+    await api.post(`/api/empresas/${empresaId}/activate`);
   }, [isAdmin]);
 
   const listarTodasEmpresas = useCallback(async () => {
     if (!isAdmin()) {
       throw new Error('Apenas administradores podem listar todas as empresas');
     }
-    const snap = await getDocs(collection(db, 'empresas'));
-    return Promise.all(
-      snap.docs.map(async (d) => {
-        const status = await verificarStatusTrial(d.id);
-        return { id: d.id, ...d.data(), trialStatus: status };
-      })
-    );
+    const { data } = await api.get('/api/admin/empresas');
+    return data;
   }, [isAdmin]);
 
   const value = useMemo(() => ({

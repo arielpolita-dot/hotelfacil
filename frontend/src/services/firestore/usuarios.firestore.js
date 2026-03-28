@@ -8,8 +8,7 @@ import {
   onSnapshot,
   serverTimestamp
 } from 'firebase/firestore';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { db, auth } from '../../config/firebase';
+import { db } from '../../config/firebase';
 import { validateId } from '../../utils/validators';
 
 export async function getUsuarios(empresaId) {
@@ -30,13 +29,9 @@ export function onUsuarios(empresaId, callback) {
 
 export async function addUsuario(empresaId, dados) {
   validateId(empresaId, 'empresaId');
-  // Criar usuario no Firebase Auth
-  const userCredential = await createUserWithEmailAndPassword(auth, dados.email, dados.senha);
-  const uid = userCredential.user.uid;
 
-  // Salvar dados no Firestore
-  await addDoc(collection(db, 'empresas', empresaId, 'usuarios'), {
-    uid,
+  // Save user data in Firestore (user creation now handled by Authify/backend)
+  const docRef = await addDoc(collection(db, 'empresas', empresaId, 'usuarios'), {
     nome: dados.nome,
     email: dados.email,
     telefone: dados.telefone || '',
@@ -47,17 +42,7 @@ export async function addUsuario(empresaId, dados) {
     criadoEm: serverTimestamp()
   });
 
-  // Tambem salvar na colecao global de usuarios
-  await addDoc(collection(db, 'usuarios'), {
-    uid,
-    nome: dados.nome,
-    email: dados.email,
-    empresaId,
-    role: dados.role,
-    criadoEm: serverTimestamp()
-  });
-
-  return uid;
+  return docRef.id;
 }
 
 export async function updateUsuario(empresaId, usuarioId, dados) {

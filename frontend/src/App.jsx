@@ -4,6 +4,7 @@ import { EmpresaProvider } from './context/EmpresaContext';
 import { TrialProvider } from './context/TrialContext';
 import { HotelProvider } from './context/HotelContext';
 import Login from './components/auth/Login';
+import AuthCallback from './components/auth/AuthCallback';
 import Layout from './components/Layout';
 import { Component, lazy, Suspense } from 'react';
 import { LoadingSpinner } from './components/ds';
@@ -116,7 +117,10 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <AppContent />
+        <Routes>
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="*" element={<AppContent />} />
+        </Routes>
       </AuthProvider>
     </Router>
   );

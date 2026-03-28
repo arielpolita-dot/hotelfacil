@@ -1,13 +1,5 @@
 import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
-import {
-  doc,
-  getDoc,
-  getDocs,
-  collection,
-  query,
-  where,
-} from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { api } from '../services/api/client';
 import { useAuth } from './AuthContext';
 
 const EmpresaContext = createContext();
@@ -26,25 +18,14 @@ export function EmpresaProvider({ children }) {
   const [loadingEmpresa, setLoadingEmpresa] = useState(false);
   const [errorEmpresa, setErrorEmpresa] = useState(null);
 
-  const selecionarEmpresa = useCallback(async (empresaId) => {
-    try {
-      const empresaDoc = await getDoc(doc(db, 'empresas', empresaId));
-      if (empresaDoc.exists()) {
-        setEmpresaAtual({ id: empresaDoc.id, ...empresaDoc.data() });
-        localStorage.setItem('empresaAtualId', empresaId);
-      } else {
-        throw new Error('Empresa nao encontrada');
-      }
-    } catch (err) {
-      console.error('Erro ao selecionar empresa:', err);
-      setErrorEmpresa('Erro ao selecionar empresa');
-      throw err;
-    }
+  const selecionarEmpresa = useCallback((empresa) => {
+    setEmpresaAtual(empresa);
+    localStorage.setItem('empresaAtualId', empresa.id);
   }, []);
 
-  // Carregar empresas quando o usuario logar
+  // Load empresas when user logs in
   useEffect(() => {
-    if (!currentUser?.uid) {
+    if (!currentUser?.id) {
       setEmpresaAtual(null);
       setEmpresasUsuario([]);
       return;
@@ -55,12 +36,7 @@ export function EmpresaProvider({ children }) {
     async function carregarEmpresas() {
       try {
         setLoadingEmpresa(true);
-        const empresasQuery = query(
-          collection(db, 'empresas'),
-          where('usuarios', 'array-contains', currentUser.uid)
-        );
-        const snap = await getDocs(empresasQuery);
-        const empresas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const { data: empresas } = await api.get('/api/empresas');
 
         if (cancelled) return;
         setEmpresasUsuario(empresas);
@@ -68,7 +44,7 @@ export function EmpresaProvider({ children }) {
         if (empresas.length > 0) {
           const empresaIdSalva = localStorage.getItem('empresaAtualId');
           const escolhida = empresas.find(e => e.id === empresaIdSalva) || empresas[0];
-          await selecionarEmpresa(escolhida.id);
+          selecionarEmpresa(escolhida);
         }
       } catch (err) {
         if (!cancelled) {
@@ -82,7 +58,7 @@ export function EmpresaProvider({ children }) {
 
     carregarEmpresas();
     return () => { cancelled = true; };
-  }, [currentUser?.uid, selecionarEmpresa]);
+  }, [currentUser?.id, selecionarEmpresa]);
 
   const value = useMemo(() => ({
     empresaAtual,
