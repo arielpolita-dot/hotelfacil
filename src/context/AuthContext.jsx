@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
@@ -38,9 +38,9 @@ export function AuthProvider({ children }) {
   const [error, setError] = useState(null);
 
   // Função para verificar se é admin
-  function isAdmin() {
+  const isAdmin = useCallback(() => {
     return currentUser?.email === ADMIN_EMAIL;
-  }
+  }, [currentUser]);
 
   // Função para verificar status do trial
   async function verificarStatusTrial(empresaId) {
@@ -84,7 +84,7 @@ export function AuthProvider({ children }) {
   }
 
   // Função para fazer login
-  async function login(email, password) {
+  const login = useCallback(async (email, password) => {
     try {
       setError(null);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -94,10 +94,10 @@ export function AuthProvider({ children }) {
       setError(getErrorMessage(error.code));
       throw error;
     }
-  }
+  }, []);
 
   // Função para criar conta
-  async function criarConta(email, password, nome, empresaData) {
+  const criarConta = useCallback(async (email, password, nome, empresaData) => {
     try {
       setError(null);
       // 1. Criar usuário no Firebase Authentication
@@ -116,7 +116,7 @@ export function AuthProvider({ children }) {
       // 4. Criar empresa no Firestore com trial de 3 dias
       const empresaRef = doc(collection(db, 'empresas'));
       const empresaId = empresaRef.id;
-      
+
       await setDoc(empresaRef, {
         nome: empresaData.nome,
         cnpj: empresaData.cnpj || '',
@@ -144,11 +144,10 @@ export function AuthProvider({ children }) {
       setError(getErrorMessage(error.code));
       throw error;
     }
-  }
+  }, []);
 
-  // Função para fazer logout
   // Função para recuperar senha
-  async function recuperarSenha(email) {
+  const recuperarSenha = useCallback(async (email) => {
     try {
       setError(null);
       await sendPasswordResetEmail(auth, email);
@@ -156,9 +155,9 @@ export function AuthProvider({ children }) {
       setError(getErrorMessage(error.code));
       throw error;
     }
-  }
+  }, []);
 
-  async function logout() {
+  const logout = useCallback(async () => {
     try {
       setError(null);
       await signOut(auth);
@@ -171,7 +170,7 @@ export function AuthProvider({ children }) {
       setError(getErrorMessage(error.code));
       throw error;
     }
-  }
+  }, []);
 
   // Função para carregar empresas do usuário
   async function carregarEmpresasUsuario(userId) {
@@ -206,23 +205,23 @@ export function AuthProvider({ children }) {
   }
 
   // Função para selecionar empresa
-  async function selecionarEmpresa(empresaId) {
+  const selecionarEmpresa = useCallback(async (empresaId) => {
     try {
       const empresaDoc = await getDoc(doc(db, 'empresas', empresaId));
-      
+
       if (empresaDoc.exists()) {
         const empresaData = {
           id: empresaDoc.id,
           ...empresaDoc.data()
         };
-        
+
         setEmpresaAtual(empresaData);
         localStorage.setItem('empresaAtualId', empresaId);
-        
+
         // Verificar status do trial
         const status = await verificarStatusTrial(empresaId);
         setTrialStatus(status);
-        
+
       } else {
         throw new Error('Empresa não encontrada');
       }
@@ -231,10 +230,10 @@ export function AuthProvider({ children }) {
       setError('Erro ao selecionar empresa');
       throw error;
     }
-  }
+  }, []);
 
   // Função para ativar empresa (apenas admin)
-  async function ativarEmpresa(empresaId) {
+  const ativarEmpresa = useCallback(async (empresaId) => {
     if (!isAdmin()) {
       throw new Error('Apenas administradores podem ativar empresas');
     }
@@ -251,10 +250,10 @@ export function AuthProvider({ children }) {
       console.error('Erro ao ativar empresa:', error);
       throw error;
     }
-  }
+  }, [isAdmin]);
 
   // Função para listar todas as empresas (apenas admin)
-  async function listarTodasEmpresas() {
+  const listarTodasEmpresas = useCallback(async () => {
     if (!isAdmin()) {
       throw new Error('Apenas administradores podem listar todas as empresas');
     }
@@ -265,7 +264,7 @@ export function AuthProvider({ children }) {
         empresasSnapshot.docs.map(async (doc) => {
           const data = doc.data();
           const status = await verificarStatusTrial(doc.id);
-          
+
           return {
             id: doc.id,
             ...data,
@@ -279,7 +278,7 @@ export function AuthProvider({ children }) {
       console.error('Erro ao listar empresas:', error);
       throw error;
     }
-  }
+  }, [isAdmin]);
 
   // Efeito para monitorar mudanças no estado de autenticação
   useEffect(() => {
@@ -336,7 +335,7 @@ export function AuthProvider({ children }) {
     return errorMessages[errorCode] || 'Erro desconhecido. Tente novamente.';
   }
 
-  const value = {
+  const value = useMemo(() => ({
     currentUser,
     empresaAtual,
     empresasUsuario,
@@ -351,7 +350,11 @@ export function AuthProvider({ children }) {
     ativarEmpresa,
     listarTodasEmpresas,
     isAdmin
-  };
+  }), [
+    currentUser, empresaAtual, empresasUsuario, trialStatus,
+    loading, error, login, criarConta, logout, recuperarSenha,
+    selecionarEmpresa, ativarEmpresa, listarTodasEmpresas, isAdmin
+  ]);
 
   return (
     <AuthContext.Provider value={value}>

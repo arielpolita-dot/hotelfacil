@@ -3,18 +3,21 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { HotelProvider } from './context/HotelContext';
 import Login from './components/ui/Login';
 import Layout from './components/Layout';
-import Dashboard from './pages/Dashboard';
-import Disponibilidade from './pages/Disponibilidade';
-import Quartos from './pages/Quartos';
-import Vendas from './pages/Vendas';
-import Faturas from './pages/Faturas';
-import Despesas from './pages/Despesas';
-import Usuarios from './pages/Usuarios';
-import FluxoCaixa from './pages/FluxoCaixa';
-import DRE from './pages/DRE';
-import Configuracoes from './pages/Configuracoes';
-import Fornecedores from './pages/Fornecedores';
-import { Component } from 'react';
+import { Component, lazy, Suspense } from 'react';
+import { LoadingSpinner } from './components/ds';
+
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Disponibilidade = lazy(() => import('./pages/Disponibilidade'));
+const Quartos = lazy(() => import('./pages/Quartos'));
+const Vendas = lazy(() => import('./pages/Vendas'));
+const Faturas = lazy(() => import('./pages/Faturas'));
+const Despesas = lazy(() => import('./pages/Despesas'));
+const Usuarios = lazy(() => import('./pages/Usuarios'));
+const FluxoCaixa = lazy(() => import('./pages/FluxoCaixa'));
+const DRE = lazy(() => import('./pages/DRE'));
+const Configuracoes = lazy(() => import('./pages/Configuracoes'));
+const Fornecedores = lazy(() => import('./pages/Fornecedores'));
+const AdminPanel = lazy(() => import('./pages/AdminPanel'));
 
 // Error Boundary para capturar erros silenciosos do React
 class ErrorBoundary extends Component {
@@ -79,21 +82,24 @@ function AppContent() {
     <ErrorBoundary>
       <HotelProvider>
         <Layout>
-          <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/disponibilidade" element={<Disponibilidade />} />
-            <Route path="/quartos" element={<Quartos />} />
-            <Route path="/vendas" element={<Vendas />} />
-            <Route path="/faturas" element={<Faturas />} />
-            <Route path="/despesas" element={<Despesas />} />
-            <Route path="/usuarios" element={<Usuarios />} />
-            <Route path="/fluxo-caixa" element={<FluxoCaixa />} />
-            <Route path="/dre" element={<DRE />} />
-            <Route path="/configuracoes" element={<Configuracoes />} />
-            <Route path="/fornecedores" element={<Fornecedores />} />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
+          <Suspense fallback={<LoadingSpinner message="Carregando..." />}>
+            <Routes>
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/disponibilidade" element={<Disponibilidade />} />
+              <Route path="/quartos" element={<Quartos />} />
+              <Route path="/vendas" element={<Vendas />} />
+              <Route path="/faturas" element={<Faturas />} />
+              <Route path="/despesas" element={<Despesas />} />
+              <Route path="/usuarios" element={<Usuarios />} />
+              <Route path="/fluxo-caixa" element={<FluxoCaixa />} />
+              <Route path="/dre" element={<DRE />} />
+              <Route path="/configuracoes" element={<Configuracoes />} />
+              <Route path="/fornecedores" element={<Fornecedores />} />
+              <Route path="/admin" element={<AdminPanel />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </Suspense>
         </Layout>
       </HotelProvider>
     </ErrorBoundary>

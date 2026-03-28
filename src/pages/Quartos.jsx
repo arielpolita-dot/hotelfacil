@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useHotel } from '../context/HotelContext';
 import { Plus, BedDouble, Pencil, Trash2, X, Search, Filter } from 'lucide-react';
 import { formatCurrency } from '../utils/formatters';
@@ -77,11 +77,11 @@ export default function Quartos() {
     setSaving(false);
   };
 
-  const quartosFiltrados = quartos.filter(q => {
+  const quartosFiltrados = useMemo(() => quartos.filter(q => {
     const matchBusca = !busca || q.numero?.toString().includes(busca) || q.tipo?.toLowerCase().includes(busca.toLowerCase());
     const matchStatus = filtroStatus === 'todos' || q.status === filtroStatus;
     return matchBusca && matchStatus;
-  });
+  }), [quartos, busca, filtroStatus]);
 
   const countStatus = (s) => quartos.filter(q => q.status === s).length;
 

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import {
   onQuartos,
@@ -231,7 +231,7 @@ export function HotelProvider({ children }) {
     return resultado;
   }, [quartos, reservas]);
 
-  const value = {
+  const value = useMemo(() => ({
     quartos,
     reservas,
     despesas,
@@ -279,7 +279,19 @@ export function HotelProvider({ children }) {
     adicionarFluxo,
     // Disponibilidade
     getDisponibilidade
-  };
+  }), [
+    quartos, reservas, despesas, fluxoCaixa, faturas,
+    usuarios, fornecedores, bancos, loading, error, empresaId,
+    currentUser, logout,
+    adicionarQuarto, atualizarQuarto, removerQuarto, atualizarStatusQuarto,
+    adicionarReserva, atualizarReserva, fazerCheckout, cancelarReservaHook,
+    adicionarDespesa, atualizarDespesa, removerDespesa,
+    adicionarFatura, atualizarFatura, removerFatura,
+    adicionarUsuario, atualizarUsuario, removerUsuario,
+    adicionarFornecedor, atualizarFornecedor, removerFornecedor,
+    adicionarBanco, atualizarBanco, removerBanco,
+    adicionarFluxo, getDisponibilidade
+  ]);
 
   return (
     <HotelContext.Provider value={value}>
