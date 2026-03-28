@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { AuditLoggerInterceptor } from './common/interceptors/audit-logger.interceptor';
 
 import { AuthModule } from './modules/auth/auth.module';
 import { EmpresasModule } from './modules/empresas/empresas.module';
@@ -45,6 +47,9 @@ import { WebSocketModule } from './modules/websocket/websocket.module';
     FluxoCaixaModule,
     DashboardModule,
     WebSocketModule,
+  ],
+  providers: [
+    { provide: APP_INTERCEPTOR, useClass: AuditLoggerInterceptor },
   ],
 })
 export class AppModule {}

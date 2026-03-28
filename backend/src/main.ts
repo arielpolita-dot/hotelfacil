@@ -5,6 +5,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
+import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,6 +18,12 @@ async function bootstrap() {
     origin: config.get('CORS_ORIGIN', 'http://localhost:5173'),
     credentials: true,
   });
+
+  // Global exception filter
+  app.useGlobalFilters(new AllExceptionsFilter());
+
+  // Graceful shutdown
+  app.enableShutdownHooks();
 
   // Validation
   app.useGlobalPipes(
