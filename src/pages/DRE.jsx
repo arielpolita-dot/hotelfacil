@@ -1,115 +1,21 @@
 import { useState, useMemo } from 'react';
 import { useHotel } from '../context/HotelContext';
 import { toDate } from '../utils/dateUtils';
-import {
-  TrendingUp, TrendingDown, DollarSign, BarChart2,
-  ChevronDown, ChevronUp, Download, Calendar
-} from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, BarChart2 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend, Cell
 } from 'recharts';
-import { format, startOfMonth, endOfMonth, subMonths, getMonth, getYear } from 'date-fns';
+import { format, getYear } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatCurrency } from '../utils/formatters';
-const pct = (v, total) => total === 0 ? '0,0%' : `${((v / total) * 100).toFixed(1).replace('.', ',')}%`;
-
-// Mapeamento de categorias de despesas para grupos DRE
-const GRUPOS_DESPESA = {
-  'Salários':           'Pessoal',
-  'Benefícios':         'Pessoal',
-  'Encargos':           'Pessoal',
-  'Energia':            'Utilidades',
-  'Água':               'Utilidades',
-  'Internet':           'Utilidades',
-  'Telefone':           'Utilidades',
-  'Alimentação':        'Operacional',
-  'Limpeza':            'Operacional',
-  'Lavanderia':         'Operacional',
-  'Manutenção':         'Operacional',
-  'Produtos de Higiene':'Operacional',
-  'Marketing':          'Comercial',
-  'Publicidade':        'Comercial',
-  'Aluguel':            'Infraestrutura',
-  'Impostos':           'Fiscal',
-  'Taxas':              'Fiscal',
-};
-
-function getGrupo(categoria) {
-  if (!categoria) return 'Outros';
-  for (const [key, grupo] of Object.entries(GRUPOS_DESPESA)) {
-    if (categoria.toLowerCase().includes(key.toLowerCase())) return grupo;
-  }
-  return 'Outros';
-}
-
-const ORDEM_GRUPOS = ['Pessoal', 'Operacional', 'Utilidades', 'Comercial', 'Infraestrutura', 'Fiscal', 'Outros'];
-
-function Card({ title, value, sub, color = 'blue', icon: Icon, trend }) {
-  const colors = {
-    blue:   { bg: 'bg-blue-50',   text: 'text-blue-700',   icon: 'bg-blue-100 text-blue-600',   border: 'border-blue-100' },
-    green:  { bg: 'bg-emerald-50',text: 'text-emerald-700',icon: 'bg-emerald-100 text-emerald-600', border: 'border-emerald-100' },
-    red:    { bg: 'bg-red-50',    text: 'text-red-700',    icon: 'bg-red-100 text-red-600',     border: 'border-red-100' },
-    violet: { bg: 'bg-violet-50', text: 'text-violet-700', icon: 'bg-violet-100 text-violet-600', border: 'border-violet-100' },
-    amber:  { bg: 'bg-amber-50',  text: 'text-amber-700',  icon: 'bg-amber-100 text-amber-600', border: 'border-amber-100' },
-  };
-  const c = colors[color];
-  return (
-    <div className={`rounded-2xl border ${c.border} ${c.bg} p-5 flex items-start gap-4`}>
-      <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${c.icon}`}>
-        <Icon className="h-5 w-5" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">{title}</p>
-        <p className={`text-xl font-bold ${c.text} leading-tight`}>{value}</p>
-        {sub && <p className="text-xs text-slate-400 mt-0.5">{sub}</p>}
-        {trend !== undefined && (
-          <div className={`flex items-center gap-1 mt-1 text-xs font-medium ${trend >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-            {trend >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-            <span>{trend >= 0 ? '+' : ''}{trend.toFixed(1).replace('.', ',')}% vs mês anterior</span>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function LinhaGrupo({ grupo, itens, totalReceita }) {
-  const [aberto, setAberto] = useState(false);
-  const total = itens.reduce((s, i) => s + i.valor, 0);
-  return (
-    <>
-      <tr
-        className="cursor-pointer hover:bg-slate-50 transition border-b border-slate-100"
-        onClick={() => setAberto(p => !p)}
-      >
-        <td className="py-3 px-4">
-          <div className="flex items-center gap-2">
-            <span className="w-5 h-5 flex items-center justify-center text-slate-400">
-              {aberto ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-            </span>
-            <span className="text-sm font-semibold text-slate-700">{grupo}</span>
-            <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{itens.length}</span>
-          </div>
-        </td>
-        <td className="py-3 px-4 text-right text-sm font-bold text-red-600">{formatCurrency(total)}</td>
-        <td className="py-3 px-4 text-right text-xs text-slate-400">{pct(total, totalReceita)}</td>
-      </tr>
-      {aberto && itens.map((item, i) => (
-        <tr key={i} className="bg-slate-50/50 border-b border-slate-50">
-          <td className="py-2 px-4 pl-12 text-xs text-slate-500">{item.descricao || item.categoria || '—'}</td>
-          <td className="py-2 px-4 text-right text-xs text-slate-600">{formatCurrency(item.valor)}</td>
-          <td className="py-2 px-4 text-right text-xs text-slate-400">{pct(item.valor, totalReceita)}</td>
-        </tr>
-      ))}
-    </>
-  );
-}
+import { Card, LinhaGrupo, pct } from './dre/DRECard';
+import { useDREData } from './dre/useDREData';
 
 export default function DRE() {
   const { reservas, despesas, fluxoCaixa, loading } = useHotel();
   const [anoSel, setAnoSel] = useState(new Date().getFullYear());
-  const [mesSel, setMesSel] = useState(null); // null = ano inteiro
+  const [mesSel, setMesSel] = useState(null);
 
   const anos = useMemo(() => {
     const set = new Set();
@@ -121,88 +27,7 @@ export default function DRE() {
     return [...set].sort((a, b) => b - a);
   }, [reservas, despesas, fluxoCaixa]);
 
-  const { receita, despesaTotal, lucro, margem, grupos, dadosMensais, tendenciaReceita, tendenciaDespesa } = useMemo(() => {
-    const filtrar = (d) => {
-      if (!d) return false;
-      if (getYear(d) !== anoSel) return false;
-      if (mesSel !== null && getMonth(d) !== mesSel) return false;
-      return true;
-    };
-
-    // ─── Receitas ─────────────────────────────────────────────────────────
-    // Receitas do fluxo de caixa (tipo entrada)
-    const entradasFluxo = fluxoCaixa.filter(f => {
-      const d = toDate(f.data);
-      return f.tipo === 'entrada' && filtrar(d);
-    });
-    const receitaFluxo = entradasFluxo.reduce((s, f) => s + (f.valor || 0), 0);
-
-    // Receitas de reservas pagas (que não estão no fluxo de caixa)
-    const reservasPagas = reservas.filter(r => {
-      const d = toDate(r.dataCheckOut || r.dataCheckIn || r.criadoEm);
-      return filtrar(d) && r.formaPagamento && r.formaPagamento !== 'a_definir' && (r.valorTotal || r.valor || 0) > 0;
-    });
-    // Evitar dupla contagem: se já há lançamento no fluxo com mesmo valor/data, não somar
-    const receitaReservas = reservasPagas.reduce((s, r) => s + (r.valorFinal || r.valorTotal || r.valor || 0), 0);
-
-    // Usar fluxo de caixa como fonte principal (já inclui reservas pagas lançadas)
-    const receita = receitaFluxo > 0 ? receitaFluxo : receitaReservas;
-
-    // ─── Despesas ─────────────────────────────────────────────────────────
-    const despesasFiltradas = despesas.filter(d => {
-      const dt = toDate(d.data || d.criadoEm);
-      return filtrar(dt) && d.status !== 'cancelado';
-    });
-    const despesaTotal = despesasFiltradas.reduce((s, d) => s + (d.valor || 0), 0);
-
-    // Agrupar despesas
-    const mapa = {};
-    despesasFiltradas.forEach(d => {
-      const grupo = getGrupo(d.categoria);
-      if (!mapa[grupo]) mapa[grupo] = [];
-      mapa[grupo].push({ descricao: d.descricao, categoria: d.categoria, valor: d.valor || 0 });
-    });
-    const grupos = ORDEM_GRUPOS
-      .filter(g => mapa[g])
-      .map(g => ({ grupo: g, itens: mapa[g] }));
-
-    const lucro = receita - despesaTotal;
-    const margem = receita > 0 ? (lucro / receita) * 100 : 0;
-
-    // ─── Dados mensais para gráfico ───────────────────────────────────────
-    const dadosMensais = Array.from({ length: 12 }, (_, m) => {
-      const nomeMes = format(new Date(anoSel, m, 1), 'MMM', { locale: ptBR });
-      const recM = fluxoCaixa.filter(f => {
-        const d = toDate(f.data);
-        return d && f.tipo === 'entrada' && getYear(d) === anoSel && getMonth(d) === m;
-      }).reduce((s, f) => s + (f.valor || 0), 0);
-      const despM = despesas.filter(d => {
-        const dt = toDate(d.data || d.criadoEm);
-        return dt && getYear(dt) === anoSel && getMonth(dt) === m && d.status !== 'cancelado';
-      }).reduce((s, d) => s + (d.valor || 0), 0);
-      return { mes: nomeMes, receita: recM, despesa: despM, lucro: recM - despM };
-    });
-
-    // Tendência vs mês anterior
-    const mesAnterior = mesSel !== null ? mesSel - 1 : null;
-    const calcTendencia = (tipo) => {
-      if (mesSel === null || mesSel === 0) return undefined;
-      const atual = tipo === 'receita'
-        ? fluxoCaixa.filter(f => { const d = toDate(f.data); return d && f.tipo === 'entrada' && getYear(d) === anoSel && getMonth(d) === mesSel; }).reduce((s, f) => s + (f.valor || 0), 0)
-        : despesas.filter(d => { const dt = toDate(d.data || d.criadoEm); return dt && getYear(dt) === anoSel && getMonth(dt) === mesSel; }).reduce((s, d) => s + (d.valor || 0), 0);
-      const anterior = tipo === 'receita'
-        ? fluxoCaixa.filter(f => { const d = toDate(f.data); return d && f.tipo === 'entrada' && getYear(d) === anoSel && getMonth(d) === mesAnterior; }).reduce((s, f) => s + (f.valor || 0), 0)
-        : despesas.filter(d => { const dt = toDate(d.data || d.criadoEm); return dt && getYear(dt) === anoSel && getMonth(dt) === mesAnterior; }).reduce((s, d) => s + (d.valor || 0), 0);
-      if (anterior === 0) return undefined;
-      return ((atual - anterior) / anterior) * 100;
-    };
-
-    return {
-      receita, despesaTotal, lucro, margem, grupos, dadosMensais,
-      tendenciaReceita: calcTendencia('receita'),
-      tendenciaDespesa: calcTendencia('despesa'),
-    };
-  }, [reservas, despesas, fluxoCaixa, anoSel, mesSel]);
+  const { receita, despesaTotal, lucro, margem, grupos, dadosMensais, tendenciaReceita, tendenciaDespesa } = useDREData(reservas, despesas, fluxoCaixa, anoSel, mesSel);
 
   const periodoLabel = mesSel !== null
     ? format(new Date(anoSel, mesSel, 1), 'MMMM yyyy', { locale: ptBR })
@@ -219,14 +44,13 @@ export default function DRE() {
   return (
     <div className="space-y-6 animate-fade-in">
 
-      {/* ─── Header ─────────────────────────────────────────────────────── */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-slate-900">DRE — Demonstrativo de Resultado</h2>
           <p className="text-sm text-slate-500 mt-0.5 capitalize">{periodoLabel}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {/* Seletor de ano */}
           <select
             value={anoSel}
             onChange={e => setAnoSel(Number(e.target.value))}
@@ -234,7 +58,6 @@ export default function DRE() {
           >
             {anos.map(a => <option key={a} value={a}>{a}</option>)}
           </select>
-          {/* Seletor de mês */}
           <div className="flex flex-wrap gap-1">
             <button
               onClick={() => setMesSel(null)}
@@ -255,7 +78,7 @@ export default function DRE() {
         </div>
       </div>
 
-      {/* ─── Cards de resumo ─────────────────────────────────────────────── */}
+      {/* Cards de resumo */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <Card title="Receita Bruta" value={formatCurrency(receita)} color="green" icon={TrendingUp} trend={tendenciaReceita} sub="Hospedagens + entradas" />
         <Card title="Despesas Totais" value={formatCurrency(despesaTotal)} color="red" icon={TrendingDown} trend={tendenciaDespesa} sub="Todas as categorias" />
@@ -263,7 +86,7 @@ export default function DRE() {
         <Card title="Margem Líquida" value={`${margem.toFixed(1).replace('.', ',')}%`} color={margem >= 20 ? 'green' : margem >= 0 ? 'amber' : 'red'} icon={BarChart2} sub={margem >= 20 ? 'Margem saudável' : margem >= 0 ? 'Margem apertada' : 'Resultado negativo'} />
       </div>
 
-      {/* ─── Gráfico de barras ───────────────────────────────────────────── */}
+      {/* Grafico de barras */}
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
         <h3 className="text-sm font-bold text-slate-700 mb-4">Evolução Mensal — {anoSel}</h3>
         <ResponsiveContainer width="100%" height={240}>
@@ -287,7 +110,7 @@ export default function DRE() {
         </ResponsiveContainer>
       </div>
 
-      {/* ─── Tabela DRE ──────────────────────────────────────────────────── */}
+      {/* Tabela DRE */}
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="px-5 py-4 border-b border-slate-100">
           <h3 className="text-sm font-bold text-slate-700">Demonstrativo Detalhado</h3>
@@ -303,7 +126,6 @@ export default function DRE() {
               </tr>
             </thead>
             <tbody>
-              {/* Receita */}
               <tr className="bg-emerald-50 border-b border-emerald-100">
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-2">
@@ -320,7 +142,6 @@ export default function DRE() {
                 <td className="py-2.5 px-4 text-right text-xs text-slate-400">100%</td>
               </tr>
 
-              {/* Separador */}
               <tr className="bg-red-50 border-b border-red-100">
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-2">
@@ -332,7 +153,6 @@ export default function DRE() {
                 <td className="py-3 px-4 text-right text-xs text-red-600 font-semibold">{pct(despesaTotal, receita)}</td>
               </tr>
 
-              {/* Grupos de despesa expansíveis */}
               {grupos.length === 0 ? (
                 <tr>
                   <td colSpan={3} className="py-6 text-center text-sm text-slate-400">Nenhuma despesa registrada no período</td>
@@ -343,7 +163,6 @@ export default function DRE() {
                 ))
               )}
 
-              {/* Resultado */}
               <tr className={`border-t-2 ${lucro >= 0 ? 'border-blue-200 bg-blue-50' : 'border-red-200 bg-red-50'}`}>
                 <td className="py-4 px-4">
                   <div className="flex items-center gap-2">
@@ -365,7 +184,7 @@ export default function DRE() {
         </div>
       </div>
 
-      {/* ─── Análise rápida ──────────────────────────────────────────────── */}
+      {/* Analise rapida */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Composição das Despesas</p>
