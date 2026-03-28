@@ -9,20 +9,8 @@ import {
 import { format, isToday, isTomorrow, addDays, isBefore, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
-const fmt = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
-
-// Converte qualquer valor de data (Timestamp Firebase, string, Date, número) para Date
-function toDate(val) {
-  if (!val) return null;
-  // Firestore Timestamp tem .toDate()
-  if (val && typeof val.toDate === 'function') return val.toDate();
-  // Já é Date
-  if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
-  // String ou número
-  const d = new Date(val);
-  return isNaN(d.getTime()) ? null : d;
-}
+import { formatCurrency } from '../utils/formatters';
+import { toDate } from '../utils/dateUtils';
 
 const STATUS_CFG = {
   disponivel: { label: 'Disponível', bar: 'bg-emerald-500', dot: 'bg-emerald-500' },
@@ -202,7 +190,7 @@ export default function Dashboard() {
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard title="Ocupação" value={`${stats.taxaOcupacao}%`} sub={`${stats.ocupados}/${stats.total} quartos`} icon={BedDouble} iconBg="bg-blue-600" />
-        <StatCard title="Receita do Mês" value={fmt(stats.receitaMes)} sub={`${stats.reservasMes} reservas`} icon={DollarSign} iconBg="bg-emerald-600" />
+        <StatCard title="Receita do Mês" value={formatCurrency(stats.receitaMes)} sub={`${stats.reservasMes} reservas`} icon={DollarSign} iconBg="bg-emerald-600" />
         <StatCard title="Check-ins Hoje" value={stats.checkinsHoje} sub="aguardando chegada" icon={CalendarCheck} iconBg="bg-violet-600" />
         <StatCard title="Check-outs Hoje" value={stats.checkoutsHoje} sub="a liberar" icon={Clock} iconBg="bg-amber-500" />
       </div>
@@ -219,7 +207,7 @@ export default function Dashboard() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                   <XAxis dataKey="dia" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={v => `R$${v >= 1000 ? (v/1000).toFixed(0)+'k' : v}`} />
-                  <Tooltip formatter={(v) => fmt(v)} labelStyle={{ fontSize: 12 }} contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} />
+                  <Tooltip formatter={(v) => formatCurrency(v)} labelStyle={{ fontSize: 12 }} contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} />
                   <Bar dataKey="receita" name="Receita" fill="#3b82f6" radius={[6,6,0,0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -269,7 +257,7 @@ export default function Dashboard() {
                         <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${stMap[r.status] || 'bg-slate-100 text-slate-600'}`}>
                           {stLabel[r.status] || r.status}
                         </span>
-                        <span className="text-xs font-bold text-slate-700">{fmt(r.valorTotal || r.valor)}</span>
+                        <span className="text-xs font-bold text-slate-700">{formatCurrency(r.valorTotal || r.valor)}</span>
                       </div>
                     </div>
                   );
@@ -315,14 +303,14 @@ export default function Dashboard() {
                   <ArrowUpRight className="h-4 w-4 text-emerald-600" />
                   <span className="text-sm text-slate-700">Receita</span>
                 </div>
-                <span className="text-sm font-bold text-emerald-700">{fmt(stats.receitaMes)}</span>
+                <span className="text-sm font-bold text-emerald-700">{formatCurrency(stats.receitaMes)}</span>
               </div>
               <div className="flex items-center justify-between p-3 bg-rose-50 rounded-xl">
                 <div className="flex items-center gap-2">
                   <ArrowDownRight className="h-4 w-4 text-rose-600" />
                   <span className="text-sm text-slate-700">Despesas</span>
                 </div>
-                <span className="text-sm font-bold text-rose-700">{fmt(stats.despesasMes)}</span>
+                <span className="text-sm font-bold text-rose-700">{formatCurrency(stats.despesasMes)}</span>
               </div>
               <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
                 <div className="flex items-center gap-2">
@@ -330,7 +318,7 @@ export default function Dashboard() {
                   <span className="text-sm font-semibold text-slate-700">Saldo</span>
                 </div>
                 <span className={`text-sm font-bold ${stats.receitaMes - stats.despesasMes >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
-                  {fmt(stats.receitaMes - stats.despesasMes)}
+                  {formatCurrency(stats.receitaMes - stats.despesasMes)}
                 </span>
               </div>
             </div>
@@ -429,7 +417,7 @@ export default function Dashboard() {
             </span>
           )}
           <span className="ml-auto text-xs text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full font-medium">
-            {fmt(stats.contasProximas7?.reduce((s, d) => s + (d.valor || 0), 0) || 0)}
+            {formatCurrency(stats.contasProximas7?.reduce((s, d) => s + (d.valor || 0), 0) || 0)}
           </span>
         </div>
         {!stats.contasProximas7?.length && !stats.contasVencidas?.length ? (
@@ -465,7 +453,7 @@ export default function Dashboard() {
                           Vencida {dtV ? format(dtV, 'dd/MM', { locale: ptBR }) : '—'}
                         </span>
                       </td>
-                      <td className="py-2.5 px-3 text-right font-bold text-red-600">{fmt(d.valor)}</td>
+                      <td className="py-2.5 px-3 text-right font-bold text-red-600">{formatCurrency(d.valor)}</td>
                     </tr>
                   );
                 })}
@@ -488,7 +476,7 @@ export default function Dashboard() {
                           {ehHoje ? 'Hoje' : dt ? format(dt, 'dd/MM', { locale: ptBR }) : '—'}
                         </span>
                       </td>
-                      <td className="py-2.5 px-3 text-right font-bold text-rose-600">{fmt(d.valor)}</td>
+                      <td className="py-2.5 px-3 text-right font-bold text-rose-600">{formatCurrency(d.valor)}</td>
                     </tr>
                   );
                 })}
@@ -536,14 +524,14 @@ export default function Dashboard() {
                               {d.fornecedor ? ` · ${d.fornecedor}` : ''}
                             </p>
                           </div>
-                          <span className="text-sm font-bold text-red-600 flex-shrink-0 ml-3">{fmt(d.valor)}</span>
+                          <span className="text-sm font-bold text-red-600 flex-shrink-0 ml-3">{formatCurrency(d.valor)}</span>
                         </div>
                       );
                     })}
                   </div>
                   <div className="mt-2 flex items-center justify-between text-xs text-red-700 font-semibold px-1">
                     <span>Subtotal vencidas:</span>
-                    <span>{fmt(stats.contasVencidas.reduce((s, d) => s + (d.valor || 0), 0))}</span>
+                    <span>{formatCurrency(stats.contasVencidas.reduce((s, d) => s + (d.valor || 0), 0))}</span>
                   </div>
                 </div>
               )}
@@ -564,13 +552,13 @@ export default function Dashboard() {
                           <p className="text-sm font-semibold text-slate-900">{d.descricao}</p>
                           <p className="text-xs text-slate-500">{d.categoria}{d.fornecedor ? ` · ${d.fornecedor}` : ''}</p>
                         </div>
-                        <span className="text-sm font-bold text-amber-700 flex-shrink-0 ml-3">{fmt(d.valor)}</span>
+                        <span className="text-sm font-bold text-amber-700 flex-shrink-0 ml-3">{formatCurrency(d.valor)}</span>
                       </div>
                     ))}
                   </div>
                   <div className="mt-2 flex items-center justify-between text-xs text-amber-700 font-semibold px-1">
                     <span>Subtotal hoje:</span>
-                    <span>{fmt(stats.contasHoje.reduce((s, d) => s + (d.valor || 0), 0))}</span>
+                    <span>{formatCurrency(stats.contasHoje.reduce((s, d) => s + (d.valor || 0), 0))}</span>
                   </div>
                 </div>
               )}
@@ -579,7 +567,7 @@ export default function Dashboard() {
               <div className="pt-3 border-t border-slate-200 flex items-center justify-between">
                 <span className="text-sm font-bold text-slate-700">Total a pagar:</span>
                 <span className="text-base font-bold text-rose-600">
-                  {fmt([
+                  {formatCurrency([
                     ...(stats.contasVencidas || []),
                     ...(stats.contasHoje || [])
                   ].reduce((s, d) => s + (d.valor || 0), 0))}

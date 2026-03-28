@@ -5,12 +5,10 @@ import { TrendingUp, TrendingDown, DollarSign, ArrowUpRight, ArrowDownRight, Plu
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
-const fmt = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+import { formatCurrency } from '../utils/formatters';
+import { inputCls, selectCls } from '../styles/formClasses';
 
 const EMPTY = { tipo: 'entrada', descricao: '', valor: '', data: new Date().toISOString().split('T')[0], categoria: 'Outros', observacoes: '' };
-const inputCls = "w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
-const selectCls = "w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
 
 function Modal({ title, onClose, children }) {
   return (
@@ -101,7 +99,7 @@ export default function FluxoCaixa() {
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex items-start justify-between">
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Entradas</p>
-            <p className="text-2xl font-bold text-emerald-600 mt-1">{fmt(entradas)}</p>
+            <p className="text-2xl font-bold text-emerald-600 mt-1">{formatCurrency(entradas)}</p>
           </div>
           <div className="w-11 h-11 bg-emerald-100 rounded-xl flex items-center justify-center">
             <ArrowUpRight className="h-5 w-5 text-emerald-600" />
@@ -110,7 +108,7 @@ export default function FluxoCaixa() {
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex items-start justify-between">
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Saídas</p>
-            <p className="text-2xl font-bold text-rose-600 mt-1">{fmt(saidas)}</p>
+            <p className="text-2xl font-bold text-rose-600 mt-1">{formatCurrency(saidas)}</p>
           </div>
           <div className="w-11 h-11 bg-rose-100 rounded-xl flex items-center justify-center">
             <ArrowDownRight className="h-5 w-5 text-rose-600" />
@@ -119,7 +117,7 @@ export default function FluxoCaixa() {
         <div className={`rounded-2xl border shadow-sm p-5 flex items-start justify-between ${saldo >= 0 ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'}`}>
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Saldo</p>
-            <p className={`text-2xl font-bold mt-1 ${saldo >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{fmt(saldo)}</p>
+            <p className={`text-2xl font-bold mt-1 ${saldo >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>{formatCurrency(saldo)}</p>
           </div>
           <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${saldo >= 0 ? 'bg-emerald-200' : 'bg-rose-200'}`}>
             <DollarSign className={`h-5 w-5 ${saldo >= 0 ? 'text-emerald-700' : 'text-rose-700'}`} />
@@ -142,7 +140,7 @@ export default function FluxoCaixa() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
               <XAxis dataKey="dia" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} interval={4} />
               <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={v => `R$${v >= 1000 ? (v/1000).toFixed(0)+'k' : v}`} />
-              <Tooltip formatter={(v) => fmt(v)} contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} />
+              <Tooltip formatter={(v) => formatCurrency(v)} contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} />
               <Area type="monotone" dataKey="saldo" name="Saldo" stroke="#3b82f6" strokeWidth={2} fill="url(#gradSaldo)" />
             </AreaChart>
           </ResponsiveContainer>
@@ -195,7 +193,7 @@ export default function FluxoCaixa() {
                         </span>
                       </td>
                       <td className={`py-3 px-4 text-right font-bold ${m.tipo === 'entrada' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                        {m.tipo === 'entrada' ? '+' : '-'}{fmt(m.valor)}
+                        {m.tipo === 'entrada' ? '+' : '-'}{formatCurrency(m.valor)}
                       </td>
                     </tr>
                   );

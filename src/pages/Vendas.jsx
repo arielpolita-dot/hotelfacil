@@ -1,12 +1,13 @@
 import { toDate, toDateString } from '../utils/dateUtils';
+import { formatCurrency } from '../utils/formatters';
+import { maskCPF, maskCNPJ, maskPhone } from '../utils/masks';
+import { inputCls, selectCls } from '../styles/formClasses';
 import { useState, useMemo, useRef } from 'react';
 import { useHotel } from '../context/HotelFirestoreContext';
 import { useAuth } from '../context/AuthContext';
 import { Plus, Search, X, CalendarCheck, BedDouble, CreditCard, Building2, Pencil, ShoppingCart, LogIn, LogOut, Ban, Printer, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-
-const fmt = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
 
 const STATUS_CFG = {
   confirmada:   { label: 'Confirmada',  cls: 'bg-blue-100 text-blue-700' },
@@ -119,8 +120,6 @@ function Modal({ title, onClose, children }) {
   );
 }
 
-const inputCls = "w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
-const selectCls = "w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
 
 function Field({ label, children }) {
   return (
@@ -137,26 +136,6 @@ function SectionTitle({ children }) {
   );
 }
 
-// ─── Funções de máscara ─────────────────────────────────────────────
-function maskCPF(v) {
-  return v.replace(/\D/g, '').slice(0, 11)
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-}
-function maskCNPJ(v) {
-  return v.replace(/\D/g, '').slice(0, 14)
-    .replace(/(\d{2})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d)/, '$1/$2')
-    .replace(/(\d{4})(\d{1,2})$/, '$1-$2');
-}
-function maskPhone(v) {
-  const d = v.replace(/\D/g, '').slice(0, 11);
-  if (d.length <= 10)
-    return d.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3').trim().replace(/-$/, '');
-  return d.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3').trim().replace(/-$/, '');
-}
 
 export default function Vendas() {
   const { quartos, reservas, bancos, adicionarReserva, atualizarReserva, adicionarFatura, adicionarBanco, atualizarBanco, removerBanco, loading } = useHotel();
@@ -520,7 +499,7 @@ export default function Vendas() {
 
                 {/* Footer: valor + ações */}
                 <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                  <p className="font-bold text-slate-900 text-base">{fmt(r.valorTotal || r.valor)}</p>
+                  <p className="font-bold text-slate-900 text-base">{formatCurrency(r.valorTotal || r.valor)}</p>
                   <div className="flex items-center gap-1">
                     <button onClick={() => abrirEditar(r)} title="Editar" className="w-9 h-9 flex items-center justify-center rounded-xl text-blue-600 bg-blue-50 hover:bg-blue-100 transition">
                       <Pencil className="h-4 w-4" />
@@ -595,7 +574,7 @@ export default function Vendas() {
                         <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${cfg.cls}`}>{cfg.label}</span>
                       </td>
                       <td className="py-3 px-4 text-right font-bold text-slate-900">
-                        {fmt(r.valorTotal || r.valor)}
+                        {formatCurrency(r.valorTotal || r.valor)}
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center justify-center gap-1">
@@ -932,28 +911,28 @@ export default function Vendas() {
                 <div className="mt-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
                   <div className="flex justify-between text-sm text-slate-600">
                     <span>Valor da diária</span>
-                    <span>{fmt(parseFloat(form.valorTotal) || 0)}</span>
+                    <span>{formatCurrency(parseFloat(form.valorTotal) || 0)}</span>
                   </div>
                   {parseFloat(form.valorExtra) > 0 && (
                     <div className="flex justify-between text-sm text-emerald-600">
                       <span>+ Valor extra</span>
-                      <span>+ {fmt(parseFloat(form.valorExtra))}</span>
+                      <span>+ {formatCurrency(parseFloat(form.valorExtra))}</span>
                     </div>
                   )}
                   {parseFloat(form.desconto) > 0 && (
                     <div className="flex justify-between text-sm text-red-500">
                       <span>- Desconto</span>
-                      <span>- {fmt(parseFloat(form.desconto))}</span>
+                      <span>- {formatCurrency(parseFloat(form.desconto))}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-sm font-bold text-slate-900 border-t border-slate-200 mt-2 pt-2">
                     <span>Total a cobrar</span>
-                    <span>{fmt(calcularValorFinal())}</span>
+                    <span>{formatCurrency(calcularValorFinal())}</span>
                   </div>
                   {isCartao(form.formaPagamento) && parseInt(form.parcelas) > 1 && (
                     <div className="flex justify-between text-xs text-slate-500 mt-1">
                       <span>{form.parcelas}x de</span>
-                      <span>{fmt(calcularValorFinal() / parseInt(form.parcelas))}</span>
+                      <span>{formatCurrency(calcularValorFinal() / parseInt(form.parcelas))}</span>
                     </div>
                   )}
                 </div>
@@ -963,8 +942,8 @@ export default function Vendas() {
               {!(parseFloat(form.valorExtra) > 0 || parseFloat(form.desconto) > 0) && isCartao(form.formaPagamento) && parseInt(form.parcelas) > 1 && (
                 <div className="mt-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
                   <div className="flex justify-between text-sm font-bold text-slate-900">
-                    <span>Total: {fmt(parseFloat(form.valorTotal) || 0)}</span>
-                    <span>{form.parcelas}x de {fmt((parseFloat(form.valorTotal) || 0) / parseInt(form.parcelas))}</span>
+                    <span>Total: {formatCurrency(parseFloat(form.valorTotal) || 0)}</span>
+                    <span>{form.parcelas}x de {formatCurrency((parseFloat(form.valorTotal) || 0) / parseInt(form.parcelas))}</span>
                   </div>
                 </div>
               )}
@@ -1119,11 +1098,11 @@ export default function Vendas() {
                 <div style={{ borderTop:'1px solid #e2e8f0',paddingTop:'0.75rem' }}>
                   <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Valores</p>
                   <div className="space-y-0.5 text-xs">
-                    <div className="flex justify-between"><span className="text-slate-500">Diárias:</span><span className="font-medium">{fmt(reciboData.valorBase)}</span></div>
-                    {reciboData.valorExtra > 0 && <div className="flex justify-between"><span className="text-slate-500">Valor extra:</span><span className="font-medium text-amber-600">+ {fmt(reciboData.valorExtra)}</span></div>}
-                    {reciboData.desconto > 0 && <div className="flex justify-between"><span className="text-slate-500">Desconto:</span><span className="font-medium text-green-600">- {fmt(reciboData.desconto)}</span></div>}
+                    <div className="flex justify-between"><span className="text-slate-500">Diárias:</span><span className="font-medium">{formatCurrency(reciboData.valorBase)}</span></div>
+                    {reciboData.valorExtra > 0 && <div className="flex justify-between"><span className="text-slate-500">Valor extra:</span><span className="font-medium text-amber-600">+ {formatCurrency(reciboData.valorExtra)}</span></div>}
+                    {reciboData.desconto > 0 && <div className="flex justify-between"><span className="text-slate-500">Desconto:</span><span className="font-medium text-green-600">- {formatCurrency(reciboData.desconto)}</span></div>}
                     <div className="flex justify-between font-bold text-slate-900" style={{ borderTop:'1px solid #e2e8f0',paddingTop:'0.375rem',marginTop:'0.25rem' }}>
-                      <span>Total Pago:</span><span className="text-green-600">{fmt(reciboData.valorFinal)}</span>
+                      <span>Total Pago:</span><span className="text-green-600">{formatCurrency(reciboData.valorFinal)}</span>
                     </div>
                   </div>
                 </div>
@@ -1131,7 +1110,7 @@ export default function Vendas() {
                 <div className="text-xs">
                   <span className="text-slate-500">Forma de pagamento: </span>
                   <span className="font-medium">{FORMAS_PAGAMENTO.find(f=>f.value===reciboData.formaPagamento)?.label || reciboData.formaPagamento}</span>
-                  {reciboData.parcelas > 1 && <span className="text-slate-500"> — {reciboData.parcelas}x de {fmt(reciboData.valorFinal/reciboData.parcelas)}</span>}
+                  {reciboData.parcelas > 1 && <span className="text-slate-500"> — {reciboData.parcelas}x de {formatCurrency(reciboData.valorFinal/reciboData.parcelas)}</span>}
                 </div>
                 {reciboData.observacoes && <div className="text-xs"><span className="text-slate-500">Obs: </span><span>{reciboData.observacoes}</span></div>}
                 {/* Rodapé */}

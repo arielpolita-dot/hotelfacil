@@ -10,16 +10,8 @@ import {
 } from 'lucide-react';
 import { format, isToday, isBefore, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-
-function toDate(val) {
-  if (!val) return null;
-  if (val && typeof val.toDate === 'function') return val.toDate();
-  if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
-  const d = new Date(val);
-  return isNaN(d.getTime()) ? null : d;
-}
-
-const fmt = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+import { formatCurrency } from '../utils/formatters';
+import { toDate } from '../utils/dateUtils';
 
 const NAV_ITEMS = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -247,7 +239,7 @@ export default function Layout({ children }) {
                                     Venceu em {dt ? format(dt, 'dd/MM/yyyy', { locale: ptBR }) : '—'}
                                   </p>
                                 </div>
-                                <span className="text-sm font-bold text-red-600 ml-3 flex-shrink-0">{fmt(d.valor)}</span>
+                                <span className="text-sm font-bold text-red-600 ml-3 flex-shrink-0">{formatCurrency(d.valor)}</span>
                               </div>
                             );
                           })}
@@ -269,7 +261,7 @@ export default function Layout({ children }) {
                                 <p className="text-sm font-semibold text-slate-900 truncate">{d.descricao}</p>
                                 <p className="text-xs text-amber-600">{d.categoria}</p>
                               </div>
-                              <span className="text-sm font-bold text-amber-700 ml-3 flex-shrink-0">{fmt(d.valor)}</span>
+                              <span className="text-sm font-bold text-amber-700 ml-3 flex-shrink-0">{formatCurrency(d.valor)}</span>
                             </div>
                           ))}
                         </div>
@@ -281,7 +273,7 @@ export default function Layout({ children }) {
                     <div className="px-4 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
                       <span className="text-xs text-slate-500">Total em aberto:</span>
                       <span className="text-sm font-bold text-rose-600">
-                        {fmt([...alertas.vencidas, ...alertas.hoje].reduce((s, d) => s + (d.valor || 0), 0))}
+                        {formatCurrency([...alertas.vencidas, ...alertas.hoje].reduce((s, d) => s + (d.valor || 0), 0))}
                       </span>
                     </div>
                   )}

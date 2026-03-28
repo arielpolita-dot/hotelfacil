@@ -11,8 +11,7 @@ import {
 } from 'recharts';
 import { format, startOfMonth, endOfMonth, subMonths, getMonth, getYear } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-
-const fmt = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+import { formatCurrency } from '../utils/formatters';
 const pct = (v, total) => total === 0 ? '0,0%' : `${((v / total) * 100).toFixed(1).replace('.', ',')}%`;
 
 // Mapeamento de categorias de despesas para grupos DRE
@@ -93,13 +92,13 @@ function LinhaGrupo({ grupo, itens, totalReceita }) {
             <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{itens.length}</span>
           </div>
         </td>
-        <td className="py-3 px-4 text-right text-sm font-bold text-red-600">{fmt(total)}</td>
+        <td className="py-3 px-4 text-right text-sm font-bold text-red-600">{formatCurrency(total)}</td>
         <td className="py-3 px-4 text-right text-xs text-slate-400">{pct(total, totalReceita)}</td>
       </tr>
       {aberto && itens.map((item, i) => (
         <tr key={i} className="bg-slate-50/50 border-b border-slate-50">
           <td className="py-2 px-4 pl-12 text-xs text-slate-500">{item.descricao || item.categoria || '—'}</td>
-          <td className="py-2 px-4 text-right text-xs text-slate-600">{fmt(item.valor)}</td>
+          <td className="py-2 px-4 text-right text-xs text-slate-600">{formatCurrency(item.valor)}</td>
           <td className="py-2 px-4 text-right text-xs text-slate-400">{pct(item.valor, totalReceita)}</td>
         </tr>
       ))}
@@ -258,9 +257,9 @@ export default function DRE() {
 
       {/* ─── Cards de resumo ─────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <Card title="Receita Bruta" value={fmt(receita)} color="green" icon={TrendingUp} trend={tendenciaReceita} sub="Hospedagens + entradas" />
-        <Card title="Despesas Totais" value={fmt(despesaTotal)} color="red" icon={TrendingDown} trend={tendenciaDespesa} sub="Todas as categorias" />
-        <Card title="Resultado Líquido" value={fmt(lucro)} color={lucro >= 0 ? 'blue' : 'red'} icon={DollarSign} sub={lucro >= 0 ? 'Lucro operacional' : 'Prejuízo operacional'} />
+        <Card title="Receita Bruta" value={formatCurrency(receita)} color="green" icon={TrendingUp} trend={tendenciaReceita} sub="Hospedagens + entradas" />
+        <Card title="Despesas Totais" value={formatCurrency(despesaTotal)} color="red" icon={TrendingDown} trend={tendenciaDespesa} sub="Todas as categorias" />
+        <Card title="Resultado Líquido" value={formatCurrency(lucro)} color={lucro >= 0 ? 'blue' : 'red'} icon={DollarSign} sub={lucro >= 0 ? 'Lucro operacional' : 'Prejuízo operacional'} />
         <Card title="Margem Líquida" value={`${margem.toFixed(1).replace('.', ',')}%`} color={margem >= 20 ? 'green' : margem >= 0 ? 'amber' : 'red'} icon={BarChart2} sub={margem >= 20 ? 'Margem saudável' : margem >= 0 ? 'Margem apertada' : 'Resultado negativo'} />
       </div>
 
@@ -273,7 +272,7 @@ export default function DRE() {
             <XAxis dataKey="mes" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={v => `R$${v >= 1000 ? (v/1000).toFixed(0)+'k' : v}`} />
             <Tooltip
-              formatter={(v, name) => [fmt(v), name === 'receita' ? 'Receita' : name === 'despesa' ? 'Despesas' : 'Resultado']}
+              formatter={(v, name) => [formatCurrency(v), name === 'receita' ? 'Receita' : name === 'despesa' ? 'Despesas' : 'Resultado']}
               contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '12px' }}
             />
             <Legend formatter={v => v === 'receita' ? 'Receita' : v === 'despesa' ? 'Despesas' : 'Resultado'} wrapperStyle={{ fontSize: '11px' }} />
@@ -312,12 +311,12 @@ export default function DRE() {
                     <span className="text-sm font-bold text-emerald-800">1. Receita Operacional Bruta</span>
                   </div>
                 </td>
-                <td className="py-3 px-4 text-right text-sm font-bold text-emerald-700">{fmt(receita)}</td>
+                <td className="py-3 px-4 text-right text-sm font-bold text-emerald-700">{formatCurrency(receita)}</td>
                 <td className="py-3 px-4 text-right text-xs text-emerald-600 font-semibold">100%</td>
               </tr>
               <tr className="border-b border-slate-50">
                 <td className="py-2.5 px-4 pl-10 text-xs text-slate-500">Hospedagens e serviços</td>
-                <td className="py-2.5 px-4 text-right text-xs text-slate-600">{fmt(receita)}</td>
+                <td className="py-2.5 px-4 text-right text-xs text-slate-600">{formatCurrency(receita)}</td>
                 <td className="py-2.5 px-4 text-right text-xs text-slate-400">100%</td>
               </tr>
 
@@ -329,7 +328,7 @@ export default function DRE() {
                     <span className="text-sm font-bold text-red-800">2. Despesas Operacionais</span>
                   </div>
                 </td>
-                <td className="py-3 px-4 text-right text-sm font-bold text-red-700">({fmt(despesaTotal)})</td>
+                <td className="py-3 px-4 text-right text-sm font-bold text-red-700">({formatCurrency(despesaTotal)})</td>
                 <td className="py-3 px-4 text-right text-xs text-red-600 font-semibold">{pct(despesaTotal, receita)}</td>
               </tr>
 
@@ -355,7 +354,7 @@ export default function DRE() {
                   </div>
                 </td>
                 <td className={`py-4 px-4 text-right text-base font-bold ${lucro >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
-                  {lucro >= 0 ? '' : '('}{fmt(Math.abs(lucro))}{lucro < 0 ? ')' : ''}
+                  {lucro >= 0 ? '' : '('}{formatCurrency(Math.abs(lucro))}{lucro < 0 ? ')' : ''}
                 </td>
                 <td className={`py-4 px-4 text-right text-sm font-bold ${lucro >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
                   {margem.toFixed(1).replace('.', ',')}%
@@ -394,9 +393,9 @@ export default function DRE() {
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Indicadores</p>
           <div className="space-y-3">
             {[
-              { label: 'Receita Bruta', value: fmt(receita), color: 'text-emerald-600' },
-              { label: 'Total de Despesas', value: fmt(despesaTotal), color: 'text-red-500' },
-              { label: 'Resultado Líquido', value: fmt(lucro), color: lucro >= 0 ? 'text-blue-600' : 'text-red-600' },
+              { label: 'Receita Bruta', value: formatCurrency(receita), color: 'text-emerald-600' },
+              { label: 'Total de Despesas', value: formatCurrency(despesaTotal), color: 'text-red-500' },
+              { label: 'Resultado Líquido', value: formatCurrency(lucro), color: lucro >= 0 ? 'text-blue-600' : 'text-red-600' },
               { label: 'Margem Líquida', value: `${margem.toFixed(1).replace('.', ',')}%`, color: margem >= 20 ? 'text-emerald-600' : margem >= 0 ? 'text-amber-600' : 'text-red-600' },
               { label: 'Índice de Despesas', value: pct(despesaTotal, receita), color: 'text-slate-600' },
             ].map(({ label, value, color }) => (

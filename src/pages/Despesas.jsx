@@ -3,8 +3,9 @@ import { useHotel } from '../context/HotelFirestoreContext';
 import { Plus, X, Trash2, Pencil, Search, TrendingDown, Printer, CalendarDays } from 'lucide-react';
 import { format, isToday, isYesterday, startOfDay, endOfDay, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-
-const fmt = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+import { formatCurrency } from '../utils/formatters';
+import { toDate } from '../utils/dateUtils';
+import { inputCls, selectCls } from '../styles/formClasses';
 
 const CATEGORIAS = ['Alimentação', 'Limpeza', 'Manutenção', 'Pessoal', 'Marketing', 'Utilidades', 'Administrativo', 'Outros'];
 const STATUS_LIST = ['pendente', 'pago', 'cancelado'];
@@ -15,17 +16,6 @@ const STATUS_CFG = {
 };
 
 const EMPTY = { descricao: '', categoria: 'Outros', valor: '', data: new Date().toISOString().split('T')[0], status: 'pendente', fornecedor: '', observacoes: '' };
-
-const inputCls = "w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
-const selectCls = "w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
-
-function toDate(val) {
-  if (!val) return null;
-  if (val && typeof val.toDate === 'function') return val.toDate();
-  if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
-  const d = new Date(val);
-  return isNaN(d.getTime()) ? null : d;
-}
 
 function Modal({ title, onClose, children }) {
   return (
@@ -133,7 +123,7 @@ export default function Despesas() {
         <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">${d.categoria}</td>
         <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">${dtStr}</td>
         <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">${cfg.label}</td>
-        <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;text-align:right;font-weight:bold;">${fmt(d.valor)}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;text-align:right;font-weight:bold;">${formatCurrency(d.valor)}</td>
       </tr>`;
     }).join('');
 
@@ -174,7 +164,7 @@ export default function Despesas() {
     <tfoot>
       <tr>
         <td colspan="4">Total</td>
-        <td style="text-align:right">${fmt(totalFiltrado)}</td>
+        <td style="text-align:right">${formatCurrency(totalFiltrado)}</td>
       </tr>
     </tfoot>
   </table>
@@ -212,16 +202,16 @@ export default function Despesas() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Total Filtrado</p>
-          <p className="text-2xl font-bold text-slate-900 mt-1">{fmt(totalFiltrado)}</p>
+          <p className="text-2xl font-bold text-slate-900 mt-1">{formatCurrency(totalFiltrado)}</p>
           <p className="text-xs text-slate-400 mt-0.5">{despesasFiltradas.length} registros</p>
         </div>
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Pendente</p>
-          <p className="text-2xl font-bold text-amber-600 mt-1">{fmt(totalPendente)}</p>
+          <p className="text-2xl font-bold text-amber-600 mt-1">{formatCurrency(totalPendente)}</p>
         </div>
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Pago</p>
-          <p className="text-2xl font-bold text-emerald-600 mt-1">{fmt(totalPago)}</p>
+          <p className="text-2xl font-bold text-emerald-600 mt-1">{formatCurrency(totalPago)}</p>
         </div>
       </div>
 
@@ -329,7 +319,7 @@ export default function Despesas() {
                       <td className="py-3 px-4">
                         <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${cfg.cls}`}>{cfg.label}</span>
                       </td>
-                      <td className="py-3 px-4 text-right font-bold text-slate-900">{fmt(d.valor)}</td>
+                      <td className="py-3 px-4 text-right font-bold text-slate-900">{formatCurrency(d.valor)}</td>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-1">
                           <button onClick={() => abrirEditar(d)} className="text-xs text-blue-600 hover:underline font-medium px-2 py-1 rounded-lg hover:bg-blue-50 transition">Editar</button>
@@ -343,7 +333,7 @@ export default function Despesas() {
               <tfoot>
                 <tr className="bg-slate-50 border-t-2 border-slate-200">
                   <td colSpan={4} className="py-3 px-4 text-sm font-bold text-slate-700">Total ({despesasFiltradas.length} registros)</td>
-                  <td className="py-3 px-4 text-right text-sm font-bold text-slate-900">{fmt(totalFiltrado)}</td>
+                  <td className="py-3 px-4 text-right text-sm font-bold text-slate-900">{formatCurrency(totalFiltrado)}</td>
                   <td />
                 </tr>
               </tfoot>

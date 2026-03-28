@@ -3,32 +3,12 @@ import { useHotel } from '../context/HotelFirestoreContext';
 import {
   Plus, Search, Edit2, Trash2, X, Building2, Phone, Mail, MapPin, User, FileText
 } from 'lucide-react';
+import { maskCPF, maskCNPJ, maskPhone } from '../utils/masks';
 
 const EMPTY_FORM = {
   nome: '', tipo: 'juridica', cnpj: '', cpf: '', email: '', telefone: '',
   contato: '', endereco: '', cidade: '', estado: '', cep: '', observacoes: ''
 };
-
-function maskCNPJ(v) {
-  return v.replace(/\D/g, '').slice(0, 14)
-    .replace(/^(\d{2})(\d)/, '$1.$2')
-    .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
-    .replace(/\.(\d{3})(\d)/, '.$1/$2')
-    .replace(/(\d{4})(\d)/, '$1-$2');
-}
-
-function maskCPF(v) {
-  return v.replace(/\D/g, '').slice(0, 11)
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-}
-
-function maskPhone(v) {
-  const d = v.replace(/\D/g, '').slice(0, 11);
-  if (d.length <= 10) return d.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
-  return d.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
-}
 
 export default function Fornecedores() {
   const { fornecedores, adicionarFornecedor, atualizarFornecedor, removerFornecedor } = useHotel();

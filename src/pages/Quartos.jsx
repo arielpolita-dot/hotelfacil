@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useHotel } from '../context/HotelFirestoreContext';
 import { Plus, BedDouble, Pencil, Trash2, X, Search, Filter } from 'lucide-react';
+import { formatCurrency } from '../utils/formatters';
+import { inputCls, selectCls } from '../styles/formClasses';
 
 const STATUS_CFG = {
   disponivel: { label: 'Disponível', cls: 'bg-emerald-100 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
@@ -39,9 +41,6 @@ function Field({ label, children }) {
     </div>
   );
 }
-
-const inputCls = "w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
-const selectCls = "w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition";
 
 export default function Quartos() {
   const { quartos, adicionarQuarto, atualizarQuarto, removerQuarto, loading } = useHotel();
@@ -176,7 +175,7 @@ export default function Quartos() {
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-slate-500">Diária</span>
                   <span className="font-bold text-blue-600">
-                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(q.precoDiaria || 0)}
+                    {formatCurrency(q.precoDiaria)}
                   </span>
                 </div>
 
