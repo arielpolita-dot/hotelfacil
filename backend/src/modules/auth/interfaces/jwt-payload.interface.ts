@@ -6,7 +6,7 @@ export interface JwtPayload {
   type: 'access' | 'refresh';
 }
 
-export interface AuthUser {
+export class AuthUser {
   id: string;
   email: string;
   empresaId: string;
