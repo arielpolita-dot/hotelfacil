@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
-import { useHotel } from '../context/HotelFirestoreContext';
+import { useHotel } from '../context/HotelContext';
 import {
   BedDouble, CalendarCheck, DollarSign, TrendingUp,
   ArrowUpRight, ArrowDownRight, Clock, BarChart2,

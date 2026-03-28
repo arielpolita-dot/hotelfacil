@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useHotel } from '../context/HotelFirestoreContext';
+import { useHotel } from '../context/HotelContext';
 import { 
   Plus, 
   Search, 

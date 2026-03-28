@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { HotelProvider } from './context/HotelFirestoreContext';
+import { HotelProvider } from './context/HotelContext';
 import Login from './components/ui/Login';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';

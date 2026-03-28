@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useHotel } from '../context/HotelFirestoreContext';
+import { useHotel } from '../context/HotelContext';
 import { Plus, X, Trash2, Pencil, Search, TrendingDown, Printer, CalendarDays } from 'lucide-react';
 import { format, isToday, isYesterday, startOfDay, endOfDay, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';

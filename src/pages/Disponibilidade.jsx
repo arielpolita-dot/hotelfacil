@@ -1,6 +1,6 @@
 import { toDate, toDateString } from '../utils/dateUtils';
 import { useState, useMemo } from 'react';
-import { useHotel } from '../context/HotelFirestoreContext';
+import { useHotel } from '../context/HotelContext';
 import { ChevronLeft, ChevronRight, BedDouble, ShoppingCart } from 'lucide-react';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, getDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';

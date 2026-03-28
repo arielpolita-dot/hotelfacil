@@ -7,16 +7,17 @@ import {
   updateProfile,
   sendPasswordResetEmail
 } from 'firebase/auth';
-import { 
-  doc, 
-  setDoc, 
-  getDoc, 
+// TODO: Extract to services/firestore/auth.firestore.js when backend is ready
+import {
+  doc,
+  setDoc,
+  getDoc,
   getDocs,
   updateDoc,
-  collection, 
-  query, 
+  collection,
+  query,
   where,
-  Timestamp 
+  Timestamp
 } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
 

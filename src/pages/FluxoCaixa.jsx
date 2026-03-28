@@ -1,6 +1,6 @@
 import { toDate, toDateString } from '../utils/dateUtils';
 import { useState, useMemo } from 'react';
-import { useHotel } from '../context/HotelFirestoreContext';
+import { useHotel } from '../context/HotelContext';
 import { TrendingUp, TrendingDown, DollarSign, ArrowUpRight, ArrowDownRight, Plus, X } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';

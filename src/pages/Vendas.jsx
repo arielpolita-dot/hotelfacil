@@ -3,7 +3,7 @@ import { formatCurrency } from '../utils/formatters';
 import { maskCPF, maskCNPJ, maskPhone } from '../utils/masks';
 import { inputCls, selectCls } from '../styles/formClasses';
 import { useState, useMemo, useRef } from 'react';
-import { useHotel } from '../context/HotelFirestoreContext';
+import { useHotel } from '../context/HotelContext';
 import { useAuth } from '../context/AuthContext';
 import { Plus, Search, X, CalendarCheck, BedDouble, CreditCard, Building2, Pencil, ShoppingCart, LogIn, LogOut, Ban, Printer, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';

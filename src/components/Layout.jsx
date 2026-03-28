@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useHotel } from '../context/HotelFirestoreContext';
+import { useHotel } from '../context/HotelContext';
 import {
   LayoutDashboard, BedDouble, CalendarCheck, ShoppingCart,
   Receipt, CreditCard, TrendingUp, Users, Menu, X,

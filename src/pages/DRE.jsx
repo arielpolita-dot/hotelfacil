@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useHotel } from '../context/HotelFirestoreContext';
+import { useHotel } from '../context/HotelContext';
 import { toDate } from '../utils/dateUtils';
 import {
   TrendingUp, TrendingDown, DollarSign, BarChart2,

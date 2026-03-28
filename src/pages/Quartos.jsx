@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useHotel } from '../context/HotelFirestoreContext';
+import { useHotel } from '../context/HotelContext';
 import { Plus, BedDouble, Pencil, Trash2, X, Search, Filter } from 'lucide-react';
 import { formatCurrency } from '../utils/formatters';
 import { inputCls, selectCls } from '../styles/formClasses';

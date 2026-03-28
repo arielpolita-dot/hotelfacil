@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useHotel } from '../context/HotelFirestoreContext';
+import { useHotel } from '../context/HotelContext';
 import {
   Plus, Search, Edit2, Trash2, X, Building2, Phone, Mail, MapPin, User, FileText
 } from 'lucide-react';
