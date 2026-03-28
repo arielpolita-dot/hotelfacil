@@ -1,16 +1,18 @@
 version: 1
+appRoot: frontend
 frontend:
   phases:
     preBuild:
       commands:
-        - cd frontend && npm install -g pnpm && pnpm install
+        - npm install -g pnpm
+        - pnpm install
     build:
       commands:
-        - cd frontend && pnpm build
+        - pnpm build
   artifacts:
-    baseDirectory: frontend/dist
+    baseDirectory: dist
     files:
       - '**/*'
   cache:
     paths:
-      - frontend/node_modules/**/*
+      - node_modules/**/*
