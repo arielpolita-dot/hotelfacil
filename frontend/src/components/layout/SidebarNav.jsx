@@ -6,20 +6,20 @@ import {
 } from 'lucide-react';
 
 export const NAV_ITEMS = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/disponibilidade', icon: CalendarCheck, label: 'Disponibilidade' },
-  { to: '/quartos', icon: BedDouble, label: 'Quartos' },
-  { to: '/vendas', icon: ShoppingCart, label: 'Reservas' },
+  { to: '/app', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/app/disponibilidade', icon: CalendarCheck, label: 'Disponibilidade' },
+  { to: '/app/quartos', icon: BedDouble, label: 'Quartos' },
+  { to: '/app/vendas', icon: ShoppingCart, label: 'Reservas' },
   { divider: true, label: 'Financeiro' },
-  { to: '/faturas', icon: Receipt, label: 'Faturas' },
-  { to: '/despesas', icon: CreditCard, label: 'Despesas' },
-  { to: '/fluxo-caixa', icon: TrendingUp, label: 'Fluxo de Caixa' },
-  { to: '/dre', icon: BarChart2, label: 'DRE' },
+  { to: '/app/faturas', icon: Receipt, label: 'Faturas' },
+  { to: '/app/despesas', icon: CreditCard, label: 'Despesas' },
+  { to: '/app/fluxo-caixa', icon: TrendingUp, label: 'Fluxo de Caixa' },
+  { to: '/app/dre', icon: BarChart2, label: 'DRE' },
   { divider: true, label: 'Cadastros' },
-  { to: '/fornecedores', icon: Building2, label: 'Fornecedores' },
+  { to: '/app/fornecedores', icon: Building2, label: 'Fornecedores' },
   { divider: true, label: 'Configurações' },
-  { to: '/usuarios', icon: Users, label: 'Usuários' },
-  { to: '/configuracoes', icon: Settings, label: 'Hotel / Empresa' },
+  { to: '/app/usuarios', icon: Users, label: 'Usuários' },
+  { to: '/app/configuracoes', icon: Settings, label: 'Hotel / Empresa' },
 ];
 
 export function SidebarNav({ sidebarOpen, setSidebarOpen, currentUser, empresaAtual, logout }) {
@@ -69,6 +69,7 @@ export function SidebarNav({ sidebarOpen, setSidebarOpen, currentUser, empresaAt
             <NavLink
               key={item.to}
               to={item.to}
+              end={item.to === '/app'}
               onClick={() => setSidebarOpen(false)}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group ${

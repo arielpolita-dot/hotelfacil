@@ -18,7 +18,7 @@ export default function AuthCallback() {
       body: JSON.stringify({ code, redirect_uri: `${window.location.origin}/auth/callback` }),
     })
       .then(r => { if (!r.ok) throw new Error('Auth failed'); return r.json(); })
-      .then(() => { window.location.href = '/dashboard'; })
+      .then(() => { window.location.href = '/app'; })
       .catch(e => setError(e.message));
   }, [searchParams]);
 

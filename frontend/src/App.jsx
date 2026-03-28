@@ -3,8 +3,8 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { EmpresaProvider } from './context/EmpresaContext';
 import { TrialProvider } from './context/TrialContext';
 import { HotelProvider } from './context/HotelContext';
-import Login from './components/auth/Login';
 import AuthCallback from './components/auth/AuthCallback';
+import LandingPage from './pages/LandingPage';
 import Layout from './components/Layout';
 import { Component, lazy, Suspense } from 'react';
 import { LoadingSpinner } from './components/ds';
@@ -40,7 +40,7 @@ class ErrorBoundary extends Component {
         <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
           <div className="bg-white rounded-2xl shadow-sm border border-red-100 p-8 max-w-md w-full text-center">
             <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">⚠️</span>
+              <span className="text-2xl">{'\u26A0\uFE0F'}</span>
             </div>
             <h2 className="text-lg font-bold text-slate-900 mb-2">Algo deu errado</h2>
             <p className="text-sm text-slate-500 mb-4">{this.state.error?.message || 'Erro desconhecido'}</p>
@@ -58,8 +58,10 @@ class ErrorBoundary extends Component {
   }
 }
 
-function AppContent() {
-  const { currentUser, loading } = useAuth();
+export { Dashboard, Disponibilidade, Quartos, Vendas, Faturas, Despesas, Usuarios, FluxoCaixa, DRE, Configuracoes, Fornecedores, AdminPanel };
+
+function ProtectedApp() {
+  const { currentUser, loading, login } = useAuth();
 
   if (loading) {
     return (
@@ -78,7 +80,8 @@ function AppContent() {
   }
 
   if (!currentUser) {
-    return <Login />;
+    login();
+    return <LoadingSpinner message="Redirecionando para login..." />;
   }
 
   return (
@@ -89,20 +92,19 @@ function AppContent() {
             <Layout>
               <Suspense fallback={<LoadingSpinner message="Carregando..." />}>
                 <Routes>
-                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/disponibilidade" element={<Disponibilidade />} />
-                  <Route path="/quartos" element={<Quartos />} />
-                  <Route path="/vendas" element={<Vendas />} />
-                  <Route path="/faturas" element={<Faturas />} />
-                  <Route path="/despesas" element={<Despesas />} />
-                  <Route path="/usuarios" element={<Usuarios />} />
-                  <Route path="/fluxo-caixa" element={<FluxoCaixa />} />
-                  <Route path="/dre" element={<DRE />} />
-                  <Route path="/configuracoes" element={<Configuracoes />} />
-                  <Route path="/fornecedores" element={<Fornecedores />} />
-                  <Route path="/admin" element={<AdminPanel />} />
-                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                  <Route index element={<Dashboard />} />
+                  <Route path="quartos" element={<Quartos />} />
+                  <Route path="disponibilidade" element={<Disponibilidade />} />
+                  <Route path="vendas" element={<Vendas />} />
+                  <Route path="faturas" element={<Faturas />} />
+                  <Route path="despesas" element={<Despesas />} />
+                  <Route path="usuarios" element={<Usuarios />} />
+                  <Route path="fluxo-caixa" element={<FluxoCaixa />} />
+                  <Route path="dre" element={<DRE />} />
+                  <Route path="configuracoes" element={<Configuracoes />} />
+                  <Route path="fornecedores" element={<Fornecedores />} />
+                  <Route path="admin" element={<AdminPanel />} />
+                  <Route path="*" element={<Navigate to="/app" replace />} />
                 </Routes>
               </Suspense>
             </Layout>
@@ -118,8 +120,15 @@ function App() {
     <Router>
       <AuthProvider>
         <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<LandingPage />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="*" element={<AppContent />} />
+
+          {/* Protected app routes */}
+          <Route path="/app/*" element={<ProtectedApp />} />
+
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
     </Router>
