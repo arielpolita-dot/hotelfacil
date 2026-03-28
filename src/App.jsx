@@ -1,5 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { EmpresaProvider } from './context/EmpresaContext';
+import { TrialProvider } from './context/TrialContext';
 import { HotelProvider } from './context/HotelContext';
 import Login from './components/auth/Login';
 import Layout from './components/Layout';
@@ -45,7 +47,7 @@ class ErrorBoundary extends Component {
               onClick={() => window.location.reload()}
               className="bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 transition"
             >
-              Recarregar página
+              Recarregar pagina
             </button>
           </div>
         </div>
@@ -64,10 +66,10 @@ function AppContent() {
         <div className="flex flex-col items-center gap-6">
           <img
             src="/icon-512.png"
-            alt="Hotel Fácil"
+            alt="Hotel Facil"
             className="w-32 h-32 rounded-3xl shadow-2xl"
           />
-          <p className="text-white font-semibold text-lg tracking-wide">Hotel Fácil</p>
+          <p className="text-white font-semibold text-lg tracking-wide">Hotel Facil</p>
           <div className="w-8 h-8 border-[3px] border-white border-t-transparent rounded-full animate-spin"></div>
         </div>
       </div>
@@ -80,28 +82,32 @@ function AppContent() {
 
   return (
     <ErrorBoundary>
-      <HotelProvider>
-        <Layout>
-          <Suspense fallback={<LoadingSpinner message="Carregando..." />}>
-            <Routes>
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/disponibilidade" element={<Disponibilidade />} />
-              <Route path="/quartos" element={<Quartos />} />
-              <Route path="/vendas" element={<Vendas />} />
-              <Route path="/faturas" element={<Faturas />} />
-              <Route path="/despesas" element={<Despesas />} />
-              <Route path="/usuarios" element={<Usuarios />} />
-              <Route path="/fluxo-caixa" element={<FluxoCaixa />} />
-              <Route path="/dre" element={<DRE />} />
-              <Route path="/configuracoes" element={<Configuracoes />} />
-              <Route path="/fornecedores" element={<Fornecedores />} />
-              <Route path="/admin" element={<AdminPanel />} />
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
-            </Routes>
-          </Suspense>
-        </Layout>
-      </HotelProvider>
+      <EmpresaProvider>
+        <TrialProvider>
+          <HotelProvider>
+            <Layout>
+              <Suspense fallback={<LoadingSpinner message="Carregando..." />}>
+                <Routes>
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/disponibilidade" element={<Disponibilidade />} />
+                  <Route path="/quartos" element={<Quartos />} />
+                  <Route path="/vendas" element={<Vendas />} />
+                  <Route path="/faturas" element={<Faturas />} />
+                  <Route path="/despesas" element={<Despesas />} />
+                  <Route path="/usuarios" element={<Usuarios />} />
+                  <Route path="/fluxo-caixa" element={<FluxoCaixa />} />
+                  <Route path="/dre" element={<DRE />} />
+                  <Route path="/configuracoes" element={<Configuracoes />} />
+                  <Route path="/fornecedores" element={<Fornecedores />} />
+                  <Route path="/admin" element={<AdminPanel />} />
+                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                </Routes>
+              </Suspense>
+            </Layout>
+          </HotelProvider>
+        </TrialProvider>
+      </EmpresaProvider>
     </ErrorBoundary>
   );
 }

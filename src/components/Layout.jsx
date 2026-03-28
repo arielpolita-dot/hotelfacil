@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useEmpresa } from '../context/EmpresaContext';
 import { useHotel } from '../context/HotelContext';
 import { Menu, Building2 } from 'lucide-react';
 import { NotificationBell } from './layout/NotificationBell';
@@ -8,7 +9,8 @@ import { SidebarNav, NAV_ITEMS } from './layout/SidebarNav';
 
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { currentUser, empresaAtual, logout } = useAuth();
+  const { currentUser, logout } = useAuth();
+  const { empresaAtual } = useEmpresa();
   const { despesas } = useHotel();
   const location = useLocation();
 

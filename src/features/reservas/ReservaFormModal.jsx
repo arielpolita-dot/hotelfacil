@@ -1,18 +1,9 @@
 import { useMemo } from 'react';
-import { Modal } from '../../components/ds';
+import { Modal, FormField } from '../../components/ds';
 import { maskCPF, maskCNPJ, maskPhone } from '../../utils/masks';
 import { inputCls, selectCls } from '../../styles/formClasses';
 import { Building2 } from 'lucide-react';
 import { FORMAS_PAGAMENTO } from './constants';
-
-function Field({ label, children }) {
-  return (
-    <div>
-      <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">{label}</label>
-      {children}
-    </div>
-  );
-}
 
 function SectionTitle({ children }) {
   return (
@@ -46,9 +37,9 @@ export function ReservaFormModal({
         <div>
           <SectionTitle>Dados do Hospede</SectionTitle>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Nome Completo">
+            <FormField label="Nome Completo">
               <input type="text" value={form.nomeHospede} onChange={setUpper('nomeHospede')} placeholder="NOME DO HOSPEDE" className={inputCls} style={{ textTransform: 'uppercase' }} />
-            </Field>
+            </FormField>
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{useCnpj ? 'CNPJ' : 'CPF'}</label>
@@ -59,12 +50,12 @@ export function ReservaFormModal({
               </div>
               <input type="text" value={form.cpf} onChange={setMasked('cpf', useCnpj ? maskCNPJ : maskCPF)} placeholder={useCnpj ? '00.000.000/0001-00' : '000.000.000-00'} className={inputCls} />
             </div>
-            <Field label="Email">
+            <FormField label="Email">
               <input type="email" value={form.email} onChange={set('email')} placeholder="email@exemplo.com" className={inputCls} style={{ textTransform: 'lowercase' }} />
-            </Field>
-            <Field label="Celular">
+            </FormField>
+            <FormField label="Celular">
               <input type="tel" value={form.telefone} onChange={setMasked('telefone', maskPhone)} placeholder="(00) 00000-0000" className={inputCls} />
-            </Field>
+            </FormField>
           </div>
         </div>
 
@@ -72,34 +63,34 @@ export function ReservaFormModal({
         <div>
           <SectionTitle>Quarto e Periodo</SectionTitle>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Quarto">
+            <FormField label="Quarto">
               <select value={form.quartoId} onChange={e => { const qId = e.target.value; setForm(p => ({ ...p, quartoId: qId })); setTimeout(() => calcularValor(qId, null, null), 50); }} className={selectCls}>
                 <option value="">Selecione um quarto</option>
                 {quartosParaSelect.map(q => (
                   <option key={q.id} value={q.id}>Quarto {q.numero} — {q.tipo} (R$ {q.precoDiaria}/diaria)</option>
                 ))}
               </select>
-            </Field>
-            <Field label="Status">
+            </FormField>
+            <FormField label="Status">
               <select value={form.status} onChange={set('status')} className={selectCls}>
                 <option value="confirmada">Confirmada</option>
                 <option value="check-in">Check-in</option>
                 <option value="checkout">Check-out</option>
                 <option value="cancelada">Cancelada</option>
               </select>
-            </Field>
-            <Field label="Check-in">
+            </FormField>
+            <FormField label="Check-in">
               <input type="date" value={form.dataCheckIn} onChange={e => { const v = e.target.value; setForm(p => ({ ...p, dataCheckIn: v })); setTimeout(() => calcularValor(null, v, null), 50); }} className={inputCls} />
-            </Field>
-            <Field label="Check-out">
+            </FormField>
+            <FormField label="Check-out">
               <input type="date" value={form.dataCheckOut} onChange={e => { const v = e.target.value; setForm(p => ({ ...p, dataCheckOut: v })); setTimeout(() => calcularValor(null, null, v), 50); }} className={inputCls} />
-            </Field>
-            <Field label="Adultos">
+            </FormField>
+            <FormField label="Adultos">
               <input type="number" min="1" value={form.adultos} onChange={set('adultos')} className={inputCls} />
-            </Field>
-            <Field label="Criancas">
+            </FormField>
+            <FormField label="Criancas">
               <input type="number" min="0" value={form.criancas} onChange={set('criancas')} className={inputCls} />
-            </Field>
+            </FormField>
           </div>
         </div>
 
@@ -107,16 +98,16 @@ export function ReservaFormModal({
         <div>
           <SectionTitle>Pagamento</SectionTitle>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Valor Total (R$)">
+            <FormField label="Valor Total (R$)">
               <input type="number" min="0" step="0.01" value={form.valorTotal} onChange={set('valorTotal')} placeholder="0,00" className={inputCls} />
-            </Field>
-            <Field label="Forma de Pagamento">
+            </FormField>
+            <FormField label="Forma de Pagamento">
               <select value={form.formaPagamento} onChange={set('formaPagamento')} className={selectCls}>
                 {FORMAS_PAGAMENTO.map(fp => (
                   <option key={fp.value} value={fp.value}>{fp.label}</option>
                 ))}
               </select>
-            </Field>
+            </FormField>
           </div>
           {form.formaPagamento === 'faturado' && (
             <div className="mt-4 p-4 bg-violet-50 border border-violet-200 rounded-xl space-y-3">
@@ -125,18 +116,18 @@ export function ReservaFormModal({
                 <p className="text-xs font-bold text-violet-700 uppercase tracking-wide">Dados da Empresa Faturada</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Field label="CNPJ"><input type="text" value={form.faturadoCnpj} onChange={set('faturadoCnpj')} placeholder="00.000.000/0001-00" className={inputCls} /></Field>
-                <Field label="Nome da Empresa"><input type="text" value={form.faturadoEmpresa} onChange={set('faturadoEmpresa')} placeholder="Razao Social" className={inputCls} /></Field>
-                <Field label="Contato"><input type="text" value={form.faturadoContato} onChange={set('faturadoContato')} placeholder="Nome / Telefone" className={inputCls} /></Field>
-                <Field label="Endereco"><input type="text" value={form.faturadoEndereco} onChange={set('faturadoEndereco')} placeholder="Rua, no, Cidade - UF" className={inputCls} /></Field>
+                <FormField label="CNPJ"><input type="text" value={form.faturadoCnpj} onChange={set('faturadoCnpj')} placeholder="00.000.000/0001-00" className={inputCls} /></FormField>
+                <FormField label="Nome da Empresa"><input type="text" value={form.faturadoEmpresa} onChange={set('faturadoEmpresa')} placeholder="Razao Social" className={inputCls} /></FormField>
+                <FormField label="Contato"><input type="text" value={form.faturadoContato} onChange={set('faturadoContato')} placeholder="Nome / Telefone" className={inputCls} /></FormField>
+                <FormField label="Endereco"><input type="text" value={form.faturadoEndereco} onChange={set('faturadoEndereco')} placeholder="Rua, no, Cidade - UF" className={inputCls} /></FormField>
               </div>
             </div>
           )}
         </div>
 
-        <Field label="Observacoes">
+        <FormField label="Observacoes">
           <textarea value={form.observacoes} onChange={set('observacoes')} rows={3} placeholder="Pedidos especiais, informacoes adicionais..." className={inputCls + ' resize-none'} />
-        </Field>
+        </FormField>
 
         <div className="flex gap-3 pt-2 pb-1">
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">Cancelar</button>

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useHotel } from '../../context/HotelContext';
-import { useAuth } from '../../context/AuthContext';
+import { useEmpresa } from '../../context/EmpresaContext';
 import { Plus, Search, CalendarCheck } from 'lucide-react';
 import { STATUS_CFG, STATUS_FILTROS } from './constants';
 import { useReservaForm } from './useReservaForm';
@@ -14,7 +14,7 @@ import { CancelamentoModal } from './CancelamentoModal';
 
 export default function Vendas() {
   const { quartos, reservas, bancos, adicionarReserva, atualizarReserva, adicionarFatura, adicionarBanco, atualizarBanco, removerBanco, loading } = useHotel();
-  const { empresaAtual } = useAuth();
+  const { empresaAtual } = useEmpresa();
 
   const [modal, setModal] = useState(null);
   const [busca, setBusca] = useState('');

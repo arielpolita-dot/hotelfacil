@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuth } from './AuthContext';
+import { useEmpresa } from './EmpresaContext';
 import {
   onQuartos,
   onReservas,
@@ -45,7 +46,8 @@ export function useHotel() {
 }
 
 export function HotelProvider({ children }) {
-  const { currentUser, empresaAtual, logout } = useAuth();
+  const { currentUser, logout } = useAuth();
+  const { empresaAtual } = useEmpresa();
 
   const [quartos, setQuartos] = useState([]);
   const [reservas, setReservas] = useState([]);

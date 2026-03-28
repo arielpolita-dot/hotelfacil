@@ -1,4 +1,4 @@
-import { Modal } from '../../components/ds';
+import { Modal, FormField } from '../../components/ds';
 import { formatCurrency } from '../../utils/formatters';
 import { toDate } from '../../utils/dateUtils';
 import { inputCls, selectCls } from '../../styles/formClasses';
@@ -6,15 +6,6 @@ import { Building2, CreditCard } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { FORMAS_PAGAMENTO } from './constants';
-
-function Field({ label, children }) {
-  return (
-    <div>
-      <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">{label}</label>
-      {children}
-    </div>
-  );
-}
 
 function SectionTitle({ children }) {
   return (
@@ -48,16 +39,16 @@ export function PagamentoModal({
         <div>
           <SectionTitle>Dados do Pagamento</SectionTitle>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Data de Pagamento">
+            <FormField label="Data de Pagamento">
               <input type="date" value={form.dataPagamento} onChange={set('dataPagamento')} className={inputCls} />
-            </Field>
-            <Field label="Forma de Pagamento">
+            </FormField>
+            <FormField label="Forma de Pagamento">
               <select value={form.formaPagamento} onChange={set('formaPagamento')} className={selectCls}>
                 {FORMAS_PAGAMENTO.map(fp => (
                   <option key={fp.value} value={fp.value}>{fp.label}</option>
                 ))}
               </select>
-            </Field>
+            </FormField>
             {/* Banco */}
             {['transferencia','pix','cheque','cartao_credito','cartao_debito'].includes(form.formaPagamento) && (
               <div className="sm:col-span-2">
@@ -82,23 +73,23 @@ export function PagamentoModal({
                 })()}
               </div>
             )}
-            <Field label="Valor da Diaria (R$)">
+            <FormField label="Valor da Diaria (R$)">
               <input type="number" min="0" step="0.01" value={form.valorTotal} onChange={set('valorTotal')} placeholder="0,00" className={inputCls} />
-            </Field>
-            <Field label="Valor Extra (R$)">
+            </FormField>
+            <FormField label="Valor Extra (R$)">
               <input type="number" min="0" step="0.01" value={form.valorExtra} onChange={set('valorExtra')} placeholder="Ex: consumo, servicos adicionais" className={inputCls} />
-            </Field>
-            <Field label="Desconto (R$)">
+            </FormField>
+            <FormField label="Desconto (R$)">
               <input type="number" min="0" step="0.01" value={form.desconto} onChange={set('desconto')} placeholder="0,00" className={inputCls} />
-            </Field>
+            </FormField>
             {isCartao(form.formaPagamento) && (
-              <Field label="Parcelamento">
+              <FormField label="Parcelamento">
                 <select value={form.parcelas} onChange={set('parcelas')} className={selectCls}>
                   {[1,2,3,4,5,6,7,8,9,10,11,12].map(n => (
                     <option key={n} value={n}>{n === 1 ? 'A vista' : `${n}x`}</option>
                   ))}
                 </select>
-              </Field>
+              </FormField>
             )}
           </div>
 
@@ -154,10 +145,10 @@ export function PagamentoModal({
             </div>
             <p className="text-xs text-violet-600 mb-3">Esta reserva sera registrada em <strong>Vendas por Fatura</strong>.</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field label="CNPJ"><input type="text" value={form.faturadoCnpj} onChange={set('faturadoCnpj')} placeholder="00.000.000/0001-00" className={inputCls} /></Field>
-              <Field label="Nome da Empresa"><input type="text" value={form.faturadoEmpresa} onChange={set('faturadoEmpresa')} placeholder="Razao Social" className={inputCls} /></Field>
-              <Field label="Contato"><input type="text" value={form.faturadoContato} onChange={set('faturadoContato')} placeholder="Nome / Telefone" className={inputCls} /></Field>
-              <Field label="Endereco"><input type="text" value={form.faturadoEndereco} onChange={set('faturadoEndereco')} placeholder="Rua, no, Cidade - UF" className={inputCls} /></Field>
+              <FormField label="CNPJ"><input type="text" value={form.faturadoCnpj} onChange={set('faturadoCnpj')} placeholder="00.000.000/0001-00" className={inputCls} /></FormField>
+              <FormField label="Nome da Empresa"><input type="text" value={form.faturadoEmpresa} onChange={set('faturadoEmpresa')} placeholder="Razao Social" className={inputCls} /></FormField>
+              <FormField label="Contato"><input type="text" value={form.faturadoContato} onChange={set('faturadoContato')} placeholder="Nome / Telefone" className={inputCls} /></FormField>
+              <FormField label="Endereco"><input type="text" value={form.faturadoEndereco} onChange={set('faturadoEndereco')} placeholder="Rua, no, Cidade - UF" className={inputCls} /></FormField>
             </div>
           </div>
         )}

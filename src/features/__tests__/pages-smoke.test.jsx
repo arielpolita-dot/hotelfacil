@@ -23,14 +23,27 @@ vi.mock('../../context/HotelContext', () => ({
 vi.mock('../../context/AuthContext', () => ({
   useAuth: () => ({
     currentUser: { uid: 'u1', email: 'test@test.com', displayName: 'Test' },
-    empresaAtual: { id: 'e1', nome: 'Hotel Teste' },
-    empresasUsuario: [{ id: 'e1', nome: 'Hotel Teste' }],
-    trialStatus: { status: 'pago' },
     loading: false, error: null,
     login: vi.fn(), criarConta: vi.fn(), logout: vi.fn(),
-    recuperarSenha: vi.fn(), selecionarEmpresa: vi.fn(),
-    ativarEmpresa: vi.fn(), listarTodasEmpresas: vi.fn(),
+    recuperarSenha: vi.fn(),
+  }),
+}));
+
+vi.mock('../../context/EmpresaContext', () => ({
+  useEmpresa: () => ({
+    empresaAtual: { id: 'e1', nome: 'Hotel Teste' },
+    empresasUsuario: [{ id: 'e1', nome: 'Hotel Teste' }],
+    loadingEmpresa: false, errorEmpresa: null,
+    selecionarEmpresa: vi.fn(),
+  }),
+}));
+
+vi.mock('../../context/TrialContext', () => ({
+  useTrial: () => ({
+    trialStatus: { status: 'pago' },
     isAdmin: vi.fn().mockReturnValue(false),
+    ativarEmpresa: vi.fn(),
+    listarTodasEmpresas: vi.fn(),
   }),
 }));
 
