@@ -228,53 +228,11 @@ function Faturas() {
     return colors[tipo] || 'bg-gray-500';
   };
 
-  // Dados mock para demonstração se não houver faturas
-  const mockFaturas = faturas.length === 0 ? [
-    {
-      id: '1',
-      empresaCliente: 'Empresa ABC Ltda',
-      cnpj: '12.345.678/0001-90',
-      contato: 'João Silva',
-      email: 'joao@empresaabc.com',
-      telefone: '(11) 99999-9999',
-      tipoContrato: 'Trimestral',
-      dataInicio: '2024-01-01',
-      dataFim: '2024-12-31',
-      periodicidadeFatura: 'Mensal',
-      valorMensal: 15000,
-      valorTotal: 45000,
-      quartosInclusos: [101, 102, 103],
-      status: 'Ativo',
-      proximaFatura: '2024-11-01',
-      faturasPendentes: 0,
-      dataCriacao: '2024-01-01T00:00:00.000Z'
-    },
-    {
-      id: '2',
-      empresaCliente: 'Construtora XYZ S.A.',
-      cnpj: '98.765.432/0001-10',
-      contato: 'Maria Santos',
-      email: 'maria@construtoraXYZ.com',
-      telefone: '(11) 88888-8888',
-      tipoContrato: 'Semestral',
-      dataInicio: '2024-06-01',
-      dataFim: '2024-12-31',
-      periodicidadeFatura: 'Quinzenal',
-      valorMensal: 8000,
-      valorTotal: 48000,
-      quartosInclusos: [201, 202],
-      status: 'Ativo',
-      proximaFatura: '2024-11-15',
-      faturasPendentes: 1,
-      dataCriacao: '2024-06-01T00:00:00.000Z'
-    }
-  ] : filteredFaturas;
-
   const estatisticas = {
-    totalContratos: mockFaturas.length,
-    contratosAtivos: mockFaturas.filter(f => f.status === 'Ativo').length,
-    receitaMensal: mockFaturas.reduce((acc, f) => f.status === 'Ativo' ? acc + f.valorMensal : acc, 0),
-    faturasPendentes: mockFaturas.reduce((acc, f) => acc + (f.faturasPendentes || 0), 0)
+    totalContratos: filteredFaturas.length,
+    contratosAtivos: filteredFaturas.filter(f => f.status === 'Ativo').length,
+    receitaMensal: filteredFaturas.reduce((acc, f) => f.status === 'Ativo' ? acc + f.valorMensal : acc, 0),
+    faturasPendentes: filteredFaturas.reduce((acc, f) => acc + (f.faturasPendentes || 0), 0)
   };
 
   return (
@@ -381,7 +339,7 @@ function Faturas() {
 
       {/* Lista de Contratos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {mockFaturas.map((fatura) => {
+        {filteredFaturas.map((fatura) => {
           const StatusIcon = getStatusIcon(fatura.status);
           
           return (
@@ -478,7 +436,7 @@ function Faturas() {
         })}
       </div>
 
-      {mockFaturas.length === 0 && (
+      {filteredFaturas.length === 0 && (
         <div className="text-center py-12">
           <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum contrato encontrado</h3>

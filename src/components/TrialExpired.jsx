@@ -1,6 +1,9 @@
 import React from 'react';
 import { AlertCircle, Clock, CheckCircle } from 'lucide-react';
 
+const SUPPORT_EMAIL = import.meta.env.VITE_SUPPORT_EMAIL || 'contato@hotelfacil.com.br';
+const PIX_KEY = import.meta.env.VITE_PIX_KEY || SUPPORT_EMAIL;
+
 export default function TrialExpired({ empresaNome, onLogout }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -81,7 +84,7 @@ export default function TrialExpired({ empresaNome, onLogout }) {
             </li>
             <li className="ml-5">
               <div className="bg-white border border-gray-300 rounded px-3 py-2 font-mono text-sm">
-                arielpolita@gmail.com
+                {PIX_KEY}
               </div>
             </li>
             <li className="flex gap-2 mt-3">
@@ -102,7 +105,7 @@ export default function TrialExpired({ empresaNome, onLogout }) {
         {/* Informações Adicionais */}
         <div className="text-center text-xs text-gray-500 mb-6">
           <p>Dúvidas? Entre em contato:</p>
-          <p className="font-semibold text-gray-700 mt-1">arielpolita@gmail.com</p>
+          <p className="font-semibold text-gray-700 mt-1">{SUPPORT_EMAIL}</p>
         </div>
 
         {/* Botão de Logout */}

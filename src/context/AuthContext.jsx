@@ -36,8 +36,6 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  console.log('✅ Passo 1: AuthProvider funcionando');
-
   // Função para verificar se é admin
   function isAdmin() {
     return currentUser?.email === ADMIN_EMAIL;
@@ -101,17 +99,11 @@ export function AuthProvider({ children }) {
   async function criarConta(email, password, nome, empresaData) {
     try {
       setError(null);
-      console.log('Iniciando criação de conta...');
-
       // 1. Criar usuário no Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      console.log('Usuário criado no Authentication:', user.uid);
-
       // 2. Atualizar perfil do usuário
       await updateProfile(user, { displayName: nome });
-      console.log('Perfil atualizado');
-
       // 3. Criar documento do usuário no Firestore
       const userDocRef = doc(db, 'usuarios', user.uid);
       await setDoc(userDocRef, {
@@ -120,8 +112,6 @@ export function AuthProvider({ children }) {
         criadoEm: Timestamp.now(),
         ativo: true
       });
-      console.log('Documento do usuário criado no Firestore');
-
       // 4. Criar empresa no Firestore com trial de 3 dias
       const empresaRef = doc(collection(db, 'empresas'));
       const empresaId = empresaRef.id;
@@ -141,8 +131,6 @@ export function AuthProvider({ children }) {
         diasTrial: 3,
         valorMensal: 99.90
       });
-      console.log('Empresa criada no Firestore:', empresaId);
-
       // 5. Aguardar um pouco para garantir que tudo foi salvo
       await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -187,8 +175,6 @@ export function AuthProvider({ children }) {
   // Função para carregar empresas do usuário
   async function carregarEmpresasUsuario(userId) {
     try {
-      console.log('Carregando empresas do usuário:', userId);
-      
       const empresasQuery = query(
         collection(db, 'empresas'),
         where('usuarios', 'array-contains', userId)
@@ -200,7 +186,6 @@ export function AuthProvider({ children }) {
         ...doc.data()
       }));
       
-      console.log('Empresas carregadas:', empresas.length);
       setEmpresasUsuario(empresas);
       
       // Se há empresas, selecionar automaticamente a primeira
@@ -222,8 +207,6 @@ export function AuthProvider({ children }) {
   // Função para selecionar empresa
   async function selecionarEmpresa(empresaId) {
     try {
-      console.log('Selecionando empresa:', empresaId);
-      
       const empresaDoc = await getDoc(doc(db, 'empresas', empresaId));
       
       if (empresaDoc.exists()) {
@@ -239,8 +222,6 @@ export function AuthProvider({ children }) {
         const status = await verificarStatusTrial(empresaId);
         setTrialStatus(status);
         
-        console.log('Empresa selecionada:', empresaData.nome);
-        console.log('Status do trial:', status);
       } else {
         throw new Error('Empresa não encontrada');
       }
@@ -265,7 +246,6 @@ export function AuthProvider({ children }) {
         ativo: true
       });
 
-      console.log('Empresa ativada:', empresaId);
     } catch (error) {
       console.error('Erro ao ativar empresa:', error);
       throw error;
@@ -302,13 +282,9 @@ export function AuthProvider({ children }) {
 
   // Efeito para monitorar mudanças no estado de autenticação
   useEffect(() => {
-    console.log('Configurando listener de autenticação...');
-    
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       try {
         if (user) {
-          console.log('Usuário autenticado detectado:', user.uid);
-          
           // Usuário está logado
           const userDocRef = doc(db, 'usuarios', user.uid);
           const userDoc = await getDoc(userDocRef);
@@ -324,8 +300,6 @@ export function AuthProvider({ children }) {
           // Carregar empresas do usuário
           await carregarEmpresasUsuario(user.uid);
         } else {
-          console.log('Nenhum usuário autenticado');
-          
           // Usuário não está logado
           setCurrentUser(null);
           setEmpresaAtual(null);

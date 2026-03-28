@@ -104,10 +104,11 @@ service cloud.firestore {
         
         // Apenas administradores podem criar/editar usuários
         allow create: if isAdmin(empresaId);
-        allow update: if isAdmin(empresaId) || 
-                         (request.auth.uid == userId && 
-                          !("permissoes" in resource.data) && 
-                          !("acesso.funcao" in resource.data));
+        // Users can update their own basic info (but NOT permissions or role)
+        allow update: if isAdmin(empresaId) ||
+                         (belongsToCompany(empresaId) &&
+                          request.auth.uid == userId &&
+                          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['permissoes', 'acesso', 'role', 'status']));
         
         // Apenas administradores podem excluir usuários (exceto a si mesmo)
         allow delete: if isAdmin(empresaId) && request.auth.uid != userId;
@@ -122,14 +123,14 @@ service cloud.firestore {
     
     // Regras especiais para criação de empresa (durante cadastro)
     match /empresas/{empresaId}/dados {
-      allow create: if isAuthenticated() && 
-                       request.auth.uid == resource.data.auditoria.criadoPor;
+      allow create: if isAuthenticated() &&
+                       request.auth.uid == request.resource.data.auditoria.criadoPor;
     }
     
-    // Regras para logs de auditoria (apenas leitura para administradores)
-    match /logs/{logId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
+    // Regras para logs de auditoria (scoped to company)
+    match /empresas/{empresaId}/logs/{logId} {
+      allow read: if belongsToCompany(empresaId);
+      allow create: if belongsToCompany(empresaId);
       allow update, delete: if false; // Logs são imutáveis
     }
     

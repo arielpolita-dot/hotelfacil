@@ -294,63 +294,11 @@ function Usuarios() {
     return roles.find(r => r.value === role) || roles[2]; // Default para Recepcionista
   };
 
-  // Dados mock para demonstração se não houver usuários
-  const mockUsuarios = usuarios.length === 0 ? [
-    {
-      id: '1',
-      nome: 'João Silva',
-      email: 'joao@hotelteste.com',
-      telefone: '(11) 99999-9999',
-      role: 'Admin',
-      status: 'Ativo',
-      permissoes: getPermissoesPorRole('Admin'),
-      dataCriacao: '2024-01-01T00:00:00.000Z',
-      ultimoLogin: '2024-10-11T08:00:00.000Z',
-      empresaId: empresaAtual?.id
-    },
-    {
-      id: '2',
-      nome: 'Maria Santos',
-      email: 'maria@hotelteste.com',
-      telefone: '(11) 88888-8888',
-      role: 'Gerente',
-      status: 'Ativo',
-      permissoes: getPermissoesPorRole('Gerente'),
-      dataCriacao: '2024-02-01T00:00:00.000Z',
-      ultimoLogin: '2024-10-10T18:30:00.000Z',
-      empresaId: empresaAtual?.id
-    },
-    {
-      id: '3',
-      nome: 'Carlos Oliveira',
-      email: 'carlos@hotelteste.com',
-      telefone: '(11) 77777-7777',
-      role: 'Recepcionista',
-      status: 'Ativo',
-      permissoes: getPermissoesPorRole('Recepcionista'),
-      dataCriacao: '2024-03-01T00:00:00.000Z',
-      ultimoLogin: '2024-10-11T07:45:00.000Z',
-      empresaId: empresaAtual?.id
-    },
-    {
-      id: '4',
-      nome: 'Ana Costa',
-      email: 'ana@hotelteste.com',
-      telefone: '(11) 66666-6666',
-      role: 'Financeiro',
-      status: 'Inativo',
-      permissoes: getPermissoesPorRole('Financeiro'),
-      dataCriacao: '2024-04-01T00:00:00.000Z',
-      ultimoLogin: '2024-09-15T16:20:00.000Z',
-      empresaId: empresaAtual?.id
-    }
-  ] : filteredUsuarios;
-
   const estatisticas = {
-    totalUsuarios: mockUsuarios.length,
-    usuariosAtivos: mockUsuarios.filter(u => u.status === 'Ativo').length,
-    usuariosInativos: mockUsuarios.filter(u => u.status === 'Inativo').length,
-    usuariosSuspensos: mockUsuarios.filter(u => u.status === 'Suspenso').length
+    totalUsuarios: filteredUsuarios.length,
+    usuariosAtivos: filteredUsuarios.filter(u => u.status === 'Ativo').length,
+    usuariosInativos: filteredUsuarios.filter(u => u.status === 'Inativo').length,
+    usuariosSuspensos: filteredUsuarios.filter(u => u.status === 'Suspenso').length
   };
 
   return (
@@ -455,7 +403,7 @@ function Usuarios() {
 
       {/* Lista de Usuários */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {mockUsuarios.map((usuario) => {
+        {filteredUsuarios.map((usuario) => {
           const StatusIcon = getStatusIcon(usuario.status);
           const roleInfo = getRoleInfo(usuario.role);
           const RoleIcon = roleInfo.icon;
@@ -563,7 +511,7 @@ function Usuarios() {
         })}
       </div>
 
-      {mockUsuarios.length === 0 && (
+      {filteredUsuarios.length === 0 && (
         <div className="text-center py-12">
           <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum usuário encontrado</h3>
