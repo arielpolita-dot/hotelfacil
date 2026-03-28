@@ -61,7 +61,7 @@
 | **Base directory** | `/backend` |
 | **Dockerfile** | `/Dockerfile` (relativo ao base_directory) |
 | **Porta** | 8000 |
-| **Dominio** | `https://api.ohospedeiro.com.br` |
+| **Dominio** | `https://api-ohospedeiro.oentregador.com.br` |
 | **Health check** | `/health` |
 
 ---
@@ -70,8 +70,8 @@
 
 | Tipo | Nome | Destino | Proxy |
 |------|------|---------|-------|
-| A | `api.ohospedeiro.com.br` | `178.156.220.246` | Proxied |
-| CNAME | `app.ohospedeiro.com.br` | Amplify | DNS only |
+| A | `api-ohospedeiro.oentregador.com.br` | `178.156.220.246` | Proxied |
+| CNAME | `app-ohospedeiro.oentregador.com.br` | Amplify | DNS only |
 
 ---
 
@@ -80,11 +80,16 @@
 | Campo | Valor |
 |-------|-------|
 | **Hosting** | AWS Amplify |
+| **App ID** | `dq20t12et9vm2` |
+| **Default Domain** | `dq20t12et9vm2.amplifyapp.com` |
 | **Repo** | `https://github.com/arielpolita-dot/hotelfacil` |
 | **Branch** | `main` |
 | **App root** | `/` (raiz, SPA React) |
-| **Dominio** | `https://app.ohospedeiro.com.br` |
-| **Firebase** | Temporario — frontend ainda usa Firestore ate VITE_USE_API=true |
+| **Dominio** | `https://app-ohospedeiro.oentregador.com.br` |
+| **Build** | pnpm install → pnpm build → dist/ |
+| **SPA Rewrite** | Configurado (todas rotas → index.html) |
+| **Firebase** | Temporario — frontend usa Firestore enquanto VITE_USE_API=false |
+| **Para ativar Postgres** | Mudar VITE_USE_API=true no Amplify |
 
 ---
 
@@ -93,7 +98,7 @@
 ```
 PORT=8000
 NODE_ENV=production
-CORS_ORIGIN=https://app.ohospedeiro.com.br
+CORS_ORIGIN=https://app-ohospedeiro.oentregador.com.br
 DATABASE_HOST=j10091rlz24bbq717necpte1
 DATABASE_PORT=5432
 DATABASE_NAME=ohospedeiro
@@ -111,7 +116,7 @@ AUTHIFY_API_KEY=ak_d30b2d4f5740d8a9d141e0c0cff7de1833f71bf797aac713
 BILLING_API_URL=https://billing.ohanax.com
 BILLING_FRONTEND_URL=https://billing.ohanax.com
 BILLING_API_KEY=bk_6dd737d4b336cd22bb199cf4bc4010d63967818b9853d2e6
-FRONTEND_URL=https://app.ohospedeiro.com.br
+FRONTEND_URL=https://app-ohospedeiro.oentregador.com.br
 ```
 
 ---
