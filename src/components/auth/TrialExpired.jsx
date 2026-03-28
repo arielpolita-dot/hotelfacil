@@ -16,12 +16,12 @@ export default function TrialExpired({ empresaNome, onLogout }) {
         </div>
 
         {/* Título */}
-        <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">
+        <h1 className="text-2xl font-bold text-center text-slate-800 mb-2">
           Período de Teste Expirado
         </h1>
 
         {/* Empresa */}
-        <p className="text-center text-gray-600 mb-6">
+        <p className="text-center text-slate-600 mb-6">
           {empresaNome}
         </p>
 
@@ -30,10 +30,10 @@ export default function TrialExpired({ empresaNome, onLogout }) {
           <div className="flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-slate-700">
                 Seu período de teste gratuito de <strong>3 dias</strong> expirou.
               </p>
-              <p className="text-sm text-gray-700 mt-2">
+              <p className="text-sm text-slate-700 mt-2">
                 Para continuar usando o sistema, realize o pagamento da assinatura mensal.
               </p>
             </div>
@@ -42,31 +42,31 @@ export default function TrialExpired({ empresaNome, onLogout }) {
 
         {/* Plano */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-          <h3 className="font-semibold text-gray-800 mb-4">Plano Mensal</h3>
+          <h3 className="font-semibold text-slate-800 mb-4">Plano Mensal</h3>
           
           <div className="flex items-baseline gap-2 mb-4">
             <span className="text-3xl font-bold text-blue-600">R$ 99,90</span>
-            <span className="text-gray-600">/mês</span>
+            <span className="text-slate-600">/mês</span>
           </div>
 
           <ul className="space-y-2 mb-4">
-            <li className="flex items-center gap-2 text-sm text-gray-700">
+            <li className="flex items-center gap-2 text-sm text-slate-700">
               <CheckCircle className="w-4 h-4 text-green-600" />
               <span>Gestão completa de reservas</span>
             </li>
-            <li className="flex items-center gap-2 text-sm text-gray-700">
+            <li className="flex items-center gap-2 text-sm text-slate-700">
               <CheckCircle className="w-4 h-4 text-green-600" />
               <span>Controle de quartos e disponibilidade</span>
             </li>
-            <li className="flex items-center gap-2 text-sm text-gray-700">
+            <li className="flex items-center gap-2 text-sm text-slate-700">
               <CheckCircle className="w-4 h-4 text-green-600" />
               <span>Gestão financeira e relatórios</span>
             </li>
-            <li className="flex items-center gap-2 text-sm text-gray-700">
+            <li className="flex items-center gap-2 text-sm text-slate-700">
               <CheckCircle className="w-4 h-4 text-green-600" />
               <span>Suporte técnico</span>
             </li>
-            <li className="flex items-center gap-2 text-sm text-gray-700">
+            <li className="flex items-center gap-2 text-sm text-slate-700">
               <CheckCircle className="w-4 h-4 text-green-600" />
               <span>Atualizações automáticas</span>
             </li>
@@ -74,16 +74,16 @@ export default function TrialExpired({ empresaNome, onLogout }) {
         </div>
 
         {/* Instruções de Pagamento */}
-        <div className="bg-gray-50 rounded-lg p-4 mb-6">
-          <h4 className="font-semibold text-gray-800 mb-3">Como Pagar:</h4>
+        <div className="bg-slate-50 rounded-lg p-4 mb-6">
+          <h4 className="font-semibold text-slate-800 mb-3">Como Pagar:</h4>
           
-          <ol className="space-y-2 text-sm text-gray-700">
+          <ol className="space-y-2 text-sm text-slate-700">
             <li className="flex gap-2">
               <span className="font-semibold text-blue-600">1.</span>
               <span>Faça um PIX de <strong>R$ 99,90</strong> para:</span>
             </li>
             <li className="ml-5">
-              <div className="bg-white border border-gray-300 rounded px-3 py-2 font-mono text-sm">
+              <div className="bg-white border border-slate-200 rounded px-3 py-2 font-mono text-sm">
                 {PIX_KEY}
               </div>
             </li>
@@ -103,15 +103,15 @@ export default function TrialExpired({ empresaNome, onLogout }) {
         </div>
 
         {/* Informações Adicionais */}
-        <div className="text-center text-xs text-gray-500 mb-6">
+        <div className="text-center text-xs text-slate-500 mb-6">
           <p>Dúvidas? Entre em contato:</p>
-          <p className="font-semibold text-gray-700 mt-1">{SUPPORT_EMAIL}</p>
+          <p className="font-semibold text-slate-700 mt-1">{SUPPORT_EMAIL}</p>
         </div>
 
         {/* Botão de Logout */}
         <button
           onClick={onLogout}
-          className="w-full py-3 px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition-colors"
+          className="w-full py-3 px-4 bg-slate-200 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition-colors"
         >
           Sair
         </button>

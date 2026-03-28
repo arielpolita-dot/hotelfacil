@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useHotel } from '../../context/HotelContext';
 import { useAuth } from '../../context/AuthContext';
+import { useEmpresa } from '../../context/EmpresaContext';
 import {
   Plus, Search, Edit3, Trash2, User, Phone, Calendar,
   CheckCircle, XCircle, AlertCircle, Users
@@ -10,7 +11,8 @@ import { UsuarioFormModal } from './UsuarioFormModal';
 
 function Usuarios() {
   const { usuarios = [], adicionarUsuario, atualizarUsuario, removerUsuario } = useHotel();
-  const { currentUser, empresaAtual } = useAuth();
+  const { currentUser } = useAuth();
+  const { empresaAtual } = useEmpresa();
   const [showModal, setShowModal] = useState(false);
   const [editingUsuario, setEditingUsuario] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -93,8 +95,8 @@ function Usuarios() {
   });
 
   const getStatusColor = (status) => ({
-    'Ativo': 'bg-green-100 text-green-800', 'Inativo': 'bg-gray-100 text-gray-800', 'Suspenso': 'bg-red-100 text-red-800',
-  }[status] || 'bg-gray-100 text-gray-800');
+    'Ativo': 'bg-green-100 text-green-800', 'Inativo': 'bg-slate-100 text-slate-800', 'Suspenso': 'bg-red-100 text-red-800',
+  }[status] || 'bg-slate-100 text-slate-800');
 
   const getStatusIcon = (status) => ({
     'Ativo': CheckCircle, 'Inativo': XCircle, 'Suspenso': AlertCircle,
@@ -114,8 +116,8 @@ function Usuarios() {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Gestao de Usuarios</h1>
-          <p className="text-gray-600">Gerencie usuarios e permissoes do sistema</p>
+          <h1 className="text-2xl font-bold text-slate-800">Gestao de Usuarios</h1>
+          <p className="text-slate-600">Gerencie usuarios e permissoes do sistema</p>
         </div>
         <button onClick={() => setShowModal(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
@@ -128,13 +130,13 @@ function Usuarios() {
         {[
           { label: 'Total de Usuarios', value: estatisticas.totalUsuarios, icon: Users, color: 'text-blue-600' },
           { label: 'Usuarios Ativos', value: estatisticas.usuariosAtivos, icon: CheckCircle, color: 'text-green-600' },
-          { label: 'Usuarios Inativos', value: estatisticas.usuariosInativos, icon: XCircle, color: 'text-gray-600' },
+          { label: 'Usuarios Inativos', value: estatisticas.usuariosInativos, icon: XCircle, color: 'text-slate-600' },
           { label: 'Usuarios Suspensos', value: estatisticas.usuariosSuspensos, icon: AlertCircle, color: 'text-red-600' },
         ].map(({ label, value, icon: Icon, color }) => (
           <div key={label} className="bg-white p-6 rounded-lg shadow-sm border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">{label}</p>
+                <p className="text-sm font-medium text-slate-600">{label}</p>
                 <p className={`text-2xl font-bold ${color}`}>{value}</p>
               </div>
               <Icon className={`h-8 w-8 ${color}`} />
@@ -148,19 +150,19 @@ function Usuarios() {
         <div className="flex flex-wrap gap-4">
           <div className="flex-1 min-w-64">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
               <input type="text" placeholder="Buscar por nome ou email..." value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
             </div>
           </div>
           <select value={filterRole} onChange={(e) => setFilterRole(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            className="px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
             <option value="">Todas as Funcoes</option>
             {roles.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
           </select>
           <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            className="px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
             <option value="">Todos os Status</option>
             {statusOptions.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
@@ -175,15 +177,15 @@ function Usuarios() {
           const RoleIcon = roleInfo.icon;
           return (
             <div key={usuario.id} className="bg-white rounded-lg shadow-sm border overflow-hidden hover:shadow-md transition-shadow">
-              <div className="bg-gray-50 p-4 border-b">
+              <div className="bg-slate-50 p-4 border-b">
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                       <User className="h-6 w-6 text-blue-600" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-gray-900">{usuario.nome}</h3>
-                      <p className="text-sm text-gray-600">{usuario.email}</p>
+                      <h3 className="text-lg font-bold text-slate-900">{usuario.nome}</h3>
+                      <p className="text-sm text-slate-600">{usuario.email}</p>
                     </div>
                   </div>
                   <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${roleInfo.color} bg-opacity-10`}>
@@ -202,21 +204,21 @@ function Usuarios() {
                 </div>
                 <div className="space-y-2 mb-4">
                   {usuario.telefone && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600"><Phone className="h-4 w-4" /><span>{usuario.telefone}</span></div>
+                    <div className="flex items-center gap-2 text-sm text-slate-600"><Phone className="h-4 w-4" /><span>{usuario.telefone}</span></div>
                   )}
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2 text-sm text-slate-600">
                     <Calendar className="h-4 w-4" />
                     <span>Criado em: {usuario.dataCriacao ? new Date(usuario.dataCriacao).toLocaleDateString('pt-BR') : '-'}</span>
                   </div>
                   {usuario.ultimoLogin && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <div className="flex items-center gap-2 text-sm text-slate-600">
                       <CheckCircle className="h-4 w-4" />
                       <span>Ultimo login: {new Date(usuario.ultimoLogin).toLocaleDateString('pt-BR')}</span>
                     </div>
                   )}
                 </div>
                 <div className="mb-4">
-                  <p className="text-sm font-medium text-gray-700 mb-2">Permissoes:</p>
+                  <p className="text-sm font-medium text-slate-700 mb-2">Permissoes:</p>
                   <div className="flex flex-wrap gap-1">
                     {Object.entries(usuario.permissoes || {}).map(([key, value]) => {
                       if (!value) return null;
@@ -246,9 +248,9 @@ function Usuarios() {
 
       {filteredUsuarios.length === 0 && (
         <div className="text-center py-12">
-          <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum usuario encontrado</h3>
-          <p className="text-gray-500 mb-4">Comece cadastrando o primeiro usuario do sistema</p>
+          <Users className="h-16 w-16 text-slate-200 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-slate-900 mb-2">Nenhum usuario encontrado</h3>
+          <p className="text-slate-500 mb-4">Comece cadastrando o primeiro usuario do sistema</p>
           <button onClick={() => setShowModal(true)}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center gap-2">
             <Plus className="h-5 w-5" /> Cadastrar Primeiro Usuario

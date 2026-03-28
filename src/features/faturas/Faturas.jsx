@@ -61,7 +61,7 @@ function Faturas() {
   const getStatusColor = (status) => ({
     'Ativo': 'bg-green-100 text-green-800', 'Suspenso': 'bg-yellow-100 text-yellow-800',
     'Cancelado': 'bg-red-100 text-red-800', 'Vencido': 'bg-red-100 text-red-800',
-  }[status] || 'bg-gray-100 text-gray-800');
+  }[status] || 'bg-slate-100 text-slate-800');
 
   const getStatusIcon = (status) => ({
     'Ativo': CheckCircle, 'Suspenso': AlertCircle, 'Cancelado': XCircle, 'Vencido': Clock,
@@ -69,7 +69,7 @@ function Faturas() {
 
   const getTipoColor = (tipo) => ({
     'Mensal': 'bg-blue-500', 'Trimestral': 'bg-green-500', 'Semestral': 'bg-purple-500', 'Anual': 'bg-orange-500',
-  }[tipo] || 'bg-gray-500');
+  }[tipo] || 'bg-slate-500');
 
   const estatisticas = {
     totalContratos: filteredFaturas.length,
@@ -83,8 +83,8 @@ function Faturas() {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Vendas por Faturas</h1>
-          <p className="text-gray-600">Gerencie contratos corporativos e faturamento</p>
+          <h1 className="text-2xl font-bold text-slate-800">Vendas por Faturas</h1>
+          <p className="text-slate-600">Gerencie contratos corporativos e faturamento</p>
         </div>
         <button onClick={() => setShowModal(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
@@ -103,7 +103,7 @@ function Faturas() {
           <div key={label} className="bg-white p-6 rounded-lg shadow-sm border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">{label}</p>
+                <p className="text-sm font-medium text-slate-600">{label}</p>
                 <p className={`text-2xl font-bold ${color}`}>{value}</p>
               </div>
               <Icon className={`h-8 w-8 ${color}`} />
@@ -117,19 +117,19 @@ function Faturas() {
         <div className="flex flex-wrap gap-4">
           <div className="flex-1 min-w-64">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
               <input type="text" placeholder="Buscar por empresa ou CNPJ..." value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
             </div>
           </div>
           <select value={filterTipo} onChange={(e) => setFilterTipo(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            className="px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
             <option value="">Todos os Tipos</option>
             {tiposContrato.map(tipo => <option key={tipo} value={tipo}>{tipo}</option>)}
           </select>
           <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            className="px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
             <option value="">Todos os Status</option>
             {statusOptions.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
@@ -161,23 +161,23 @@ function Faturas() {
                     <StatusIcon className="h-3 w-3" /> {fatura.status}
                   </span>
                   <div className="text-right">
-                    <p className="text-sm text-gray-600">Valor Total</p>
-                    <p className="font-bold text-gray-900">R$ {(fatura.valorTotal || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                    <p className="text-sm text-slate-600">Valor Total</p>
+                    <p className="font-bold text-slate-900">R$ {(fatura.valorTotal || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
                   </div>
                 </div>
                 <div className="space-y-2 mb-4">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2 text-sm text-slate-600">
                     <Calendar className="h-4 w-4" />
                     <span>Periodo: {fatura.dataInicio ? new Date(fatura.dataInicio).toLocaleDateString('pt-BR') : '-'} - {fatura.dataFim ? new Date(fatura.dataFim).toLocaleDateString('pt-BR') : '-'}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2 text-sm text-slate-600">
                     <CreditCard className="h-4 w-4" /><span>Faturamento: {fatura.periodicidadeFatura}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2 text-sm text-slate-600">
                     <CalendarDays className="h-4 w-4" />
                     <span>Proxima Fatura: {fatura.proximaFatura ? new Date(fatura.proximaFatura).toLocaleDateString('pt-BR') : '-'}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2 text-sm text-slate-600">
                     <Users className="h-4 w-4" /><span>Quartos: {fatura.quartosInclusos?.length || 0} inclusos</span>
                   </div>
                 </div>
@@ -208,9 +208,9 @@ function Faturas() {
 
       {filteredFaturas.length === 0 && (
         <div className="text-center py-12">
-          <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum contrato encontrado</h3>
-          <p className="text-gray-500 mb-4">Comece criando o primeiro contrato corporativo</p>
+          <FileText className="h-16 w-16 text-slate-200 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-slate-900 mb-2">Nenhum contrato encontrado</h3>
+          <p className="text-slate-500 mb-4">Comece criando o primeiro contrato corporativo</p>
           <button onClick={() => setShowModal(true)}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center gap-2">
             <Plus className="h-5 w-5" /> Criar Primeiro Contrato

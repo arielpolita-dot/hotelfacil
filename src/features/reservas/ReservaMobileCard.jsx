@@ -47,19 +47,19 @@ export function ReservaMobileCard({ r, onEdit, onPagamento, onUpdateStatus }) {
       <div className="flex items-center justify-between pt-2 border-t border-slate-100">
         <p className="font-bold text-slate-900 text-base">{formatCurrency(r.valorTotal || r.valor)}</p>
         <div className="flex items-center gap-1">
-          <button onClick={() => onEdit(r)} title="Editar" className="w-9 h-9 flex items-center justify-center rounded-xl text-blue-600 bg-blue-50 hover:bg-blue-100 transition">
+          <button onClick={() => onEdit(r)} title="Editar" aria-label="Editar" className="w-9 h-9 flex items-center justify-center rounded-xl text-blue-600 bg-blue-50 hover:bg-blue-100 transition">
             <Pencil className="h-4 w-4" />
           </button>
-          <button onClick={() => onPagamento(r)} title="Pagamento" className="w-9 h-9 flex items-center justify-center rounded-xl text-violet-600 bg-violet-50 hover:bg-violet-100 transition">
+          <button onClick={() => onPagamento(r)} title="Pagamento" aria-label="Pagamento" className="w-9 h-9 flex items-center justify-center rounded-xl text-violet-600 bg-violet-50 hover:bg-violet-100 transition">
             <ShoppingCart className="h-4 w-4" />
           </button>
           {r.status === 'confirmada' && (
-            <button onClick={() => onUpdateStatus(r.id, 'check-in')} title="Check-in" className="w-9 h-9 flex items-center justify-center rounded-xl text-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition">
+            <button onClick={() => onUpdateStatus(r.id, 'check-in')} title="Check-in" aria-label="Check-in" className="w-9 h-9 flex items-center justify-center rounded-xl text-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition">
               <LogIn className="h-4 w-4" />
             </button>
           )}
           {(r.status === 'check-in' || r.status === 'checkin') && (
-            <button onClick={() => onUpdateStatus(r.id, 'checkout')} title="Check-out" className="w-9 h-9 flex items-center justify-center rounded-xl text-orange-500 bg-orange-50 hover:bg-orange-100 transition">
+            <button onClick={() => onUpdateStatus(r.id, 'checkout')} title="Check-out" aria-label="Check-out" className="w-9 h-9 flex items-center justify-center rounded-xl text-orange-500 bg-orange-50 hover:bg-orange-100 transition">
               <LogOut className="h-4 w-4" />
             </button>
           )}

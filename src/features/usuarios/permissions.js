@@ -5,7 +5,7 @@ export const roles = [
   { value: 'Gerente', label: 'Gerente', icon: ShieldCheck, color: 'text-blue-600' },
   { value: 'Recepcionista', label: 'Recepcionista', icon: UserCheck, color: 'text-green-600' },
   { value: 'Financeiro', label: 'Financeiro', icon: Shield, color: 'text-orange-600' },
-  { value: 'Manutencao', label: 'Manutencao', icon: Settings, color: 'text-gray-600' },
+  { value: 'Manutencao', label: 'Manutencao', icon: Settings, color: 'text-slate-600' },
 ];
 
 export const statusOptions = ['Ativo', 'Inativo', 'Suspenso'];

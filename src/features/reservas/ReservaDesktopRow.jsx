@@ -39,19 +39,19 @@ export function ReservaDesktopRow({ r, onEdit, onPagamento, onUpdateStatus }) {
       </td>
       <td className="py-3 px-4">
         <div className="flex items-center justify-center gap-1">
-          <button onClick={() => onEdit(r)} title="Editar reserva" className="w-8 h-8 flex items-center justify-center rounded-lg text-blue-600 hover:bg-blue-50 transition">
+          <button onClick={() => onEdit(r)} title="Editar reserva" aria-label="Editar" className="w-8 h-8 flex items-center justify-center rounded-lg text-blue-600 hover:bg-blue-50 transition">
             <Pencil className="h-4 w-4" />
           </button>
-          <button onClick={() => onPagamento(r)} title="Registrar pagamento" className="w-8 h-8 flex items-center justify-center rounded-lg text-violet-600 hover:bg-violet-50 transition">
+          <button onClick={() => onPagamento(r)} title="Registrar pagamento" aria-label="Pagamento" className="w-8 h-8 flex items-center justify-center rounded-lg text-violet-600 hover:bg-violet-50 transition">
             <ShoppingCart className="h-4 w-4" />
           </button>
           {r.status === 'confirmada' && (
-            <button onClick={() => onUpdateStatus(r.id, 'check-in')} title="Fazer Check-in" className="w-8 h-8 flex items-center justify-center rounded-lg text-emerald-600 hover:bg-emerald-50 transition">
+            <button onClick={() => onUpdateStatus(r.id, 'check-in')} title="Fazer Check-in" aria-label="Check-in" className="w-8 h-8 flex items-center justify-center rounded-lg text-emerald-600 hover:bg-emerald-50 transition">
               <LogIn className="h-4 w-4" />
             </button>
           )}
           {(r.status === 'check-in' || r.status === 'checkin') && (
-            <button onClick={() => onUpdateStatus(r.id, 'checkout')} title="Fazer Check-out" className="w-8 h-8 flex items-center justify-center rounded-lg text-orange-500 hover:bg-orange-50 transition">
+            <button onClick={() => onUpdateStatus(r.id, 'checkout')} title="Fazer Check-out" aria-label="Check-out" className="w-8 h-8 flex items-center justify-center rounded-lg text-orange-500 hover:bg-orange-50 transition">
               <LogOut className="h-4 w-4" />
             </button>
           )}

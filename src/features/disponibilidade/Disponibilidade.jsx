@@ -19,7 +19,7 @@ const STATUS_CFG = {
   checkin:     { label: 'Check-in',   cls: 'bg-blue-500',     text: 'text-white', light: 'bg-blue-50 text-blue-700 border-blue-200' },
   overbook:    { label: 'Overbook',    cls: 'bg-yellow-400',   text: 'text-slate-900', light: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
   checkout:    { label: 'Limpeza',    cls: 'bg-slate-400',    text: 'text-white', light: 'bg-slate-100 text-slate-600 border-slate-300' },
-  manutencao:  { label: 'Manutenção', cls: 'bg-gray-900',    text: 'text-white', light: 'bg-gray-100 text-gray-700 border-gray-300' },
+  manutencao:  { label: 'Manutenção', cls: 'bg-slate-900',    text: 'text-white', light: 'bg-slate-100 text-slate-700 border-slate-200' },
   limpeza:     { label: 'Limpeza',    cls: 'bg-slate-400',    text: 'text-white', light: 'bg-slate-100 text-slate-600 border-slate-300' },
 };
 

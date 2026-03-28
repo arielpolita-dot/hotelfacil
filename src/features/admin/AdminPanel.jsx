@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useTrial } from '../../context/TrialContext';
 import { 
   Building2, 
   CheckCircle, 
@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 export default function AdminPanel() {
-  const { isAdmin, listarTodasEmpresas, ativarEmpresa } = useAuth();
+  const { isAdmin, listarTodasEmpresas, ativarEmpresa } = useTrial();
   const [empresas, setEmpresas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // 'all', 'trial', 'expired', 'paid'
@@ -115,11 +115,11 @@ export default function AdminPanel() {
 
   if (!isAdmin()) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
         <div className="bg-white rounded-lg shadow-lg p-8 text-center">
           <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Acesso Negado</h2>
-          <p className="text-gray-600">Você não tem permissão para acessar esta página.</p>
+          <h2 className="text-2xl font-bold text-slate-800 mb-2">Acesso Negado</h2>
+          <p className="text-slate-600">Você não tem permissão para acessar esta página.</p>
         </div>
       </div>
     );
@@ -127,22 +127,22 @@ export default function AdminPanel() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando empresas...</p>
+          <p className="text-slate-600">Carregando empresas...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <div className="min-h-screen bg-slate-100 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Painel Administrativo</h1>
-          <p className="text-gray-600">Gerencie todas as empresas cadastradas no sistema</p>
+          <h1 className="text-3xl font-bold text-slate-800 mb-2">Painel Administrativo</h1>
+          <p className="text-slate-600">Gerencie todas as empresas cadastradas no sistema</p>
         </div>
 
         {/* Stats */}
@@ -150,17 +150,17 @@ export default function AdminPanel() {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total</p>
-                <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
+                <p className="text-sm text-slate-600">Total</p>
+                <p className="text-2xl font-bold text-slate-800">{stats.total}</p>
               </div>
-              <Building2 className="w-8 h-8 text-gray-400" />
+              <Building2 className="w-8 h-8 text-slate-400" />
             </div>
           </div>
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Trial Ativo</p>
+                <p className="text-sm text-slate-600">Trial Ativo</p>
                 <p className="text-2xl font-bold text-blue-600">{stats.trial}</p>
               </div>
               <Clock className="w-8 h-8 text-blue-400" />
@@ -170,7 +170,7 @@ export default function AdminPanel() {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Expirados</p>
+                <p className="text-sm text-slate-600">Expirados</p>
                 <p className="text-2xl font-bold text-red-600">{stats.expired}</p>
               </div>
               <XCircle className="w-8 h-8 text-red-400" />
@@ -180,7 +180,7 @@ export default function AdminPanel() {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Pagos</p>
+                <p className="text-sm text-slate-600">Pagos</p>
                 <p className="text-2xl font-bold text-green-600">{stats.paid}</p>
               </div>
               <CheckCircle className="w-8 h-8 text-green-400" />
@@ -196,7 +196,7 @@ export default function AdminPanel() {
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 filter === 'all'
                   ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
               Todas ({stats.total})
@@ -206,7 +206,7 @@ export default function AdminPanel() {
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 filter === 'trial'
                   ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
               Trial ({stats.trial})
@@ -216,7 +216,7 @@ export default function AdminPanel() {
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 filter === 'expired'
                   ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
               Expirados ({stats.expired})
@@ -226,7 +226,7 @@ export default function AdminPanel() {
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 filter === 'paid'
                   ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
               Pagos ({stats.paid})
@@ -241,11 +241,11 @@ export default function AdminPanel() {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-xl font-bold text-gray-800">{empresa.nome}</h3>
+                    <h3 className="text-xl font-bold text-slate-800">{empresa.nome}</h3>
                     {getStatusBadge(empresa.trialStatus?.status)}
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-600">
                     {empresa.cnpj && (
                       <div className="flex items-center gap-2">
                         <CreditCard className="w-4 h-4" />
@@ -279,7 +279,7 @@ export default function AdminPanel() {
                   <button
                     onClick={() => handleAtivarEmpresa(empresa.id)}
                     disabled={ativando === empresa.id}
-                    className="ml-4 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
+                    className="ml-4 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-slate-400 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
                   >
                     {ativando === empresa.id ? (
                       <>
@@ -324,8 +324,8 @@ export default function AdminPanel() {
 
           {empresasFiltradas.length === 0 && (
             <div className="bg-white rounded-lg shadow p-12 text-center">
-              <Building2 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-600">Nenhuma empresa encontrada com este filtro.</p>
+              <Building2 className="w-16 h-16 text-slate-200 mx-auto mb-4" />
+              <p className="text-slate-600">Nenhuma empresa encontrada com este filtro.</p>
             </div>
           )}
         </div>

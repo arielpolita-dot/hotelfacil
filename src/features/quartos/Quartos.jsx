@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
 import { useHotel } from '../../context/HotelContext';
-import { Plus, BedDouble, Pencil, Trash2, X, Search, Filter } from 'lucide-react';
+import { Plus, BedDouble, Pencil, Trash2, Search } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatters';
 import { inputCls, selectCls } from '../../styles/formClasses';
+import { Modal, FormField } from '../../components/ds';
 
 const STATUS_CFG = {
   disponivel: { label: 'Disponível', cls: 'bg-emerald-100 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
@@ -17,30 +18,6 @@ const STATUS_LIST = Object.keys(STATUS_CFG);
 
 const EMPTY = { numero: '', tipo: 'Standard', capacidade: 2, precoDiaria: '', status: 'disponivel', descricao: '', andar: '' };
 
-function Modal({ title, onClose, children }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-5 border-b border-slate-100">
-          <h2 className="text-base font-bold text-slate-900">{title}</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 transition p-1 rounded-lg hover:bg-slate-100">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        <div className="p-5">{children}</div>
-      </div>
-    </div>
-  );
-}
-
-function Field({ label, children }) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-slate-700 mb-1.5">{label}</label>
-      {children}
-    </div>
-  );
-}
 
 export default function Quartos() {
   const { quartos, adicionarQuarto, atualizarQuarto, removerQuarto, loading } = useHotel();
@@ -204,63 +181,62 @@ export default function Quartos() {
       )}
 
       {/* Modal Novo / Editar */}
-      {(modal === 'novo' || modal === 'editar') && (
-        <Modal title={modal === 'novo' ? 'Novo Quarto' : 'Editar Quarto'} onClose={fechar}>
+      <Modal open={modal === 'novo' || modal === 'editar'} onClose={fechar} title={modal === 'novo' ? 'Novo Quarto' : 'Editar Quarto'}>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Número *">
+              <FormField label="Número *">
                 <input type="text" value={form.numero} onChange={set('numero')} placeholder="Ex: 101" className={inputCls} />
-              </Field>
-              <Field label="Andar">
+              </FormField>
+              <FormField label="Andar">
                 <input type="text" value={form.andar} onChange={set('andar')} placeholder="Ex: 1" className={inputCls} />
-              </Field>
+              </FormField>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Tipo">
+              <FormField label="Tipo">
                 <select value={form.tipo} onChange={set('tipo')} className={selectCls}>
                   {TIPOS.map(t => <option key={t}>{t}</option>)}
                 </select>
-              </Field>
-              <Field label="Capacidade (pax)">
+              </FormField>
+              <FormField label="Capacidade (pax)">
                 <input type="number" min="1" value={form.capacidade} onChange={set('capacidade')} className={inputCls} />
-              </Field>
+              </FormField>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Diária (R$) *">
+              <FormField label="Diária (R$) *">
                 <input type="number" min="0" step="0.01" value={form.precoDiaria} onChange={set('precoDiaria')} placeholder="0,00" className={inputCls} />
-              </Field>
-              <Field label="Status">
+              </FormField>
+              <FormField label="Status">
                 <select value={form.status} onChange={set('status')} className={selectCls}>
                   {STATUS_LIST.map(s => <option key={s} value={s}>{STATUS_CFG[s].label}</option>)}
                 </select>
-              </Field>
+              </FormField>
             </div>
             {/* Período de manutenção — aparece apenas quando status = manutencao */}
             {form.status === 'manutencao' && (
-              <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-3">
-                <p className="text-xs font-bold text-gray-600 uppercase tracking-wide flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-gray-800 inline-block"></span>
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                <p className="text-xs font-bold text-slate-600 uppercase tracking-wide flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-slate-800 inline-block"></span>
                   Período de Manutenção
                 </p>
                 <div className="grid grid-cols-2 gap-3">
-                  <Field label="Inicio da Manutenção">
+                  <FormField label="Inicio da Manutenção">
                     <input
                       type="date"
                       value={form.manutencaoInicio || ''}
                       onChange={set('manutencaoInicio')}
                       className={inputCls}
                     />
-                  </Field>
-                  <Field label="Fim da Manutenção">
+                  </FormField>
+                  <FormField label="Fim da Manutenção">
                     <input
                       type="date"
                       value={form.manutencaoFim || ''}
                       onChange={set('manutencaoFim')}
                       className={inputCls}
                     />
-                  </Field>
+                  </FormField>
                 </div>
-                <Field label="Motivo da Manutenção">
+                <FormField label="Motivo da Manutenção">
                   <input
                     type="text"
                     value={form.manutencaoMotivo || ''}
@@ -268,13 +244,13 @@ export default function Quartos() {
                     placeholder="Ex: Reparo no ar-condicionado, pintura..."
                     className={inputCls}
                   />
-                </Field>
+                </FormField>
               </div>
             )}
 
-            <Field label="Descrição">
+            <FormField label="Descrição">
               <textarea value={form.descricao} onChange={set('descricao')} rows={3} placeholder="Comodidades, características..." className={inputCls + ' resize-none'} />
-            </Field>
+            </FormField>
             <div className="flex gap-3 pt-2">
               <button onClick={fechar} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">Cancelar</button>
               <button onClick={salvar} disabled={saving} className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition disabled:opacity-50">
@@ -282,27 +258,24 @@ export default function Quartos() {
               </button>
             </div>
           </div>
-        </Modal>
-      )}
+      </Modal>
 
       {/* Modal Excluir */}
-      {modal === 'excluir' && (
-        <Modal title="Excluir Quarto" onClose={fechar}>
-          <div className="text-center py-4">
-            <div className="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Trash2 className="h-7 w-7 text-red-600" />
-            </div>
-            <p className="text-slate-700 font-medium mb-1">Tem certeza que deseja excluir este quarto?</p>
-            <p className="text-sm text-slate-500 mb-6">Esta ação não pode ser desfeita.</p>
-            <div className="flex gap-3">
-              <button onClick={fechar} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">Cancelar</button>
-              <button onClick={confirmarExcluir} disabled={saving} className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition disabled:opacity-50">
-                {saving ? 'Excluindo...' : 'Excluir'}
-              </button>
-            </div>
+      <Modal open={modal === 'excluir'} onClose={fechar} title="Excluir Quarto">
+        <div className="text-center py-4">
+          <div className="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Trash2 className="h-7 w-7 text-red-600" />
           </div>
-        </Modal>
-      )}
+          <p className="text-slate-700 font-medium mb-1">Tem certeza que deseja excluir este quarto?</p>
+          <p className="text-sm text-slate-500 mb-6">Esta acao nao pode ser desfeita.</p>
+          <div className="flex gap-3">
+            <button onClick={fechar} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">Cancelar</button>
+            <button onClick={confirmarExcluir} disabled={saving} className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition disabled:opacity-50">
+              {saving ? 'Excluindo...' : 'Excluir'}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

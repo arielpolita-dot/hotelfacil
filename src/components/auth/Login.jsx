@@ -121,17 +121,17 @@ export default function Login() {
       </div>
 
       {/* ── Painel direito — formulário ── */}
-      <div className="flex-1 flex items-center justify-center bg-gray-50 p-6">
+      <div className="flex-1 flex items-center justify-center bg-slate-50 p-6">
         <div className="w-full max-w-md">
           {/* Logo mobile */}
           <div className="lg:hidden flex flex-col items-center mb-8">
             <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg mb-3">
               <BedDouble className="h-7 w-7 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">Hotel Fácil</h1>
+            <h1 className="text-2xl font-bold text-slate-900">Hotel Fácil</h1>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+          <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
 
             {/* ── Cabeçalho ── */}
             <div className="mb-7">
@@ -139,18 +139,18 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => trocarModo('login')}
-                  className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-4 transition"
+                  className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 mb-4 transition"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Voltar ao login
                 </button>
               )}
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold text-slate-900">
                 {modo === 'login' && 'Bem-vindo de volta!'}
                 {modo === 'cadastro' && 'Criar nova conta'}
                 {modo === 'recuperar' && 'Recuperar senha'}
               </h2>
-              <p className="text-gray-500 text-sm mt-1">
+              <p className="text-slate-500 text-sm mt-1">
                 {modo === 'login' && 'Entre com seu email e senha para continuar'}
                 {modo === 'cadastro' && 'Preencha os dados abaixo para começar'}
                 {modo === 'recuperar' && 'Informe seu email e enviaremos um link para redefinir sua senha'}
@@ -159,7 +159,7 @@ export default function Login() {
 
             {/* Mensagem de erro */}
             {erro && (
-              <div className="mb-5 flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+              <div role="alert" aria-live="assertive" className="mb-5 flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
                 <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5 text-red-500" />
                 <span>{erro}</span>
               </div>
@@ -167,7 +167,7 @@ export default function Login() {
 
             {/* Mensagem de sucesso */}
             {successMsg && (
-              <div className="mb-5 flex items-start gap-3 bg-green-50 border border-green-200 text-green-700 rounded-xl px-4 py-3 text-sm">
+              <div role="status" aria-live="polite" className="mb-5 flex items-start gap-3 bg-green-50 border border-green-200 text-green-700 rounded-xl px-4 py-3 text-sm">
                 <CheckCircle2 className="h-4 w-4 flex-shrink-0 mt-0.5 text-green-500" />
                 <span>{successMsg}</span>
               </div>
@@ -177,28 +177,28 @@ export default function Login() {
               {/* Campos de cadastro */}
               {modo === 'cadastro' && (
                 <>
-                  <Field label="Nome completo *" icon={<User className="h-4 w-4 text-gray-400" />}>
+                  <Field label="Nome completo *" icon={<User className="h-4 w-4 text-slate-400" />}>
                     <input type="text" required value={form.nome} onChange={set('nome')} placeholder="Seu nome" className={inputCls} />
                   </Field>
-                  <Field label="Nome do hotel / empresa *" icon={<Building2 className="h-4 w-4 text-gray-400" />}>
+                  <Field label="Nome do hotel / empresa *" icon={<Building2 className="h-4 w-4 text-slate-400" />}>
                     <input type="text" required value={form.nomeEmpresa} onChange={set('nomeEmpresa')} placeholder="Nome do seu hotel" className={inputCls} />
                   </Field>
                   <div className="grid grid-cols-2 gap-3">
                     <Field label="CNPJ" icon={null}>
-                      <input type="text" value={form.cnpj} onChange={set('cnpj')} placeholder="00.000.000/0001-00" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+                      <input type="text" value={form.cnpj} onChange={set('cnpj')} placeholder="00.000.000/0001-00" className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
                     </Field>
                     <Field label="Telefone" icon={null}>
-                      <input type="tel" value={form.telefone} onChange={set('telefone')} placeholder="(00) 00000-0000" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+                      <input type="tel" value={form.telefone} onChange={set('telefone')} placeholder="(00) 00000-0000" className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
                     </Field>
                   </div>
                   <Field label="Endereço" icon={null}>
-                    <input type="text" value={form.endereco} onChange={set('endereco')} placeholder="Endereço completo" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+                    <input type="text" value={form.endereco} onChange={set('endereco')} placeholder="Endereço completo" className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
                   </Field>
                 </>
               )}
 
               {/* Email */}
-              <Field label="Email" icon={<Mail className="h-4 w-4 text-gray-400" />}>
+              <Field label="Email" icon={<Mail className="h-4 w-4 text-slate-400" />}>
                 <input type="email" required value={form.email} onChange={set('email')} placeholder="seu@email.com" className={inputCls} />
               </Field>
 
@@ -206,7 +206,7 @@ export default function Login() {
               {modo !== 'recuperar' && (
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-sm font-medium text-gray-700">Senha</label>
+                    <label className="block text-sm font-medium text-slate-700">Senha</label>
                     {modo === 'login' && (
                       <button
                         type="button"
@@ -219,7 +219,7 @@ export default function Login() {
                   </div>
                   <div className="relative">
                     <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
-                      <Lock className="h-4 w-4 text-gray-400" />
+                      <Lock className="h-4 w-4 text-slate-400" />
                     </div>
                     <input
                       type={showPass ? 'text' : 'password'}
@@ -227,9 +227,9 @@ export default function Login() {
                       value={form.senha}
                       onChange={set('senha')}
                       placeholder="••••••••"
-                      className="w-full pl-10 pr-11 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                      className="w-full pl-10 pr-11 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                     />
-                    <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition">
+                    <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition">
                       {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
@@ -264,7 +264,7 @@ export default function Login() {
             {/* Rodapé do card */}
             {modo !== 'recuperar' && (
               <div className="mt-6 text-center">
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-slate-500">
                   {modo === 'login' ? 'Ainda não tem uma conta?' : 'Já possui uma conta?'}{' '}
                   <button
                     onClick={() => trocarModo(modo === 'login' ? 'cadastro' : 'login')}
@@ -277,7 +277,7 @@ export default function Login() {
             )}
           </div>
 
-          <p className="text-center text-xs text-gray-400 mt-5">
+          <p className="text-center text-xs text-slate-400 mt-5">
             © {new Date().getFullYear()} Hotel Fácil · Todos os direitos reservados
           </p>
         </div>
@@ -287,12 +287,12 @@ export default function Login() {
 }
 
 const inputCls =
-  'w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition';
+  'w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition';
 
 function Field({ label, icon, children }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
+      <label className="block text-sm font-medium text-slate-700 mb-1.5">{label}</label>
       {icon ? (
         <div className="relative">
           <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">{icon}</div>
