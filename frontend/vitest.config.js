@@ -13,7 +13,12 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'text-summary', 'lcov'],
       include: ['src/**/*.{js,jsx}'],
-      exclude: ['src/components/ui/**', 'src/test/**', 'node_modules/**'],
+      exclude: [
+        'src/components/ui/**',
+        'src/test/**',
+        'node_modules/**',
+        'src/main.jsx',
+      ],
       thresholds: {
         statements: 80,
         branches: 70,
