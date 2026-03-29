@@ -55,25 +55,18 @@ export function EmpresaSwitcher() {
   if (!activeEmpresa) return null;
 
   const empresaNome = activeEmpresa.name || activeEmpresa.nome || 'Hotel';
-  const hasMultiple = companies.length > 1;
 
   return (
     <div className="relative px-3 mb-2" ref={ref}>
       <button
-        onClick={() => hasMultiple && setOpen(!open)}
-        className={`flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl border transition ${
-          hasMultiple
-            ? 'border-slate-700 hover:border-slate-500 hover:bg-white/5 cursor-pointer'
-            : 'border-transparent cursor-default'
-        }`}
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl border border-slate-700 hover:border-slate-500 hover:bg-white/5 cursor-pointer transition"
       >
         <Initials name={empresaNome} />
         <span className="flex-1 text-xs font-semibold text-white text-left truncate">
           {empresaNome}
         </span>
-        {hasMultiple && (
-          <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform ${open ? 'rotate-180' : ''}`} />
-        )}
+        <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
       {open && (
