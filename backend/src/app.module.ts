@@ -39,7 +39,7 @@ import { WebSocketModule } from './modules/websocket/websocket.module';
         password: config.get('DATABASE_PASSWORD'),
         database: config.get('DATABASE_NAME'),
         autoLoadEntities: true,
-        synchronize: config.get('NODE_ENV') === 'development',
+        synchronize: config.get('NODE_ENV') === 'development' || config.get('DB_SYNCHRONIZE') === 'true',
         logging: config.get('NODE_ENV') === 'development',
       }),
     }),
