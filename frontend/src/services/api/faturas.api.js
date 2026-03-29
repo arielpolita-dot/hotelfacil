@@ -2,7 +2,7 @@ import { api } from './client';
 
 export function onFaturas(empresaId, callback) {
   api.get(`/empresas/${empresaId}/faturas`)
-    .then(({ data }) => callback(data))
+    .then(({ data: response }) => callback(response.data || response))
     .catch(console.error);
   return () => {};
 }

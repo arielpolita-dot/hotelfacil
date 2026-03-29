@@ -35,7 +35,7 @@ import {
   deleteBanco,
   seedDadosIniciais,
   seedBancosIniciais
-} from '../services/firestoreService';
+} from '../services';
 
 const HotelContext = createContext();
 

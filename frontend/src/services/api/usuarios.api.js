@@ -1,7 +1,8 @@
 import { api } from './client';
 
 export async function getUsuarios(empresaId) {
-  const { data } = await api.get(`/empresas/${empresaId}/usuarios`);
+  const { data: response } = await api.get(`/empresas/${empresaId}/usuarios`);
+  const data = response.data || response;
   return data;
 }
 

@@ -1,7 +1,8 @@
 import { api } from './client';
 
 export async function getReservas(empresaId) {
-  const { data } = await api.get(`/empresas/${empresaId}/reservas`);
+  const { data: response } = await api.get(`/empresas/${empresaId}/reservas`);
+  const data = response.data || response;
   return data;
 }
 

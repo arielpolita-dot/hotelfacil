@@ -1,7 +1,8 @@
 import { api } from './client';
 
 export async function getDespesas(empresaId) {
-  const { data } = await api.get(`/empresas/${empresaId}/despesas`);
+  const { data: response } = await api.get(`/empresas/${empresaId}/despesas`);
+  const data = response.data || response;
   return data;
 }
 

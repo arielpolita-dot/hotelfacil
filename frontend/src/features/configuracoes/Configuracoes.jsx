@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useEmpresa } from '../../context/EmpresaContext';
-import { updateEmpresa } from '../../services/firestoreService';
-// TODO: Extract to services/firestore/storage.firestore.js
-import { storage } from '../../config/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { updateEmpresa } from '../../services';
 import {
   Building2, Save, CheckCircle, AlertCircle,
   Phone, Mail, MapPin, FileText, Globe
@@ -85,9 +82,10 @@ export default function Configuracoes() {
 
       // Upload do logo se houver novo arquivo
       if (logoFile) {
-        const storageRef = ref(storage, `empresas/${empresaAtual.id}/logo`);
-        await uploadBytes(storageRef, logoFile);
-        logoUrl = await getDownloadURL(storageRef);
+        // TODO: implement logo upload via backend API
+        // const storageRef = ref(storage, `empresas/${empresaAtual.id}/logo`);
+        // await uploadBytes(storageRef, logoFile);
+        // logoUrl = await getDownloadURL(storageRef);
       }
 
       await updateEmpresa(empresaAtual.id, { ...form, logoUrl });

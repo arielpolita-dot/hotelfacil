@@ -1,7 +1,8 @@
 import { api } from './client';
 
 export async function getFluxoCaixa(empresaId) {
-  const { data } = await api.get(`/empresas/${empresaId}/fluxo-caixa`);
+  const { data: response } = await api.get(`/empresas/${empresaId}/fluxo-caixa`);
+  const data = response.data || response;
   return data;
 }
 
