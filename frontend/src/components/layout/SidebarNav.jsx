@@ -22,7 +22,7 @@ export const NAV_ITEMS = [
   { to: '/app/configuracoes', icon: Settings, label: 'Hotel / Empresa' },
 ];
 
-export function SidebarNav({ sidebarOpen, setSidebarOpen, currentUser, empresaAtual, logout }) {
+export function SidebarNav({ sidebarOpen, setSidebarOpen, currentUser, empresaAtual, companies, switchEmpresa, logout }) {
   return (
     <aside
       className={`
@@ -40,9 +40,6 @@ export function SidebarNav({ sidebarOpen, setSidebarOpen, currentUser, empresaAt
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold text-white leading-none">Hotel Fácil</p>
-          <p className="text-xs text-slate-400 mt-0.5 truncate">
-            {empresaAtual?.nome || 'Sistema Hoteleiro'}
-          </p>
         </div>
         <button
           onClick={() => setSidebarOpen(false)}
@@ -50,6 +47,25 @@ export function SidebarNav({ sidebarOpen, setSidebarOpen, currentUser, empresaAt
         >
           <X className="h-5 w-5" />
         </button>
+      </div>
+
+      {/* Company switcher */}
+      <div className="p-4 border-b border-slate-700">
+        {companies && companies.length > 1 ? (
+          <select
+            value={empresaAtual?.id || ''}
+            onChange={(e) => switchEmpresa(e.target.value)}
+            className="w-full bg-slate-800 text-white text-sm rounded-lg px-3 py-2 border border-slate-600"
+          >
+            {companies.map(c => (
+              <option key={c.id} value={c.id}>{c.name || c.nome}</option>
+            ))}
+          </select>
+        ) : (
+          <div className="text-sm font-semibold text-white truncate">
+            {empresaAtual?.name || empresaAtual?.nome || 'Sistema Hoteleiro'}
+          </div>
+        )}
       </div>
 
       {/* Navegacao */}

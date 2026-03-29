@@ -1,72 +1,76 @@
-import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
-import { api } from '../services/api/client';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 
-const EmpresaContext = createContext();
+const STORAGE_KEY = 'ohospedeiro_active_empresa_id';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+const EmpresaContext = createContext(null);
 
 export function useEmpresa() {
-  const context = useContext(EmpresaContext);
-  if (!context) throw new Error('useEmpresa deve ser usado dentro de EmpresaProvider');
-  return context;
+  return useContext(EmpresaContext);
+}
+
+function resolveActiveEmpresa(companies) {
+  if (!companies.length) return null;
+  const storedId = localStorage.getItem(STORAGE_KEY);
+  if (storedId) {
+    const found = companies.find(c => c.id === storedId);
+    if (found) return found;
+  }
+  return companies[0];
 }
 
 export function EmpresaProvider({ children }) {
-  const { currentUser } = useAuth();
+  const { currentUser, companies } = useAuth();
+  const [activeEmpresa, setActiveEmpresa] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const [empresaAtual, setEmpresaAtual] = useState(null);
-  const [empresasUsuario, setEmpresasUsuario] = useState([]);
-  const [loadingEmpresa, setLoadingEmpresa] = useState(false);
-  const [errorEmpresa, setErrorEmpresa] = useState(null);
-
-  const selecionarEmpresa = useCallback((empresa) => {
-    setEmpresaAtual(empresa);
-    localStorage.setItem('empresaAtualId', empresa.id);
-  }, []);
-
-  // Load empresas when user logs in
   useEffect(() => {
-    if (!currentUser?.id) {
-      setEmpresaAtual(null);
-      setEmpresasUsuario([]);
+    if (!currentUser || !companies.length) {
+      setLoading(false);
       return;
     }
+    const active = resolveActiveEmpresa(companies);
+    setActiveEmpresa(active);
+    if (active) localStorage.setItem(STORAGE_KEY, active.id);
+    setLoading(false);
+  }, [currentUser, companies]);
 
-    let cancelled = false;
+  const switchEmpresa = useCallback(async (id) => {
+    localStorage.setItem(STORAGE_KEY, id);
+    try {
+      await fetch(`${API_URL}/api/empresas/${id}/switch`, {
+        method: 'POST', credentials: 'include',
+      });
+    } catch { /* best-effort server sync */ }
+    window.location.reload();
+  }, []);
 
-    async function carregarEmpresas() {
-      try {
-        setLoadingEmpresa(true);
-        const { data: empresas } = await api.get('/api/empresas');
-
-        if (cancelled) return;
-        setEmpresasUsuario(empresas);
-
-        if (empresas.length > 0) {
-          const empresaIdSalva = localStorage.getItem('empresaAtualId');
-          const escolhida = empresas.find(e => e.id === empresaIdSalva) || empresas[0];
-          selecionarEmpresa(escolhida);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          console.error('Erro ao carregar empresas do usuario:', err);
-          setErrorEmpresa('Erro ao carregar empresas');
-        }
-      } finally {
-        if (!cancelled) setLoadingEmpresa(false);
-      }
-    }
-
-    carregarEmpresas();
-    return () => { cancelled = true; };
-  }, [currentUser?.id, selecionarEmpresa]);
+  const createEmpresa = useCallback(async (data) => {
+    const res = await fetch(`${API_URL}/api/empresas`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Failed to create empresa');
+    const empresa = await res.json();
+    localStorage.setItem(STORAGE_KEY, empresa.id);
+    window.location.reload();
+    return empresa;
+  }, []);
 
   const value = useMemo(() => ({
-    empresaAtual,
-    empresasUsuario,
-    loadingEmpresa,
-    errorEmpresa,
-    selecionarEmpresa,
-  }), [empresaAtual, empresasUsuario, loadingEmpresa, errorEmpresa, selecionarEmpresa]);
+    activeEmpresa,
+    empresaAtual: activeEmpresa,
+    companies,
+    empresasUsuario: companies,
+    loading,
+    loadingEmpresa: loading,
+    switchEmpresa,
+    createEmpresa,
+    selecionarEmpresa: switchEmpresa,
+  }), [activeEmpresa, companies, loading, switchEmpresa, createEmpresa]);
 
   return (
     <EmpresaContext.Provider value={value}>

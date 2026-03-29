@@ -42,19 +42,22 @@ const mockHotelContext = {
 
 const mockAuthContext = {
   currentUser: { uid: 'test-uid', email: 'test@test.com', displayName: 'Test User' },
-  empresaAtual: { id: 'test-empresa', nome: 'Hotel Teste' },
-  empresasUsuario: [{ id: 'test-empresa', nome: 'Hotel Teste' }],
-  trialStatus: { status: 'pago' },
+  companies: [{ id: 'test-empresa', nome: 'Hotel Teste' }],
   loading: false,
-  error: null,
   login: vi.fn(),
-  criarConta: vi.fn(),
   logout: vi.fn(),
-  recuperarSenha: vi.fn(),
+};
+
+const mockEmpresaContext = {
+  activeEmpresa: { id: 'test-empresa', nome: 'Hotel Teste' },
+  empresaAtual: { id: 'test-empresa', nome: 'Hotel Teste' },
+  companies: [{ id: 'test-empresa', nome: 'Hotel Teste' }],
+  empresasUsuario: [{ id: 'test-empresa', nome: 'Hotel Teste' }],
+  loading: false,
+  loadingEmpresa: false,
+  switchEmpresa: vi.fn(),
+  createEmpresa: vi.fn(),
   selecionarEmpresa: vi.fn(),
-  ativarEmpresa: vi.fn(),
-  listarTodasEmpresas: vi.fn(),
-  isAdmin: vi.fn().mockReturnValue(false),
 };
 
 export function renderWithProviders(ui) {
@@ -65,4 +68,4 @@ export function renderWithProviders(ui) {
   );
 }
 
-export { mockHotelContext, mockAuthContext };
+export { mockHotelContext, mockAuthContext, mockEmpresaContext };

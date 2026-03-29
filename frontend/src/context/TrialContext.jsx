@@ -9,7 +9,9 @@ const TrialContext = createContext();
 
 export function useTrial() {
   const context = useContext(TrialContext);
-  if (!context) throw new Error('useTrial deve ser usado dentro de TrialProvider');
+  if (!context) {
+    return { trialStatus: null, isAdmin: () => false, ativarEmpresa: async () => {}, listarTodasEmpresas: async () => [] };
+  }
   return context;
 }
 

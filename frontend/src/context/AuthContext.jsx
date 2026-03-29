@@ -9,36 +9,36 @@ export function useAuth() {
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
+  const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Check auth status on mount
   useEffect(() => {
     fetch(`${API_URL}/api/auth/status`, { credentials: 'include' })
       .then(r => r.json())
       .then(data => {
-        if (data.authenticated) setCurrentUser(data.user);
+        if (data.authenticated) {
+          setCurrentUser(data.user);
+          setCompanies(data.companies || []);
+        }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
   const login = useCallback(() => {
-    // Redirect to backend which redirects to Authify
     window.location.href = `${API_URL}/api/auth/login`;
   }, []);
 
   const logout = useCallback(async () => {
     await fetch(`${API_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
     setCurrentUser(null);
+    setCompanies([]);
     window.location.href = '/';
   }, []);
 
   const value = useMemo(() => ({
-    currentUser,
-    loading,
-    login,
-    logout,
-  }), [currentUser, loading, login, logout]);
+    currentUser, companies, loading, login, logout,
+  }), [currentUser, companies, loading, login, logout]);
 
   return (
     <AuthContext.Provider value={value}>

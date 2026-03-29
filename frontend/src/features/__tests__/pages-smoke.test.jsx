@@ -23,17 +23,21 @@ vi.mock('../../context/HotelContext', () => ({
 vi.mock('../../context/AuthContext', () => ({
   useAuth: () => ({
     currentUser: { uid: 'u1', email: 'test@test.com', displayName: 'Test' },
-    loading: false, error: null,
-    login: vi.fn(), criarConta: vi.fn(), logout: vi.fn(),
-    recuperarSenha: vi.fn(),
+    companies: [{ id: 'e1', nome: 'Hotel Teste' }],
+    loading: false,
+    login: vi.fn(), logout: vi.fn(),
   }),
 }));
 
 vi.mock('../../context/EmpresaContext', () => ({
   useEmpresa: () => ({
+    activeEmpresa: { id: 'e1', nome: 'Hotel Teste' },
     empresaAtual: { id: 'e1', nome: 'Hotel Teste' },
+    companies: [{ id: 'e1', nome: 'Hotel Teste' }],
     empresasUsuario: [{ id: 'e1', nome: 'Hotel Teste' }],
-    loadingEmpresa: false, errorEmpresa: null,
+    loading: false, loadingEmpresa: false,
+    switchEmpresa: vi.fn(),
+    createEmpresa: vi.fn(),
     selecionarEmpresa: vi.fn(),
   }),
 }));

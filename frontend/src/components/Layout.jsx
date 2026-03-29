@@ -10,7 +10,7 @@ import { SidebarNav, NAV_ITEMS } from './layout/SidebarNav';
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { currentUser, logout } = useAuth();
-  const { empresaAtual } = useEmpresa();
+  const { empresaAtual, companies, switchEmpresa } = useEmpresa();
   const { despesas } = useHotel();
   const location = useLocation();
 
@@ -31,6 +31,8 @@ export default function Layout({ children }) {
         setSidebarOpen={setSidebarOpen}
         currentUser={currentUser}
         empresaAtual={empresaAtual}
+        companies={companies}
+        switchEmpresa={switchEmpresa}
         logout={logout}
       />
 

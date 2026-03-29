@@ -1,10 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { EmpresaProvider } from './context/EmpresaContext';
-import { TrialProvider } from './context/TrialContext';
+import { EmpresaProvider, useEmpresa } from './context/EmpresaContext';
 import { HotelProvider } from './context/HotelContext';
 import AuthCallback from './components/auth/AuthCallback';
 import LandingPage from './pages/LandingPage';
+import CreateEmpresa from './pages/CreateEmpresa';
 import Layout from './components/Layout';
 import { Component, lazy, Suspense } from 'react';
 import { LoadingSpinner } from './components/ds';
@@ -60,10 +60,35 @@ class ErrorBoundary extends Component {
 
 export { Dashboard, Disponibilidade, Quartos, Vendas, Faturas, Despesas, Usuarios, FluxoCaixa, DRE, Configuracoes, Fornecedores, AdminPanel };
 
-function ProtectedApp() {
-  const { currentUser, loading, login } = useAuth();
+function AppLayout() {
+  return (
+    <Layout>
+      <Suspense fallback={<LoadingSpinner message="Carregando..." />}>
+        <Routes>
+          <Route index element={<Dashboard />} />
+          <Route path="quartos" element={<Quartos />} />
+          <Route path="disponibilidade" element={<Disponibilidade />} />
+          <Route path="vendas" element={<Vendas />} />
+          <Route path="faturas" element={<Faturas />} />
+          <Route path="despesas" element={<Despesas />} />
+          <Route path="usuarios" element={<Usuarios />} />
+          <Route path="fluxo-caixa" element={<FluxoCaixa />} />
+          <Route path="dre" element={<DRE />} />
+          <Route path="configuracoes" element={<Configuracoes />} />
+          <Route path="fornecedores" element={<Fornecedores />} />
+          <Route path="admin" element={<AdminPanel />} />
+          <Route path="*" element={<Navigate to="/app" replace />} />
+        </Routes>
+      </Suspense>
+    </Layout>
+  );
+}
 
-  if (loading) {
+function ProtectedApp() {
+  const { currentUser, loading: authLoading, login } = useAuth();
+  const { activeEmpresa, loading: empresaLoading } = useEmpresa();
+
+  if (authLoading || empresaLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#2563EB]">
         <div className="flex flex-col items-center gap-6">
@@ -84,33 +109,15 @@ function ProtectedApp() {
     return <LoadingSpinner message="Redirecionando para login..." />;
   }
 
+  if (!activeEmpresa) {
+    return <CreateEmpresa />;
+  }
+
   return (
     <ErrorBoundary>
-      <EmpresaProvider>
-        <TrialProvider>
-          <HotelProvider>
-            <Layout>
-              <Suspense fallback={<LoadingSpinner message="Carregando..." />}>
-                <Routes>
-                  <Route index element={<Dashboard />} />
-                  <Route path="quartos" element={<Quartos />} />
-                  <Route path="disponibilidade" element={<Disponibilidade />} />
-                  <Route path="vendas" element={<Vendas />} />
-                  <Route path="faturas" element={<Faturas />} />
-                  <Route path="despesas" element={<Despesas />} />
-                  <Route path="usuarios" element={<Usuarios />} />
-                  <Route path="fluxo-caixa" element={<FluxoCaixa />} />
-                  <Route path="dre" element={<DRE />} />
-                  <Route path="configuracoes" element={<Configuracoes />} />
-                  <Route path="fornecedores" element={<Fornecedores />} />
-                  <Route path="admin" element={<AdminPanel />} />
-                  <Route path="*" element={<Navigate to="/app" replace />} />
-                </Routes>
-              </Suspense>
-            </Layout>
-          </HotelProvider>
-        </TrialProvider>
-      </EmpresaProvider>
+      <HotelProvider>
+        <AppLayout />
+      </HotelProvider>
     </ErrorBoundary>
   );
 }
@@ -119,17 +126,19 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
+        <EmpresaProvider>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
 
-          {/* Protected app routes */}
-          <Route path="/app/*" element={<ProtectedApp />} />
+            {/* Protected app routes */}
+            <Route path="/app/*" element={<ProtectedApp />} />
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </EmpresaProvider>
       </AuthProvider>
     </Router>
   );
