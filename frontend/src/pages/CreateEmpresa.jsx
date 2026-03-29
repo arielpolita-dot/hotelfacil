@@ -3,18 +3,18 @@ import { useEmpresa } from '../context/EmpresaContext';
 
 export default function CreateEmpresa() {
   const { createEmpresa } = useEmpresa();
-  const [form, setForm] = useState({ name: '', cnpj: '', telefone: '', endereco: '' });
+  const [form, setForm] = useState({ nome: '', cnpj: '', telefone: '', endereco: '' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name.trim()) return;
+    if (!form.nome.trim()) return;
     setSaving(true);
     setError(null);
     try {
       await createEmpresa({
-        name: form.name,
+        nome: form.nome,
         cnpj: form.cnpj || undefined,
         telefone: form.telefone || undefined,
         endereco: form.endereco || undefined,
@@ -43,8 +43,8 @@ export default function CreateEmpresa() {
             <input
               type="text"
               required
-              value={form.name}
-              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+              value={form.nome}
+              onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm"
               placeholder="Ex: Hotel Fazenda Vista Linda"
             />
@@ -87,7 +87,7 @@ export default function CreateEmpresa() {
           </div>
           <button
             type="submit"
-            disabled={saving || !form.name.trim()}
+            disabled={saving || !form.nome.trim()}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition disabled:opacity-50"
           >
             {saving ? 'Criando...' : 'Criar Hotel'}
