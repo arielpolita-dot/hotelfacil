@@ -138,3 +138,17 @@ FRONTEND_URL=https://app-ohospedeiro.oentregador.com.br
 | **Hetzner 1** | `5.161.213.157` | Auth, Billing, Security, Cardapio, Edifisco, Streaming, Notetaker, Dashboard, Audience, Credito | https://server.ohanax.com |
 | **Hetzner 2** | `178.156.238.246` | SellPipe | N/A (Docker Compose direto) |
 | **Hetzner 3** | `178.156.220.246` | OEntregador, OFinanceiro, **OHospedeiro** | https://server.oentregador.com.br |
+
+---
+
+## Auto-Deploy
+
+### Backend (Coolify)
+- **Webhook**: GitHub webhook → `https://server.oentregador.com.br/webhooks/source/github/events/manual`
+- **Webhook ID**: 603274649
+- **Trigger**: Push to `main` branch
+- **Secret**: Configurado no Coolify + GitHub
+
+### Frontend (Amplify)
+- **Auto-deploy**: Nativo — Amplify detecta push automaticamente
+- **App ID**: d3360t30n9ztlx
