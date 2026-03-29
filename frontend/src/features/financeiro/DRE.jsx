@@ -9,8 +9,14 @@ import {
 import { format, getYear } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatCurrency } from '../../utils/formatters';
-import { Card, LinhaGrupo, pct } from './DRECard';
+import { Card as DRECard, LinhaGrupo, pct } from './DRECard';
 import { useDREData } from './useDREData';
+import {
+  Card, CardHeader, CardBody, Spinner, EmptyState, FilterPills,
+  Select, ProgressBar,
+  DataTable, TableHeader, TableHead,
+  PageHeader,
+} from '../../components/ds';
 
 export default function DRE() {
   const { reservas, despesas, fluxoCaixa, loading } = useHotel();
@@ -37,7 +43,7 @@ export default function DRE() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      <Spinner size="md" />
     </div>
   );
 
@@ -45,49 +51,40 @@ export default function DRE() {
     <div className="space-y-6 animate-fade-in">
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-slate-900">DRE — Demonstrativo de Resultado</h2>
-          <p className="text-sm text-slate-500 mt-0.5 capitalize">{periodoLabel}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <select
-            value={anoSel}
-            onChange={e => setAnoSel(Number(e.target.value))}
-            className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {anos.map(a => <option key={a} value={a}>{a}</option>)}
-          </select>
-          <div className="flex flex-wrap gap-1">
-            <button
-              onClick={() => setMesSel(null)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${mesSel === null ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+      <PageHeader
+        title="DRE — Demonstrativo de Resultado"
+        subtitle={periodoLabel}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <Select
+              value={anoSel}
+              onChange={e => setAnoSel(Number(e.target.value))}
+              className="w-auto"
             >
-              Anual
-            </button>
-            {MESES.map((m, i) => (
-              <button
-                key={i}
-                onClick={() => setMesSel(i)}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition ${mesSel === i ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-              >
-                {m}
-              </button>
-            ))}
+              {anos.map(a => <option key={a} value={a}>{a}</option>)}
+            </Select>
+            <FilterPills
+              options={[
+                { key: 'anual', label: 'Anual' },
+                ...MESES.map((m, i) => ({ key: String(i), label: m })),
+              ]}
+              value={mesSel === null ? 'anual' : String(mesSel)}
+              onChange={k => setMesSel(k === 'anual' ? null : Number(k))}
+            />
           </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* Cards de resumo */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <Card title="Receita Bruta" value={formatCurrency(receita)} color="green" icon={TrendingUp} trend={tendenciaReceita} sub="Hospedagens + entradas" />
-        <Card title="Despesas Totais" value={formatCurrency(despesaTotal)} color="red" icon={TrendingDown} trend={tendenciaDespesa} sub="Todas as categorias" />
-        <Card title="Resultado Líquido" value={formatCurrency(lucro)} color={lucro >= 0 ? 'blue' : 'red'} icon={DollarSign} sub={lucro >= 0 ? 'Lucro operacional' : 'Prejuízo operacional'} />
-        <Card title="Margem Líquida" value={`${margem.toFixed(1).replace('.', ',')}%`} color={margem >= 20 ? 'green' : margem >= 0 ? 'amber' : 'red'} icon={BarChart2} sub={margem >= 20 ? 'Margem saudável' : margem >= 0 ? 'Margem apertada' : 'Resultado negativo'} />
+        <DRECard title="Receita Bruta" value={formatCurrency(receita)} color="green" icon={TrendingUp} trend={tendenciaReceita} sub="Hospedagens + entradas" />
+        <DRECard title="Despesas Totais" value={formatCurrency(despesaTotal)} color="red" icon={TrendingDown} trend={tendenciaDespesa} sub="Todas as categorias" />
+        <DRECard title="Resultado Líquido" value={formatCurrency(lucro)} color={lucro >= 0 ? 'blue' : 'red'} icon={DollarSign} sub={lucro >= 0 ? 'Lucro operacional' : 'Prejuízo operacional'} />
+        <DRECard title="Margem Líquida" value={`${margem.toFixed(1).replace('.', ',')}%`} color={margem >= 20 ? 'green' : margem >= 0 ? 'amber' : 'red'} icon={BarChart2} sub={margem >= 20 ? 'Margem saudável' : margem >= 0 ? 'Margem apertada' : 'Resultado negativo'} />
       </div>
 
       {/* Grafico de barras */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+      <Card padding="md">
         <h3 className="text-sm font-bold text-slate-700 mb-4">Evolução Mensal — {anoSel}</h3>
         <ResponsiveContainer width="100%" height={240}>
           <BarChart data={dadosMensais} margin={{ top: 4, right: 4, left: 0, bottom: 0 }} barSize={12}>
@@ -108,23 +105,23 @@ export default function DRE() {
             </Bar>
           </BarChart>
         </ResponsiveContainer>
-      </div>
+      </Card>
 
       {/* Tabela DRE */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100">
-          <h3 className="text-sm font-bold text-slate-700">Demonstrativo Detalhado</h3>
-          <p className="text-xs text-slate-400 mt-0.5">Clique nos grupos para expandir os lançamentos</p>
-        </div>
+      <DataTable>
+        <CardHeader>
+          <div>
+            <h3 className="text-sm font-bold text-slate-700">Demonstrativo Detalhado</h3>
+            <p className="text-xs text-slate-400 mt-0.5">Clique nos grupos para expandir os lançamentos</p>
+          </div>
+        </CardHeader>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-100">
-                <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Descrição</th>
-                <th className="text-right py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Valor</th>
-                <th className="text-right py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">% Receita</th>
-              </tr>
-            </thead>
+            <TableHeader>
+              <TableHead>Descrição</TableHead>
+              <TableHead align="right">Valor</TableHead>
+              <TableHead align="right">% Receita</TableHead>
+            </TableHeader>
             <tbody>
               <tr className="bg-emerald-50 border-b border-emerald-100">
                 <td className="py-3 px-4">
@@ -182,11 +179,11 @@ export default function DRE() {
             </tbody>
           </table>
         </div>
-      </div>
+      </DataTable>
 
       {/* Analise rapida */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+        <Card padding="md">
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Composição das Despesas</p>
           <div className="space-y-2">
             {grupos.slice(0, 5).map(({ grupo, itens }) => {
@@ -198,17 +195,15 @@ export default function DRE() {
                     <span className="text-slate-600 font-medium">{grupo}</span>
                     <span className="text-slate-500">{p.toFixed(0)}%</span>
                   </div>
-                  <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-red-400 rounded-full" style={{ width: `${p}%` }} />
-                  </div>
+                  <ProgressBar value={p} color="danger" size="sm" />
                 </div>
               );
             })}
             {grupos.length === 0 && <p className="text-xs text-slate-400">Sem dados</p>}
           </div>
-        </div>
+        </Card>
 
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+        <Card padding="md">
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Indicadores</p>
           <div className="space-y-3">
             {[
@@ -224,9 +219,9 @@ export default function DRE() {
               </div>
             ))}
           </div>
-        </div>
+        </Card>
 
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+        <Card padding="md">
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Análise de Saúde Financeira</p>
           <div className="space-y-3">
             {[
@@ -257,7 +252,7 @@ export default function DRE() {
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       </div>
 
     </div>

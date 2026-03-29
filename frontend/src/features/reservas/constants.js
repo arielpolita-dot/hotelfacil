@@ -7,6 +7,16 @@ export const STATUS_CFG = {
   cancelada:    { label: 'Cancelada',  cls: 'bg-red-100 text-red-700' },
 };
 
+/** Maps status keys to DS Badge variant names */
+export const STATUS_BADGE_MAP = {
+  confirmada:   { label: 'Confirmada',  variant: 'brand' },
+  'check-in':   { label: 'Check-in',   variant: 'success' },
+  checkin:      { label: 'Check-in',   variant: 'success' },
+  checkout:     { label: 'Check-out',  variant: 'default' },
+  'check-out':  { label: 'Check-out',  variant: 'default' },
+  cancelada:    { label: 'Cancelada',  variant: 'danger' },
+};
+
 export const FORMAS_PAGAMENTO = [
   { value: 'a_definir',       label: 'A Definir' },
   { value: 'dinheiro',        label: 'Dinheiro' },

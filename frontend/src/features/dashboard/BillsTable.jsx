@@ -3,36 +3,26 @@ import { format, isToday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatCurrency } from '../../utils/formatters';
 import { toDate } from '../../utils/dateUtils';
-
-function Card({ children, className = '' }) {
-  return (
-    <div className={`bg-white rounded-2xl shadow-sm border border-slate-100 ${className}`}>
-      {children}
-    </div>
-  );
-}
+import { Card, Badge, EmptyState } from '../../components/ds';
 
 export function BillsTable({ contasProximas7, contasVencidas }) {
   return (
-    <Card className="p-5">
+    <Card padding="md">
       <div className="flex items-center gap-2 mb-4">
         <div className="w-2 h-5 bg-rose-500 rounded-full" />
         <h3 className="text-sm font-bold text-slate-900">Contas a Pagar — Próximos 7 dias</h3>
         {contasVencidas?.length > 0 && (
-          <span className="ml-2 flex items-center gap-1 text-xs font-bold text-red-700 bg-red-100 px-2.5 py-1 rounded-full">
+          <Badge variant="danger" size="md" className="ml-2">
             <AlertTriangle className="h-3 w-3" />
             {contasVencidas.length} vencida{contasVencidas.length !== 1 ? 's' : ''}
-          </span>
+          </Badge>
         )}
-        <span className="ml-auto text-xs text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full font-medium">
+        <Badge variant="default" size="md" className="ml-auto">
           {formatCurrency(contasProximas7?.reduce((s, d) => s + (d.valor || 0), 0) || 0)}
-        </span>
+        </Badge>
       </div>
       {!contasProximas7?.length && !contasVencidas?.length ? (
-        <div className="flex flex-col items-center justify-center py-8 text-slate-400">
-          <CreditCard className="h-8 w-8 mb-2 opacity-30" />
-          <p className="text-sm">Nenhuma conta pendente</p>
-        </div>
+        <EmptyState icon={CreditCard} message="Nenhuma conta pendente" />
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -54,12 +44,12 @@ export function BillsTable({ contasProximas7, contasVencidas }) {
                       {d.fornecedor && <p className="text-xs text-red-400">{d.fornecedor}</p>}
                     </td>
                     <td className="py-2.5 px-3 hidden sm:table-cell">
-                      <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">{d.categoria}</span>
+                      <Badge variant="danger" size="sm">{d.categoria}</Badge>
                     </td>
                     <td className="py-2.5 px-3">
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-200 text-red-700">
+                      <Badge variant="danger" size="sm">
                         Vencida {dtV ? format(dtV, 'dd/MM', { locale: ptBR }) : '—'}
-                      </span>
+                      </Badge>
                     </td>
                     <td className="py-2.5 px-3 text-right font-bold text-red-600">{formatCurrency(d.valor)}</td>
                   </tr>
@@ -75,14 +65,12 @@ export function BillsTable({ contasProximas7, contasVencidas }) {
                       {d.fornecedor && <p className="text-xs text-slate-400">{d.fornecedor}</p>}
                     </td>
                     <td className="py-2.5 px-3 hidden sm:table-cell">
-                      <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">{d.categoria}</span>
+                      <Badge variant="default" size="sm">{d.categoria}</Badge>
                     </td>
                     <td className="py-2.5 px-3">
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                        ehHoje ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'
-                      }`}>
+                      <Badge variant={ehHoje ? 'warning' : 'default'} size="sm">
                         {ehHoje ? 'Hoje' : dt ? format(dt, 'dd/MM', { locale: ptBR }) : '—'}
-                      </span>
+                      </Badge>
                     </td>
                     <td className="py-2.5 px-3 text-right font-bold text-rose-600">{formatCurrency(d.valor)}</td>
                   </tr>

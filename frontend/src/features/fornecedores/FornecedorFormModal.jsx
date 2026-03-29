@@ -1,5 +1,4 @@
-import { Modal, FormField } from '../../components/ds';
-import { inputCls } from '../../styles/formClasses';
+import { Modal, FormField, Input, Textarea, Button } from '../../components/ds';
 import { maskCPF, maskCNPJ, maskPhone } from '../../utils/masks';
 
 export function FornecedorFormModal({ open, onClose, onSave, editingFornecedor, form, onChange, saving }) {
@@ -21,31 +20,28 @@ export function FornecedorFormModal({ open, onClose, onSave, editingFornecedor, 
 
         {/* Nome */}
         <FormField label="Nome / Razao Social">
-          <input
+          <Input
             value={form.nome}
             onChange={e => onChange('nome', e.target.value.toUpperCase())}
-            className={inputCls}
             placeholder="Nome do fornecedor"
           />
         </FormField>
 
         <div className="grid grid-cols-2 gap-4">
           <FormField label={form.tipo === 'juridica' ? 'CNPJ' : 'CPF'}>
-            <input
+            <Input
               value={form.tipo === 'juridica' ? form.cnpj : form.cpf}
               onChange={e => {
                 const v = form.tipo === 'juridica' ? maskCNPJ(e.target.value) : maskCPF(e.target.value);
                 onChange(form.tipo === 'juridica' ? 'cnpj' : 'cpf', v);
               }}
-              className={inputCls}
               placeholder={form.tipo === 'juridica' ? '00.000.000/0001-00' : '000.000.000-00'}
             />
           </FormField>
           <FormField label="Telefone">
-            <input
+            <Input
               value={form.telefone}
               onChange={e => onChange('telefone', maskPhone(e.target.value))}
-              className={inputCls}
               placeholder="(00) 00000-0000"
             />
           </FormField>
@@ -53,19 +49,17 @@ export function FornecedorFormModal({ open, onClose, onSave, editingFornecedor, 
 
         <div className="grid grid-cols-2 gap-4">
           <FormField label="E-mail">
-            <input
+            <Input
               type="email"
               value={form.email}
               onChange={e => onChange('email', e.target.value)}
-              className={inputCls}
               placeholder="email@empresa.com"
             />
           </FormField>
           <FormField label="Nome do Contato">
-            <input
+            <Input
               value={form.contato}
               onChange={e => onChange('contato', e.target.value.toUpperCase())}
-              className={inputCls}
               placeholder="Responsavel"
             />
           </FormField>
@@ -73,26 +67,24 @@ export function FornecedorFormModal({ open, onClose, onSave, editingFornecedor, 
 
         {/* Endereco */}
         <FormField label="Endereco">
-          <input
+          <Input
             value={form.endereco}
             onChange={e => onChange('endereco', e.target.value)}
-            className={inputCls}
             placeholder="Rua, numero, complemento"
           />
         </FormField>
 
         <div className="grid grid-cols-3 gap-4">
           <FormField label="Cidade">
-            <input value={form.cidade} onChange={e => onChange('cidade', e.target.value)} className={inputCls} placeholder="Cidade" />
+            <Input value={form.cidade} onChange={e => onChange('cidade', e.target.value)} placeholder="Cidade" />
           </FormField>
           <FormField label="Estado">
-            <input value={form.estado} onChange={e => onChange('estado', e.target.value.toUpperCase().slice(0, 2))} className={inputCls} placeholder="UF" maxLength={2} />
+            <Input value={form.estado} onChange={e => onChange('estado', e.target.value.toUpperCase().slice(0, 2))} placeholder="UF" maxLength={2} />
           </FormField>
           <FormField label="CEP">
-            <input
+            <Input
               value={form.cep}
               onChange={e => onChange('cep', e.target.value.replace(/\D/g, '').slice(0, 8).replace(/(\d{5})(\d)/, '$1-$2'))}
-              className={inputCls}
               placeholder="00000-000"
             />
           </FormField>
@@ -100,26 +92,21 @@ export function FornecedorFormModal({ open, onClose, onSave, editingFornecedor, 
 
         {/* Observacoes */}
         <FormField label="Observacoes">
-          <textarea
+          <Textarea
             value={form.observacoes}
             onChange={e => onChange('observacoes', e.target.value)}
             rows={3}
-            className={inputCls + ' resize-none'}
             placeholder="Informacoes adicionais..."
           />
         </FormField>
 
         <div className="flex gap-3 pt-2">
-          <button onClick={onClose} className="flex-1 py-2.5 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+          <Button variant="secondary" onClick={onClose} fullWidth>
             Cancelar
-          </button>
-          <button
-            onClick={onSave}
-            disabled={saving}
-            className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors"
-          >
+          </Button>
+          <Button variant="primary" onClick={onSave} loading={saving} fullWidth>
             {saving ? 'Salvando...' : editingFornecedor ? 'Salvar Alteracoes' : 'Cadastrar Fornecedor'}
-          </button>
+          </Button>
         </div>
       </div>
     </Modal>

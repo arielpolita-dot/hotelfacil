@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { TrendingUp, TrendingDown, ChevronDown, ChevronUp } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatters';
+import { Badge } from '../../components/ds';
 
 const pct = (v, total) => total === 0 ? '0,0%' : `${((v / total) * 100).toFixed(1).replace('.', ',')}%`;
 
@@ -50,7 +51,7 @@ export function LinhaGrupo({ grupo, itens, totalReceita }) {
               {aberto ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
             </span>
             <span className="text-sm font-semibold text-slate-700">{grupo}</span>
-            <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{itens.length}</span>
+            <Badge variant="default">{itens.length}</Badge>
           </div>
         </td>
         <td className="py-3 px-4 text-right text-sm font-bold text-red-600">{formatCurrency(total)}</td>

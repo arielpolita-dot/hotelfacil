@@ -1,7 +1,12 @@
 import { useState, useMemo } from 'react';
 import { useHotel } from '../../context/HotelContext';
-import { Plus, Search, Edit2, Trash2, Building2 } from 'lucide-react';
-import { Modal } from '../../components/ds';
+import { Plus, Edit2, Trash2, Building2 } from 'lucide-react';
+import {
+  Button, IconButton, Spinner,
+  SearchInput,
+  DataTable, TableHeader, TableHead, TableRow, TableCell,
+  DeleteDialog, PageHeader, EmptyState,
+} from '../../components/ds';
 import { FornecedorFormModal } from './FornecedorFormModal';
 
 const EMPTY_FORM = {
@@ -85,56 +90,47 @@ export default function Fornecedores() {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Fornecedores</h1>
-          <p className="text-sm text-slate-500 mt-1">{fornecedores.length} fornecedor{fornecedores.length !== 1 ? 'es' : ''} cadastrado{fornecedores.length !== 1 ? 's' : ''}</p>
-        </div>
-        <button
-          onClick={abrirNovo}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-        >
-          <Plus size={18} />
-          Novo Fornecedor
-        </button>
-      </div>
+      <PageHeader
+        title="Fornecedores"
+        subtitle={`${fornecedores.length} fornecedor${fornecedores.length !== 1 ? 'es' : ''} cadastrado${fornecedores.length !== 1 ? 's' : ''}`}
+        actions={
+          <Button variant="primary" icon={Plus} onClick={abrirNovo}>
+            Novo Fornecedor
+          </Button>
+        }
+      />
 
       {/* Busca */}
-      <div className="relative mb-6">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-        <input
-          type="text"
-          placeholder="Buscar por nome, CNPJ, e-mail ou contato..."
+      <div className="mt-6 mb-6">
+        <SearchInput
           value={busca}
-          onChange={e => setBusca(e.target.value)}
-          className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onChange={setBusca}
+          placeholder="Buscar por nome, CNPJ, e-mail ou contato..."
         />
       </div>
 
       {/* Tabela */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <DataTable>
         {lista.length === 0 ? (
-          <div className="text-center py-16 text-slate-400">
-            <Building2 size={40} className="mx-auto mb-3 opacity-30" />
-            <p className="font-medium">Nenhum fornecedor encontrado</p>
-            <p className="text-sm mt-1">Clique em "Novo Fornecedor" para cadastrar</p>
-          </div>
+          <EmptyState
+            icon={Building2}
+            message="Nenhum fornecedor encontrado"
+            subMessage='Clique em "Novo Fornecedor" para cadastrar'
+          />
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 border-b border-slate-200">
-              <tr>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 uppercase text-xs tracking-wide">Nome</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 uppercase text-xs tracking-wide hidden md:table-cell">CNPJ/CPF</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 uppercase text-xs tracking-wide hidden lg:table-cell">Contato</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 uppercase text-xs tracking-wide hidden lg:table-cell">Telefone</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 uppercase text-xs tracking-wide hidden xl:table-cell">E-mail</th>
-                <th className="text-right px-4 py-3 font-semibold text-slate-600 uppercase text-xs tracking-wide">Acoes</th>
-              </tr>
-            </thead>
+            <TableHeader>
+              <TableHead>Nome</TableHead>
+              <TableHead className="hidden md:table-cell">CNPJ/CPF</TableHead>
+              <TableHead className="hidden lg:table-cell">Contato</TableHead>
+              <TableHead className="hidden lg:table-cell">Telefone</TableHead>
+              <TableHead className="hidden xl:table-cell">E-mail</TableHead>
+              <TableHead align="right">Acoes</TableHead>
+            </TableHeader>
             <tbody className="divide-y divide-slate-100">
               {lista.map(f => (
-                <tr key={f.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-4 py-3">
+                <TableRow key={f.id}>
+                  <TableCell>
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
                         <Building2 size={14} className="text-blue-600" />
@@ -144,27 +140,23 @@ export default function Fornecedores() {
                         <p className="text-xs text-slate-400">{f.tipo === 'juridica' ? 'Pessoa Juridica' : 'Pessoa Fisica'}</p>
                       </div>
                     </div>
-                  </td>
-                  <td className="px-4 py-3 text-slate-600 hidden md:table-cell">{f.cnpj || f.cpf || '\u2014'}</td>
-                  <td className="px-4 py-3 text-slate-600 hidden lg:table-cell">{f.contato || '\u2014'}</td>
-                  <td className="px-4 py-3 text-slate-600 hidden lg:table-cell">{f.telefone || '\u2014'}</td>
-                  <td className="px-4 py-3 text-slate-600 hidden xl:table-cell">{f.email || '\u2014'}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-2">
-                      <button onClick={() => abrirEditar(f)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Editar" aria-label="Editar">
-                        <Edit2 size={15} />
-                      </button>
-                      <button onClick={() => setConfirmarExcluir(f)} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Excluir" aria-label="Excluir">
-                        <Trash2 size={15} />
-                      </button>
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">{f.cnpj || f.cpf || '\u2014'}</TableCell>
+                  <TableCell className="hidden lg:table-cell">{f.contato || '\u2014'}</TableCell>
+                  <TableCell className="hidden lg:table-cell">{f.telefone || '\u2014'}</TableCell>
+                  <TableCell className="hidden xl:table-cell">{f.email || '\u2014'}</TableCell>
+                  <TableCell align="right">
+                    <div className="flex items-center justify-end gap-1">
+                      <IconButton icon={Edit2} variant="brand" size="sm" label="Editar" onClick={() => abrirEditar(f)} />
+                      <IconButton icon={Trash2} variant="danger" size="sm" label="Excluir" onClick={() => setConfirmarExcluir(f)} />
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
             </tbody>
           </table>
         )}
-      </div>
+      </DataTable>
 
       {/* Modal Cadastro/Edicao */}
       <FornecedorFormModal
@@ -178,27 +170,12 @@ export default function Fornecedores() {
       />
 
       {/* Confirmar Exclusao */}
-      <Modal open={!!confirmarExcluir} onClose={() => setConfirmarExcluir(null)} title="Excluir Fornecedor" maxWidth="sm">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-            <Trash2 size={18} className="text-red-600" />
-          </div>
-          <div>
-            <p className="text-sm text-slate-500">Esta acao nao pode ser desfeita</p>
-          </div>
-        </div>
-        <p className="text-sm text-slate-700 mb-6">
-          Tem certeza que deseja excluir <strong>{confirmarExcluir?.nome}</strong>?
-        </p>
-        <div className="flex gap-3">
-          <button onClick={() => setConfirmarExcluir(null)} className="flex-1 py-2.5 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
-            Cancelar
-          </button>
-          <button onClick={() => excluir(confirmarExcluir?.id)} className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors">
-            Excluir
-          </button>
-        </div>
-      </Modal>
+      <DeleteDialog
+        open={!!confirmarExcluir}
+        onClose={() => setConfirmarExcluir(null)}
+        onConfirm={() => excluir(confirmarExcluir?.id)}
+        entityName="fornecedor"
+      />
     </div>
   );
 }

@@ -1,7 +1,6 @@
 import React from 'react';
-import { Modal } from '../../components/ds';
+import { Modal, Input, Select, Textarea, FormField, Button } from '../../components/ds';
 import { tiposContrato, periodicidades, statusOptions } from './useFaturaForm';
-import { inputCls, selectCls } from '../../styles/formClasses';
 
 export function FaturaFormModal({
   open, onClose, onSave, editingFatura,
@@ -19,30 +18,24 @@ export function FaturaFormModal({
         <div>
           <h3 className="text-lg font-medium text-slate-800 mb-4">Dados da Empresa Cliente</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Nome da Empresa *</label>
-              <input type="text" name="empresaCliente" value={formData.empresaCliente} onChange={handleInputChange} required className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">CNPJ *</label>
-              <input type="text" name="cnpj" value={formData.cnpj} onChange={handleInputChange} required placeholder="00.000.000/0000-00" className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Pessoa de Contato *</label>
-              <input type="text" name="contato" value={formData.contato} onChange={handleInputChange} required className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">E-mail *</label>
-              <input type="email" name="email" value={formData.email} onChange={handleInputChange} required className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Telefone</label>
-              <input type="tel" name="telefone" value={formData.telefone} onChange={handleInputChange} className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Endereco</label>
-              <input type="text" name="endereco" value={formData.endereco} onChange={handleInputChange} className={inputCls} />
-            </div>
+            <FormField label="Nome da Empresa" required>
+              <Input type="text" name="empresaCliente" value={formData.empresaCliente} onChange={handleInputChange} required />
+            </FormField>
+            <FormField label="CNPJ" required>
+              <Input type="text" name="cnpj" value={formData.cnpj} onChange={handleInputChange} required placeholder="00.000.000/0000-00" />
+            </FormField>
+            <FormField label="Pessoa de Contato" required>
+              <Input type="text" name="contato" value={formData.contato} onChange={handleInputChange} required />
+            </FormField>
+            <FormField label="E-mail" required>
+              <Input type="email" name="email" value={formData.email} onChange={handleInputChange} required />
+            </FormField>
+            <FormField label="Telefone">
+              <Input type="tel" name="telefone" value={formData.telefone} onChange={handleInputChange} />
+            </FormField>
+            <FormField label="Endereco">
+              <Input type="text" name="endereco" value={formData.endereco} onChange={handleInputChange} />
+            </FormField>
           </div>
         </div>
 
@@ -50,36 +43,30 @@ export function FaturaFormModal({
         <div>
           <h3 className="text-lg font-medium text-slate-800 mb-4">Dados do Contrato</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Tipo de Contrato *</label>
-              <select name="tipoContrato" value={formData.tipoContrato} onChange={handleInputChange} required className={inputCls}>
+            <FormField label="Tipo de Contrato" required>
+              <Select name="tipoContrato" value={formData.tipoContrato} onChange={handleInputChange} required>
                 {tiposContrato.map(tipo => <option key={tipo} value={tipo}>{tipo}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Periodicidade da Fatura *</label>
-              <select name="periodicidadeFatura" value={formData.periodicidadeFatura} onChange={handleInputChange} required className={inputCls}>
+              </Select>
+            </FormField>
+            <FormField label="Periodicidade da Fatura" required>
+              <Select name="periodicidadeFatura" value={formData.periodicidadeFatura} onChange={handleInputChange} required>
                 {periodicidades.map(p => <option key={p} value={p}>{p}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Data de Inicio *</label>
-              <input type="date" name="dataInicio" value={formData.dataInicio} onChange={handleInputChange} required className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Data de Fim *</label>
-              <input type="date" name="dataFim" value={formData.dataFim} onChange={handleInputChange} required className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Valor Mensal (R$) *</label>
-              <input type="number" name="valorMensal" value={formData.valorMensal} onChange={handleInputChange} step="0.01" min="0" required className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Status *</label>
-              <select name="status" value={formData.status} onChange={handleInputChange} required className={inputCls}>
+              </Select>
+            </FormField>
+            <FormField label="Data de Inicio" required>
+              <Input type="date" name="dataInicio" value={formData.dataInicio} onChange={handleInputChange} required />
+            </FormField>
+            <FormField label="Data de Fim" required>
+              <Input type="date" name="dataFim" value={formData.dataFim} onChange={handleInputChange} required />
+            </FormField>
+            <FormField label="Valor Mensal (R$)" required>
+              <Input type="number" name="valorMensal" value={formData.valorMensal} onChange={handleInputChange} step="0.01" min="0" required />
+            </FormField>
+            <FormField label="Status" required>
+              <Select name="status" value={formData.status} onChange={handleInputChange} required>
                 {statusOptions.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
+              </Select>
+            </FormField>
           </div>
         </div>
 
@@ -123,22 +110,19 @@ export function FaturaFormModal({
         </div>
 
         {/* Observacoes */}
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">Observacoes</label>
-          <textarea name="observacoes" value={formData.observacoes} onChange={handleInputChange} rows="3"
-            className={inputCls} placeholder="Informacoes adicionais sobre o contrato..." />
-        </div>
+        <FormField label="Observacoes">
+          <Textarea name="observacoes" value={formData.observacoes} onChange={handleInputChange} rows={3}
+            placeholder="Informacoes adicionais sobre o contrato..." />
+        </FormField>
 
         {/* Botoes */}
         <div className="flex gap-3 pt-4 border-t">
-          <button type="button" onClick={onClose}
-            className="flex-1 px-4 py-2 border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors">
+          <Button type="button" variant="secondary" onClick={onClose} fullWidth>
             Cancelar
-          </button>
-          <button type="submit"
-            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+          </Button>
+          <Button type="submit" variant="primary" fullWidth>
             {editingFatura ? 'Atualizar' : 'Criar'} Contrato
-          </button>
+          </Button>
         </div>
       </form>
     </Modal>

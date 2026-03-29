@@ -13,6 +13,7 @@ import { useDashboardStats } from './useDashboardStats';
 import { ReminderModal } from './ReminderModal';
 import { RoomUsageCards } from './RoomUsageCards';
 import { BillsTable } from './BillsTable';
+import { Card, StatCard, Spinner, Badge, EmptyState } from '../../components/ds';
 
 const STATUS_CFG = {
   disponivel: { label: 'Disponível', bar: 'bg-emerald-500', dot: 'bg-emerald-500' },
@@ -21,29 +22,6 @@ const STATUS_CFG = {
   manutencao: { label: 'Manutenção', bar: 'bg-amber-500',   dot: 'bg-amber-500' },
   limpeza:    { label: 'Limpeza',    bar: 'bg-sky-500',     dot: 'bg-sky-500' },
 };
-
-function Card({ children, className = '' }) {
-  return (
-    <div className={`bg-white rounded-2xl shadow-sm border border-slate-100 ${className}`}>
-      {children}
-    </div>
-  );
-}
-
-function StatCard({ title, value, sub, icon: Icon, iconBg }) {
-  return (
-    <Card className="p-5 flex items-start justify-between gap-3">
-      <div className="min-w-0">
-        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{title}</p>
-        <p className="text-2xl font-bold text-slate-900 mt-1 truncate">{value}</p>
-        {sub && <p className="text-xs text-slate-400 mt-0.5">{sub}</p>}
-      </div>
-      <div className={`w-11 h-11 ${iconBg} rounded-xl flex items-center justify-center flex-shrink-0`}>
-        <Icon className="h-5 w-5 text-white" />
-      </div>
-    </Card>
-  );
-}
 
 export default function Dashboard() {
   const { quartos, reservas, despesas, loading } = useHotel();
@@ -75,10 +53,7 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="w-10 h-10 border-[3px] border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-sm text-slate-500">Carregando dados...</p>
-        </div>
+        <Spinner size="md" message="Carregando dados..." />
       </div>
     );
   }
@@ -101,7 +76,7 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-5">
-          <Card className="p-5">
+          <Card padding="md">
             <h3 className="text-sm font-bold text-slate-900 mb-4">Receita — Últimos 7 dias</h3>
             {stats.ultimos7.some(d => d.receita > 0) ? (
               <ResponsiveContainer width="100%" height={180}>
@@ -114,31 +89,23 @@ export default function Dashboard() {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-44 flex items-center justify-center text-slate-400">
-                <div className="text-center">
-                  <BarChart2 className="h-10 w-10 mx-auto mb-2 opacity-30" />
-                  <p className="text-sm">Nenhuma movimentação registrada</p>
-                </div>
-              </div>
+              <EmptyState icon={BarChart2} message="Nenhuma movimentação registrada" />
             )}
           </Card>
 
-          <Card className="p-5">
+          <Card padding="md">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold text-slate-900">Reservas Ativas</h3>
-              <span className="text-xs text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full font-medium">{reservasRecentes.length}</span>
+              <Badge variant="default" size="md">{reservasRecentes.length}</Badge>
             </div>
             {reservasRecentes.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-10 text-slate-400">
-                <BedDouble className="h-10 w-10 mb-3 opacity-30" />
-                <p className="text-sm">Nenhuma reserva ativa</p>
-              </div>
+              <EmptyState icon={BedDouble} message="Nenhuma reserva ativa" />
             ) : (
               <div className="space-y-0">
                 {reservasRecentes.map(r => {
                   const ci = toDate(r.dataCheckIn);
                   const ciLabel = !ci ? '—' : isToday(ci) ? 'Hoje' : isTomorrow(ci) ? 'Amanhã' : format(ci, 'dd/MM', { locale: ptBR });
-                  const stMap = { confirmada: 'bg-blue-100 text-blue-700', checkin: 'bg-emerald-100 text-emerald-700', checkout: 'bg-slate-100 text-slate-600', cancelada: 'bg-red-100 text-red-700' };
+                  const stVariant = { confirmada: 'brand', checkin: 'success', checkout: 'default', cancelada: 'danger' };
                   const stLabel = { confirmada: 'Confirmada', checkin: 'Check-in', checkout: 'Check-out', cancelada: 'Cancelada' };
                   return (
                     <div key={r.id} className="flex items-center gap-3 py-3 border-b border-slate-50 last:border-0">
@@ -150,9 +117,9 @@ export default function Dashboard() {
                         <p className="text-xs text-slate-500 mt-0.5">Quarto {r.numeroQuarto || r.quartoNumero || r.quartoId} · {ciLabel}</p>
                       </div>
                       <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${stMap[r.status] || 'bg-slate-100 text-slate-600'}`}>
+                        <Badge variant={stVariant[r.status] || 'default'} size="sm">
                           {stLabel[r.status] || r.status}
-                        </span>
+                        </Badge>
                         <span className="text-xs font-bold text-slate-700">{formatCurrency(r.valorTotal || r.valor)}</span>
                       </div>
                     </div>
@@ -164,7 +131,7 @@ export default function Dashboard() {
         </div>
 
         <div className="space-y-5">
-          <Card className="p-5">
+          <Card padding="md">
             <h3 className="text-sm font-bold text-slate-900 mb-4">Status dos Quartos</h3>
             <div className="space-y-3">
               {Object.entries(STATUS_CFG).map(([key, cfg]) => {
@@ -188,7 +155,7 @@ export default function Dashboard() {
             </div>
           </Card>
 
-          <Card className="p-5">
+          <Card padding="md">
             <h3 className="text-sm font-bold text-slate-900 mb-4">Financeiro do Mês</h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-xl">

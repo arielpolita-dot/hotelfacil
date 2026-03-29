@@ -1,15 +1,18 @@
 import { useState, useMemo } from 'react';
 import { useHotel } from '../../context/HotelContext';
-import { Plus, BedDouble, Pencil, Trash2, Search } from 'lucide-react';
+import { Plus, BedDouble, Pencil, Trash2 } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatters';
-import { inputCls, selectCls } from '../../styles/formClasses';
-import { Modal, FormField } from '../../components/ds';
+import {
+  Button, Input, Select, Textarea, Badge, Spinner,
+  FormField, SearchInput, FilterPills,
+  Card, Modal, DeleteDialog, PageHeader, EmptyState,
+} from '../../components/ds';
 
 const STATUS_CFG = {
-  disponivel: { label: 'Disponível', cls: 'bg-emerald-100 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
+  disponivel: { label: 'Disponivel', cls: 'bg-emerald-100 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
   ocupado:    { label: 'Ocupado',    cls: 'bg-blue-100 text-blue-700 border-blue-200',         dot: 'bg-blue-500' },
   reservado:  { label: 'Reservado',  cls: 'bg-violet-100 text-violet-700 border-violet-200',   dot: 'bg-violet-500' },
-  manutencao: { label: 'Manutenção', cls: 'bg-amber-100 text-amber-700 border-amber-200',      dot: 'bg-amber-500' },
+  manutencao: { label: 'Manutencao', cls: 'bg-amber-100 text-amber-700 border-amber-200',      dot: 'bg-amber-500' },
   limpeza:    { label: 'Limpeza',    cls: 'bg-sky-100 text-sky-700 border-sky-200',            dot: 'bg-sky-500' },
 };
 
@@ -62,74 +65,52 @@ export default function Quartos() {
 
   const countStatus = (s) => quartos.filter(q => q.status === s).length;
 
+  const filterOptions = [
+    { key: 'todos', label: 'Todos', count: quartos.length },
+    ...STATUS_LIST.map(s => ({ key: s, label: STATUS_CFG[s].label, count: countStatus(s) })),
+  ];
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-slate-900">Quartos</h2>
-          <p className="text-sm text-slate-500 mt-0.5">{quartos.length} quartos cadastrados</p>
-        </div>
-        <button
-          onClick={abrirNovo}
-          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition shadow-sm shadow-blue-600/20"
-        >
-          <Plus className="h-4 w-4" />
-          Novo Quarto
-        </button>
-      </div>
+      <PageHeader
+        title="Quartos"
+        subtitle={`${quartos.length} quartos cadastrados`}
+        actions={
+          <Button variant="primary" icon={Plus} onClick={abrirNovo}>
+            Novo Quarto
+          </Button>
+        }
+      />
 
-      {/* Filtros rápidos */}
-      <div className="flex flex-wrap gap-2">
-        {['todos', ...STATUS_LIST].map(s => {
-          const cfg = STATUS_CFG[s];
-          const count = s === 'todos' ? quartos.length : countStatus(s);
-          return (
-            <button
-              key={s}
-              onClick={() => setFiltroStatus(s)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
-                filtroStatus === s
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300'
-              }`}
-            >
-              {cfg && <div className={`w-1.5 h-1.5 rounded-full ${filtroStatus === s ? 'bg-white' : cfg.dot}`} />}
-              {cfg ? cfg.label : 'Todos'} ({count})
-            </button>
-          );
-        })}
-      </div>
+      {/* Filtros rapidos */}
+      <FilterPills options={filterOptions} value={filtroStatus} onChange={setFiltroStatus} />
 
       {/* Busca */}
-      <div className="relative max-w-xs">
-        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-        <input
-          type="text"
-          value={busca}
-          onChange={e => setBusca(e.target.value)}
-          placeholder="Buscar por número ou tipo..."
-          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-        />
-      </div>
+      <SearchInput
+        value={busca}
+        onChange={setBusca}
+        placeholder="Buscar por numero ou tipo..."
+        className="max-w-xs"
+      />
 
       {/* Grid de quartos */}
       {loading ? (
         <div className="flex items-center justify-center h-48">
-          <div className="w-8 h-8 border-[3px] border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <Spinner />
         </div>
       ) : quartosFiltrados.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-slate-400">
-          <BedDouble className="h-12 w-12 mb-3 opacity-30" />
-          <p className="text-sm font-medium">Nenhum quarto encontrado</p>
-          <p className="text-xs mt-1">Tente ajustar os filtros ou cadastre um novo quarto</p>
-        </div>
+        <EmptyState
+          icon={BedDouble}
+          message="Nenhum quarto encontrado"
+          subMessage="Tente ajustar os filtros ou cadastre um novo quarto"
+        />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {quartosFiltrados.map(q => {
             const cfg = STATUS_CFG[q.status] || STATUS_CFG.disponivel;
             return (
-              <div key={q.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col gap-3">
+              <Card key={q.id} padding="md" className="flex flex-col gap-3 hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-lg font-bold text-slate-900">Quarto {q.numero}</p>
@@ -142,7 +123,7 @@ export default function Quartos() {
 
                 <div className="flex items-center gap-2">
                   <div className={`w-2 h-2 rounded-full ${cfg.dot}`} />
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${cfg.cls}`}>{cfg.label}</span>
+                  <Badge className={cfg.cls}>{cfg.label}</Badge>
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
@@ -150,7 +131,7 @@ export default function Quartos() {
                   <span className="font-semibold text-slate-900">{q.capacidade} pax</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-500">Diária</span>
+                  <span className="text-slate-500">Diaria</span>
                   <span className="font-bold text-blue-600">
                     {formatCurrency(q.precoDiaria)}
                   </span>
@@ -161,20 +142,14 @@ export default function Quartos() {
                 )}
 
                 <div className="flex gap-2 mt-auto pt-2 border-t border-slate-50">
-                  <button
-                    onClick={() => abrirEditar(q)}
-                    className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-blue-600 bg-slate-50 hover:bg-blue-50 py-2 rounded-xl transition"
-                  >
-                    <Pencil className="h-3.5 w-3.5" /> Editar
-                  </button>
-                  <button
-                    onClick={() => abrirExcluir(q.id)}
-                    className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-red-600 bg-slate-50 hover:bg-red-50 py-2 rounded-xl transition"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" /> Excluir
-                  </button>
+                  <Button variant="secondary" size="xs" icon={Pencil} onClick={() => abrirEditar(q)} className="flex-1">
+                    Editar
+                  </Button>
+                  <Button variant="ghost" size="xs" icon={Trash2} onClick={() => abrirExcluir(q.id)} className="flex-1 text-slate-600 hover:text-red-600 hover:bg-red-50">
+                    Excluir
+                  </Button>
                 </div>
-              </div>
+              </Card>
             );
           })}
         </div>
@@ -184,98 +159,87 @@ export default function Quartos() {
       <Modal open={modal === 'novo' || modal === 'editar'} onClose={fechar} title={modal === 'novo' ? 'Novo Quarto' : 'Editar Quarto'}>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <FormField label="Número *">
-                <input type="text" value={form.numero} onChange={set('numero')} placeholder="Ex: 101" className={inputCls} />
+              <FormField label="Numero" required>
+                <Input type="text" value={form.numero} onChange={set('numero')} placeholder="Ex: 101" />
               </FormField>
               <FormField label="Andar">
-                <input type="text" value={form.andar} onChange={set('andar')} placeholder="Ex: 1" className={inputCls} />
+                <Input type="text" value={form.andar} onChange={set('andar')} placeholder="Ex: 1" />
               </FormField>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <FormField label="Tipo">
-                <select value={form.tipo} onChange={set('tipo')} className={selectCls}>
+                <Select value={form.tipo} onChange={set('tipo')}>
                   {TIPOS.map(t => <option key={t}>{t}</option>)}
-                </select>
+                </Select>
               </FormField>
               <FormField label="Capacidade (pax)">
-                <input type="number" min="1" value={form.capacidade} onChange={set('capacidade')} className={inputCls} />
+                <Input type="number" min="1" value={form.capacidade} onChange={set('capacidade')} />
               </FormField>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <FormField label="Diária (R$) *">
-                <input type="number" min="0" step="0.01" value={form.precoDiaria} onChange={set('precoDiaria')} placeholder="0,00" className={inputCls} />
+              <FormField label="Diaria (R$)" required>
+                <Input type="number" min="0" step="0.01" value={form.precoDiaria} onChange={set('precoDiaria')} placeholder="0,00" />
               </FormField>
               <FormField label="Status">
-                <select value={form.status} onChange={set('status')} className={selectCls}>
+                <Select value={form.status} onChange={set('status')}>
                   {STATUS_LIST.map(s => <option key={s} value={s}>{STATUS_CFG[s].label}</option>)}
-                </select>
+                </Select>
               </FormField>
             </div>
-            {/* Período de manutenção — aparece apenas quando status = manutencao */}
+            {/* Periodo de manutencao — aparece apenas quando status = manutencao */}
             {form.status === 'manutencao' && (
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
                 <p className="text-xs font-bold text-slate-600 uppercase tracking-wide flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-slate-800 inline-block"></span>
-                  Período de Manutenção
+                  Periodo de Manutencao
                 </p>
                 <div className="grid grid-cols-2 gap-3">
-                  <FormField label="Inicio da Manutenção">
-                    <input
+                  <FormField label="Inicio da Manutencao">
+                    <Input
                       type="date"
                       value={form.manutencaoInicio || ''}
                       onChange={set('manutencaoInicio')}
-                      className={inputCls}
                     />
                   </FormField>
-                  <FormField label="Fim da Manutenção">
-                    <input
+                  <FormField label="Fim da Manutencao">
+                    <Input
                       type="date"
                       value={form.manutencaoFim || ''}
                       onChange={set('manutencaoFim')}
-                      className={inputCls}
                     />
                   </FormField>
                 </div>
-                <FormField label="Motivo da Manutenção">
-                  <input
+                <FormField label="Motivo da Manutencao">
+                  <Input
                     type="text"
                     value={form.manutencaoMotivo || ''}
                     onChange={set('manutencaoMotivo')}
                     placeholder="Ex: Reparo no ar-condicionado, pintura..."
-                    className={inputCls}
                   />
                 </FormField>
               </div>
             )}
 
-            <FormField label="Descrição">
-              <textarea value={form.descricao} onChange={set('descricao')} rows={3} placeholder="Comodidades, características..." className={inputCls + ' resize-none'} />
+            <FormField label="Descricao">
+              <Textarea value={form.descricao} onChange={set('descricao')} rows={3} placeholder="Comodidades, caracteristicas..." />
             </FormField>
             <div className="flex gap-3 pt-2">
-              <button onClick={fechar} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">Cancelar</button>
-              <button onClick={salvar} disabled={saving} className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition disabled:opacity-50">
-                {saving ? 'Salvando...' : 'Salvar'}
-              </button>
+              <Button variant="secondary" onClick={fechar} fullWidth>Cancelar</Button>
+              <Button variant="primary" onClick={salvar} loading={saving} fullWidth>
+                Salvar
+              </Button>
             </div>
           </div>
       </Modal>
 
       {/* Modal Excluir */}
-      <Modal open={modal === 'excluir'} onClose={fechar} title="Excluir Quarto">
-        <div className="text-center py-4">
-          <div className="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Trash2 className="h-7 w-7 text-red-600" />
-          </div>
-          <p className="text-slate-700 font-medium mb-1">Tem certeza que deseja excluir este quarto?</p>
-          <p className="text-sm text-slate-500 mb-6">Esta acao nao pode ser desfeita.</p>
-          <div className="flex gap-3">
-            <button onClick={fechar} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">Cancelar</button>
-            <button onClick={confirmarExcluir} disabled={saving} className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition disabled:opacity-50">
-              {saving ? 'Excluindo...' : 'Excluir'}
-            </button>
-          </div>
-        </div>
-      </Modal>
+      <DeleteDialog
+        open={modal === 'excluir'}
+        onClose={fechar}
+        onConfirm={confirmarExcluir}
+        entityName="quarto"
+        loading={saving}
+      />
     </div>
   );
 }

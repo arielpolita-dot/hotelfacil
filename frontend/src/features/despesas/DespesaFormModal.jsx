@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Modal } from '../../components/ds';
-import { inputCls, selectCls } from '../../styles/formClasses';
+import { Modal, Button, Input, Select, Textarea, FormField } from '../../components/ds';
 
 const CATEGORIAS = ['Alimentacao', 'Limpeza', 'Manutencao', 'Pessoal', 'Marketing', 'Utilidades', 'Administrativo', 'Outros'];
 const STATUS_LIST = ['pendente', 'pago', 'cancelado'];
@@ -30,50 +29,46 @@ export function DespesaFormModal({
     <>
       <Modal open={open} onClose={onClose} title={form.id ? 'Editar Despesa' : 'Nova Despesa'}>
         <div className="space-y-4">
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">Descricao *</label>
-            <input type="text" value={form.descricao} onChange={set('descricao')} placeholder="Ex: Compra de produtos de limpeza" className={inputCls} />
-          </div>
+          <FormField label="Descricao" required>
+            <Input type="text" value={form.descricao} onChange={set('descricao')} placeholder="Ex: Compra de produtos de limpeza" />
+          </FormField>
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">Categoria</label>
-              <select value={form.categoria} onChange={set('categoria')} className={selectCls}>
+            <FormField label="Categoria">
+              <Select value={form.categoria} onChange={set('categoria')}>
                 {CATEGORIAS.map(c => <option key={c}>{c}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">Status</label>
-              <select value={form.status} onChange={set('status')} className={selectCls}>
+              </Select>
+            </FormField>
+            <FormField label="Status">
+              <Select value={form.status} onChange={set('status')}>
                 {STATUS_LIST.map(s => <option key={s} value={s}>{STATUS_CFG[s].label}</option>)}
-              </select>
-            </div>
+              </Select>
+            </FormField>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">Valor (R$) *</label>
-              <input type="number" min="0" step="0.01" value={form.valor} onChange={set('valor')} placeholder="0,00" className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">Data</label>
-              <input type="date" value={form.data} onChange={set('data')} className={inputCls} />
-            </div>
+            <FormField label="Valor (R$)" required>
+              <Input type="number" min="0" step="0.01" value={form.valor} onChange={set('valor')} placeholder="0,00" />
+            </FormField>
+            <FormField label="Data">
+              <Input type="date" value={form.data} onChange={set('data')} />
+            </FormField>
           </div>
 
           {/* Fornecedor */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wide">Fornecedor</label>
-              <button type="button"
-                onClick={() => { setNovoFornForm({ nome: '', telefone: '', email: '', cnpj: '' }); setModalNovoFornecedor(true); }}
-                className="text-xs text-blue-600 hover:underline">+ Cadastrar fornecedor</button>
+              <label className="block text-sm font-medium text-slate-700">Fornecedor</label>
+              <Button variant="link" size="xs"
+                onClick={() => { setNovoFornForm({ nome: '', telefone: '', email: '', cnpj: '' }); setModalNovoFornecedor(true); }}>
+                + Cadastrar fornecedor
+              </Button>
             </div>
             <div className="relative">
-              <input type="text"
+              <Input type="text"
                 value={buscaFornecedor || form.fornecedor}
                 onChange={e => { setBuscaFornecedor(e.target.value); set('fornecedor')({ target: { value: e.target.value } }); setShowFornecedorList(true); }}
                 onFocus={() => setShowFornecedorList(true)}
                 onBlur={() => setTimeout(() => setShowFornecedorList(false), 200)}
-                placeholder="Buscar ou digitar fornecedor..." className={inputCls} />
+                placeholder="Buscar ou digitar fornecedor..." />
               {showFornecedorList && fornecedoresFiltrados.length > 0 && (
                 <div className="absolute z-50 w-full bg-white border border-slate-200 rounded-xl shadow-lg mt-1 max-h-48 overflow-y-auto">
                   {fornecedoresFiltrados.map(f => (
@@ -89,15 +84,12 @@ export function DespesaFormModal({
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">Observacoes</label>
-            <textarea value={form.observacoes} onChange={set('observacoes')} rows={2} className={inputCls + ' resize-none'} />
-          </div>
+          <FormField label="Observacoes">
+            <Textarea value={form.observacoes} onChange={set('observacoes')} rows={2} />
+          </FormField>
           <div className="flex gap-3 pt-2">
-            <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">Cancelar</button>
-            <button onClick={onSave} disabled={saving} className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition disabled:opacity-50">
-              {saving ? 'Salvando...' : 'Salvar'}
-            </button>
+            <Button variant="secondary" onClick={onClose} fullWidth>Cancelar</Button>
+            <Button variant="primary" onClick={onSave} loading={saving} fullWidth>Salvar</Button>
           </div>
         </div>
       </Modal>
@@ -105,29 +97,25 @@ export function DespesaFormModal({
       {/* Modal cadastro rapido de fornecedor */}
       <Modal open={modalNovoFornecedor} onClose={() => setModalNovoFornecedor(false)} title="Cadastrar Fornecedor">
         <div className="space-y-4">
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">Nome *</label>
-            <input type="text" value={novoFornForm.nome}
+          <FormField label="Nome" required>
+            <Input type="text" value={novoFornForm.nome}
               onChange={e => setNovoFornForm(p => ({ ...p, nome: e.target.value.toUpperCase() }))}
-              placeholder="NOME DO FORNECEDOR" className={inputCls} style={{ textTransform: 'uppercase' }} autoFocus />
-          </div>
+              placeholder="NOME DO FORNECEDOR" style={{ textTransform: 'uppercase' }} autoFocus />
+          </FormField>
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">CNPJ</label>
-              <input type="text" value={novoFornForm.cnpj} onChange={e => setNovoFornForm(p => ({ ...p, cnpj: e.target.value }))} placeholder="00.000.000/0001-00" className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">Telefone</label>
-              <input type="text" value={novoFornForm.telefone} onChange={e => setNovoFornForm(p => ({ ...p, telefone: e.target.value }))} placeholder="(00) 00000-0000" className={inputCls} />
-            </div>
+            <FormField label="CNPJ">
+              <Input type="text" value={novoFornForm.cnpj} onChange={e => setNovoFornForm(p => ({ ...p, cnpj: e.target.value }))} placeholder="00.000.000/0001-00" />
+            </FormField>
+            <FormField label="Telefone">
+              <Input type="text" value={novoFornForm.telefone} onChange={e => setNovoFornForm(p => ({ ...p, telefone: e.target.value }))} placeholder="(00) 00000-0000" />
+            </FormField>
           </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">E-mail</label>
-            <input type="email" value={novoFornForm.email} onChange={e => setNovoFornForm(p => ({ ...p, email: e.target.value }))} placeholder="email@fornecedor.com" className={inputCls} />
-          </div>
+          <FormField label="E-mail">
+            <Input type="email" value={novoFornForm.email} onChange={e => setNovoFornForm(p => ({ ...p, email: e.target.value }))} placeholder="email@fornecedor.com" />
+          </FormField>
           <div className="flex gap-3 pt-2">
-            <button onClick={() => setModalNovoFornecedor(false)} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">Cancelar</button>
-            <button disabled={salvandoForn || !novoFornForm.nome.trim()}
+            <Button variant="secondary" onClick={() => setModalNovoFornecedor(false)} fullWidth>Cancelar</Button>
+            <Button variant="primary" disabled={salvandoForn || !novoFornForm.nome.trim()} loading={salvandoForn} fullWidth
               onClick={async () => {
                 setSalvandoForn(true);
                 try {
@@ -136,10 +124,9 @@ export function DespesaFormModal({
                   setModalNovoFornecedor(false);
                 } catch(e) { alert('Erro ao salvar fornecedor: ' + e.message); }
                 finally { setSalvandoForn(false); }
-              }}
-              className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition disabled:opacity-50">
-              {salvandoForn ? 'Salvando...' : 'Salvar Fornecedor'}
-            </button>
+              }}>
+              Salvar Fornecedor
+            </Button>
           </div>
         </div>
       </Modal>

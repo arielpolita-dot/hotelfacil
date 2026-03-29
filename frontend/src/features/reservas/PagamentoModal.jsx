@@ -1,7 +1,6 @@
-import { Modal, FormField } from '../../components/ds';
+import { Modal, FormField, Input, Select, Button } from '../../components/ds';
 import { formatCurrency } from '../../utils/formatters';
 import { toDate } from '../../utils/dateUtils';
-import { inputCls, selectCls } from '../../styles/formClasses';
 import { Building2, CreditCard } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -40,14 +39,14 @@ export function PagamentoModal({
           <SectionTitle>Dados do Pagamento</SectionTitle>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField label="Data de Pagamento">
-              <input type="date" value={form.dataPagamento} onChange={set('dataPagamento')} className={inputCls} />
+              <Input type="date" value={form.dataPagamento} onChange={set('dataPagamento')} />
             </FormField>
             <FormField label="Forma de Pagamento">
-              <select value={form.formaPagamento} onChange={set('formaPagamento')} className={selectCls}>
+              <Select value={form.formaPagamento} onChange={set('formaPagamento')}>
                 {FORMAS_PAGAMENTO.map(fp => (
                   <option key={fp.value} value={fp.value}>{fp.label}</option>
                 ))}
-              </select>
+              </Select>
             </FormField>
             {/* Banco */}
             {['transferencia','pix','cheque','cartao_credito','cartao_debito'].includes(form.formaPagamento) && (
@@ -56,12 +55,12 @@ export function PagamentoModal({
                   <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Banco</label>
                   <button type="button" onClick={() => { setEditBancoId(null); setBancoForm({ nome: '', agencia: '', conta: '' }); setModalBanco(true); }} className="text-xs text-blue-600 hover:underline flex items-center gap-1">+ Cadastrar banco</button>
                 </div>
-                <select value={form.bancoId} onChange={set('bancoId')} className={selectCls}>
+                <Select value={form.bancoId} onChange={set('bancoId')}>
                   <option value="">Selecione um banco</option>
                   {(bancos || []).map(b => (
                     <option key={b.id} value={b.id}>{b.nome}</option>
                   ))}
-                </select>
+                </Select>
                 {form.bancoId && (() => {
                   const b = (bancos || []).find(x => x.id === form.bancoId);
                   return b && (b.agencia || b.conta) ? (
@@ -74,21 +73,21 @@ export function PagamentoModal({
               </div>
             )}
             <FormField label="Valor da Diaria (R$)">
-              <input type="number" min="0" step="0.01" value={form.valorTotal} onChange={set('valorTotal')} placeholder="0,00" className={inputCls} />
+              <Input type="number" min="0" step="0.01" value={form.valorTotal} onChange={set('valorTotal')} placeholder="0,00" />
             </FormField>
             <FormField label="Valor Extra (R$)">
-              <input type="number" min="0" step="0.01" value={form.valorExtra} onChange={set('valorExtra')} placeholder="Ex: consumo, servicos adicionais" className={inputCls} />
+              <Input type="number" min="0" step="0.01" value={form.valorExtra} onChange={set('valorExtra')} placeholder="Ex: consumo, servicos adicionais" />
             </FormField>
             <FormField label="Desconto (R$)">
-              <input type="number" min="0" step="0.01" value={form.desconto} onChange={set('desconto')} placeholder="0,00" className={inputCls} />
+              <Input type="number" min="0" step="0.01" value={form.desconto} onChange={set('desconto')} placeholder="0,00" />
             </FormField>
             {isCartao(form.formaPagamento) && (
               <FormField label="Parcelamento">
-                <select value={form.parcelas} onChange={set('parcelas')} className={selectCls}>
+                <Select value={form.parcelas} onChange={set('parcelas')}>
                   {[1,2,3,4,5,6,7,8,9,10,11,12].map(n => (
                     <option key={n} value={n}>{n === 1 ? 'A vista' : `${n}x`}</option>
                   ))}
-                </select>
+                </Select>
               </FormField>
             )}
           </div>
@@ -145,20 +144,19 @@ export function PagamentoModal({
             </div>
             <p className="text-xs text-violet-600 mb-3">Esta reserva sera registrada em <strong>Vendas por Fatura</strong>.</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <FormField label="CNPJ"><input type="text" value={form.faturadoCnpj} onChange={set('faturadoCnpj')} placeholder="00.000.000/0001-00" className={inputCls} /></FormField>
-              <FormField label="Nome da Empresa"><input type="text" value={form.faturadoEmpresa} onChange={set('faturadoEmpresa')} placeholder="Razao Social" className={inputCls} /></FormField>
-              <FormField label="Contato"><input type="text" value={form.faturadoContato} onChange={set('faturadoContato')} placeholder="Nome / Telefone" className={inputCls} /></FormField>
-              <FormField label="Endereco"><input type="text" value={form.faturadoEndereco} onChange={set('faturadoEndereco')} placeholder="Rua, no, Cidade - UF" className={inputCls} /></FormField>
+              <FormField label="CNPJ"><Input type="text" value={form.faturadoCnpj} onChange={set('faturadoCnpj')} placeholder="00.000.000/0001-00" /></FormField>
+              <FormField label="Nome da Empresa"><Input type="text" value={form.faturadoEmpresa} onChange={set('faturadoEmpresa')} placeholder="Razao Social" /></FormField>
+              <FormField label="Contato"><Input type="text" value={form.faturadoContato} onChange={set('faturadoContato')} placeholder="Nome / Telefone" /></FormField>
+              <FormField label="Endereco"><Input type="text" value={form.faturadoEndereco} onChange={set('faturadoEndereco')} placeholder="Rua, no, Cidade - UF" /></FormField>
             </div>
           </div>
         )}
 
         <div className="flex gap-3 pt-2 pb-1">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">Cancelar</button>
-          <button onClick={() => salvarPagamento(setModal, setReciboData)} disabled={saving} className="flex-1 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2">
-            <CreditCard className="h-4 w-4" />
+          <Button variant="secondary" onClick={onClose} className="flex-1">Cancelar</Button>
+          <Button onClick={() => salvarPagamento(setModal, setReciboData)} loading={saving} icon={CreditCard} className="flex-1 bg-violet-600 hover:bg-violet-700 shadow-violet-600/20">
             {saving ? 'Salvando...' : 'Confirmar Pagamento'}
-          </button>
+          </Button>
         </div>
       </div>
     </Modal>

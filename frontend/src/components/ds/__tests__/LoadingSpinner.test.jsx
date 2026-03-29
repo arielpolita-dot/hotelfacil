@@ -9,12 +9,12 @@ describe('LoadingSpinner', () => {
   });
 
   it('should show message when provided', () => {
-    render(<LoadingSpinner message="Carregando..." />);
-    expect(screen.getByText('Carregando...')).toBeDefined();
+    render(<LoadingSpinner message="Carregando dados..." />);
+    expect(screen.getByText('Carregando dados...')).toBeDefined();
   });
 
   it('should apply size classes', () => {
     const { container } = render(<LoadingSpinner size="lg" />);
-    expect(container.querySelector('.w-16')).toBeDefined();
+    expect(container.querySelector('.w-12')).toBeDefined();
   });
 });

@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Modal, FormField } from '../../components/ds';
-import { inputCls } from '../../styles/formClasses';
+import { Modal, FormField, Input, Button } from '../../components/ds';
 
 export function BancoModal({
   open, onClose,
@@ -30,29 +29,28 @@ export function BancoModal({
     <Modal open={open} onClose={onClose} title={editBancoId ? 'Editar Banco' : 'Cadastrar Banco'}>
       <div className="space-y-4">
         <FormField label="Nome do Banco">
-          <input
+          <Input
             type="text"
             value={bancoForm.nome}
             onChange={e => setBancoForm(p => ({ ...p, nome: e.target.value.toUpperCase() }))}
             placeholder="Ex: BRADESCO, ITAU, NUBANK..."
-            className={inputCls}
             style={{ textTransform: 'uppercase' }}
             autoFocus
           />
         </FormField>
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Agencia">
-            <input type="text" value={bancoForm.agencia} onChange={e => setBancoForm(p => ({ ...p, agencia: e.target.value }))} placeholder="0000-0" className={inputCls} />
+            <Input type="text" value={bancoForm.agencia} onChange={e => setBancoForm(p => ({ ...p, agencia: e.target.value }))} placeholder="0000-0" />
           </FormField>
           <FormField label="Conta">
-            <input type="text" value={bancoForm.conta} onChange={e => setBancoForm(p => ({ ...p, conta: e.target.value }))} placeholder="00000-0" className={inputCls} />
+            <Input type="text" value={bancoForm.conta} onChange={e => setBancoForm(p => ({ ...p, conta: e.target.value }))} placeholder="00000-0" />
           </FormField>
         </div>
         <div className="flex gap-3 pt-2">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">Cancelar</button>
-          <button disabled={salvando || !bancoForm.nome.trim()} onClick={salvar} className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition disabled:opacity-50">
+          <Button variant="secondary" onClick={onClose} className="flex-1">Cancelar</Button>
+          <Button disabled={salvando || !bancoForm.nome.trim()} loading={salvando} onClick={salvar} className="flex-1">
             {salvando ? 'Salvando...' : 'Salvar Banco'}
-          </button>
+          </Button>
         </div>
       </div>
     </Modal>

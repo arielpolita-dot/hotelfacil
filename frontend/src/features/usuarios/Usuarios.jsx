@@ -3,11 +3,15 @@ import { useHotel } from '../../context/HotelContext';
 import { useAuth } from '../../context/AuthContext';
 import { useEmpresa } from '../../context/EmpresaContext';
 import {
-  Plus, Search, Edit3, Trash2, User, Phone, Calendar,
+  Plus, Edit3, Trash2, User, Phone, Calendar,
   CheckCircle, XCircle, AlertCircle, Users
 } from 'lucide-react';
 import { roles, statusOptions, permissoesDisponiveis, getPermissoesPorRole } from './permissions';
 import { UsuarioFormModal } from './UsuarioFormModal';
+import {
+  Button, Badge, SearchInput, StatCard, Card, CardBody,
+  Select, PageHeader, EmptyState, DeleteDialog,
+} from '../../components/ds';
 
 function Usuarios() {
   const { usuarios = [], adicionarUsuario, atualizarUsuario, removerUsuario } = useHotel();
@@ -18,6 +22,8 @@ function Usuarios() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
   const [formData, setFormData] = useState({
     nome: '', email: '', telefone: '', senha: '', confirmarSenha: '',
@@ -70,10 +76,21 @@ function Usuarios() {
     setShowModal(true);
   };
 
-  const handleDelete = async (usuarioId) => {
+  const confirmDelete = (usuarioId) => {
     if (usuarioId === currentUser?.id) { alert('Voce nao pode excluir seu proprio usuario'); return; }
-    if (window.confirm('Tem certeza que deseja excluir este usuario?')) {
-      try { await removerUsuario(usuarioId); } catch (error) { console.error('Erro ao excluir usuario:', error); alert('Erro ao excluir usuario'); }
+    setDeletingId(usuarioId);
+    setDeleteOpen(true);
+  };
+
+  const handleDelete = async () => {
+    try {
+      await removerUsuario(deletingId);
+    } catch (error) {
+      console.error('Erro ao excluir usuario:', error);
+      alert('Erro ao excluir usuario');
+    } finally {
+      setDeleteOpen(false);
+      setDeletingId(null);
     }
   };
 
@@ -94,13 +111,9 @@ function Usuarios() {
     return matchesSearch && (!filterRole || usuario.role === filterRole) && (!filterStatus || usuario.status === filterStatus);
   });
 
-  const getStatusColor = (status) => ({
-    'Ativo': 'bg-green-100 text-green-800', 'Inativo': 'bg-slate-100 text-slate-800', 'Suspenso': 'bg-red-100 text-red-800',
-  }[status] || 'bg-slate-100 text-slate-800');
-
-  const getStatusIcon = (status) => ({
-    'Ativo': CheckCircle, 'Inativo': XCircle, 'Suspenso': AlertCircle,
-  }[status] || AlertCircle);
+  const statusBadgeVariant = (status) => ({
+    'Ativo': 'success', 'Inativo': 'default', 'Suspenso': 'danger',
+  }[status] || 'default');
 
   const getRoleInfo = (role) => roles.find(r => r.value === role) || roles[2];
 
@@ -113,70 +126,51 @@ function Usuarios() {
 
   return (
     <div className="p-6">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">Gestao de Usuarios</h1>
-          <p className="text-slate-600">Gerencie usuarios e permissoes do sistema</p>
-        </div>
-        <button onClick={() => setShowModal(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
-          <Plus className="h-5 w-5" /> Novo Usuario
-        </button>
-      </div>
+      <PageHeader
+        title="Gestao de Usuarios"
+        subtitle="Gerencie usuarios e permissoes do sistema"
+        actions={
+          <Button variant="primary" icon={Plus} onClick={() => setShowModal(true)}>
+            Novo Usuario
+          </Button>
+        }
+      />
 
       {/* Estatisticas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        {[
-          { label: 'Total de Usuarios', value: estatisticas.totalUsuarios, icon: Users, color: 'text-blue-600' },
-          { label: 'Usuarios Ativos', value: estatisticas.usuariosAtivos, icon: CheckCircle, color: 'text-green-600' },
-          { label: 'Usuarios Inativos', value: estatisticas.usuariosInativos, icon: XCircle, color: 'text-slate-600' },
-          { label: 'Usuarios Suspensos', value: estatisticas.usuariosSuspensos, icon: AlertCircle, color: 'text-red-600' },
-        ].map(({ label, value, icon: Icon, color }) => (
-          <div key={label} className="bg-white p-6 rounded-lg shadow-sm border">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-600">{label}</p>
-                <p className={`text-2xl font-bold ${color}`}>{value}</p>
-              </div>
-              <Icon className={`h-8 w-8 ${color}`} />
-            </div>
-          </div>
-        ))}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6 mb-6">
+        <StatCard title="Total de Usuarios" value={estatisticas.totalUsuarios} icon={Users} color="brand" />
+        <StatCard title="Usuarios Ativos" value={estatisticas.usuariosAtivos} icon={CheckCircle} color="success" />
+        <StatCard title="Usuarios Inativos" value={estatisticas.usuariosInativos} icon={XCircle} color="info" />
+        <StatCard title="Usuarios Suspensos" value={estatisticas.usuariosSuspensos} icon={AlertCircle} color="danger" />
       </div>
 
       {/* Filtros */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border mb-6">
+      <Card padding="md" className="mb-6">
         <div className="flex flex-wrap gap-4">
-          <div className="flex-1 min-w-64">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
-              <input type="text" placeholder="Buscar por nome ou email..." value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-            </div>
-          </div>
-          <select value={filterRole} onChange={(e) => setFilterRole(e.target.value)}
-            className="px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          <SearchInput
+            value={searchTerm}
+            onChange={setSearchTerm}
+            placeholder="Buscar por nome ou email..."
+            className="flex-1 min-w-64"
+          />
+          <Select value={filterRole} onChange={(e) => setFilterRole(e.target.value)} className="w-auto">
             <option value="">Todas as Funcoes</option>
             {roles.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
-          </select>
-          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          </Select>
+          <Select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="w-auto">
             <option value="">Todos os Status</option>
             {statusOptions.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
+          </Select>
         </div>
-      </div>
+      </Card>
 
       {/* Lista de Usuarios */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {filteredUsuarios.map((usuario) => {
-          const StatusIcon = getStatusIcon(usuario.status);
           const roleInfo = getRoleInfo(usuario.role);
           const RoleIcon = roleInfo.icon;
           return (
-            <div key={usuario.id} className="bg-white rounded-lg shadow-sm border overflow-hidden hover:shadow-md transition-shadow">
+            <Card key={usuario.id} className="overflow-hidden hover:shadow-md transition-shadow">
               <div className="bg-slate-50 p-4 border-b">
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-3">
@@ -188,18 +182,18 @@ function Usuarios() {
                       <p className="text-sm text-slate-600">{usuario.email}</p>
                     </div>
                   </div>
-                  <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${roleInfo.color} bg-opacity-10`}>
+                  <Badge variant="brand">
                     <RoleIcon className="h-3 w-3" /> {roleInfo.label}
-                  </div>
+                  </Badge>
                 </div>
               </div>
-              <div className="p-4">
+              <CardBody>
                 <div className="flex justify-between items-center mb-3">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getStatusColor(usuario.status)}`}>
-                    <StatusIcon className="h-3 w-3" /> {usuario.status}
-                  </span>
+                  <Badge variant={statusBadgeVariant(usuario.status)} dot>
+                    {usuario.status}
+                  </Badge>
                   {usuario.id === currentUser?.id && (
-                    <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">Voce</span>
+                    <Badge variant="warning">Voce</Badge>
                   )}
                 </div>
                 <div className="space-y-2 mb-4">
@@ -224,39 +218,41 @@ function Usuarios() {
                       if (!value) return null;
                       const permissao = permissoesDisponiveis.find(p => p.key === key);
                       if (!permissao) return null;
-                      return <span key={key} className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">{permissao.label}</span>;
+                      return <Badge key={key} variant="brand" size="sm">{permissao.label}</Badge>;
                     })}
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => handleEdit(usuario)}
-                    className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                    <Edit3 className="h-4 w-4" /> Editar
-                  </button>
+                  <Button variant="secondary" size="sm" icon={Edit3} onClick={() => handleEdit(usuario)} className="flex-1">
+                    Editar
+                  </Button>
                   {usuario.id !== currentUser?.id && (
-                    <button onClick={() => handleDelete(usuario.id)}
-                      className="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                      <Trash2 className="h-4 w-4" /> Excluir
-                    </button>
+                    <Button variant="danger" size="sm" icon={Trash2} onClick={() => confirmDelete(usuario.id)}>
+                      Excluir
+                    </Button>
                   )}
                 </div>
-              </div>
-            </div>
+              </CardBody>
+            </Card>
           );
         })}
       </div>
 
       {filteredUsuarios.length === 0 && (
-        <div className="text-center py-12">
-          <Users className="h-16 w-16 text-slate-200 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-slate-900 mb-2">Nenhum usuario encontrado</h3>
-          <p className="text-slate-500 mb-4">Comece cadastrando o primeiro usuario do sistema</p>
-          <button onClick={() => setShowModal(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center gap-2">
-            <Plus className="h-5 w-5" /> Cadastrar Primeiro Usuario
-          </button>
-        </div>
+        <EmptyState
+          icon={Users}
+          message="Nenhum usuario encontrado"
+          subMessage="Comece cadastrando o primeiro usuario do sistema"
+          action={{ label: 'Cadastrar Primeiro Usuario', onClick: () => setShowModal(true) }}
+        />
       )}
+
+      <DeleteDialog
+        open={deleteOpen}
+        onClose={() => { setDeleteOpen(false); setDeletingId(null); }}
+        onConfirm={handleDelete}
+        entityName="usuario"
+      />
 
       <UsuarioFormModal
         open={showModal} onClose={closeModal} onSave={handleSave}

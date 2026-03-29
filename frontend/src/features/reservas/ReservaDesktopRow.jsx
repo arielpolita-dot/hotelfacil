@@ -1,15 +1,16 @@
 import { toDate } from '../../utils/dateUtils';
 import { formatCurrency } from '../../utils/formatters';
-import { STATUS_CFG } from './constants';
+import { STATUS_BADGE_MAP } from './constants';
 import { BedDouble, Pencil, ShoppingCart, LogIn, LogOut, Ban } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { IconButton, Badge } from '../../components/ds';
 
 export function ReservaDesktopRow({ r, onEdit, onPagamento, onUpdateStatus }) {
   const ci = toDate(r.dataCheckIn);
   const co = toDate(r.dataCheckOut);
   const statusKey = r.status?.toLowerCase();
-  const cfg = STATUS_CFG[statusKey] || STATUS_CFG.confirmada;
+  const badge = STATUS_BADGE_MAP[statusKey] || STATUS_BADGE_MAP.confirmada;
 
   return (
     <tr className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
@@ -32,33 +33,23 @@ export function ReservaDesktopRow({ r, onEdit, onPagamento, onUpdateStatus }) {
         {co && !isNaN(co) ? format(co, 'dd/MM/yyyy', { locale: ptBR }) : '\u2014'}
       </td>
       <td className="py-3 px-4">
-        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${cfg.cls}`}>{cfg.label}</span>
+        <Badge variant={badge.variant}>{badge.label}</Badge>
       </td>
       <td className="py-3 px-4 text-right font-bold text-slate-900">
         {formatCurrency(r.valorTotal || r.valor)}
       </td>
       <td className="py-3 px-4">
         <div className="flex items-center justify-center gap-1">
-          <button onClick={() => onEdit(r)} title="Editar reserva" aria-label="Editar" className="w-8 h-8 flex items-center justify-center rounded-lg text-blue-600 hover:bg-blue-50 transition">
-            <Pencil className="h-4 w-4" />
-          </button>
-          <button onClick={() => onPagamento(r)} title="Registrar pagamento" aria-label="Pagamento" className="w-8 h-8 flex items-center justify-center rounded-lg text-violet-600 hover:bg-violet-50 transition">
-            <ShoppingCart className="h-4 w-4" />
-          </button>
+          <IconButton icon={Pencil} variant="brand" label="Editar" title="Editar reserva" onClick={() => onEdit(r)} />
+          <IconButton icon={ShoppingCart} variant="ghost" label="Pagamento" title="Registrar pagamento" onClick={() => onPagamento(r)} className="text-violet-600 hover:bg-violet-50" />
           {r.status === 'confirmada' && (
-            <button onClick={() => onUpdateStatus(r.id, 'check-in')} title="Fazer Check-in" aria-label="Check-in" className="w-8 h-8 flex items-center justify-center rounded-lg text-emerald-600 hover:bg-emerald-50 transition">
-              <LogIn className="h-4 w-4" />
-            </button>
+            <IconButton icon={LogIn} variant="success" label="Check-in" title="Fazer Check-in" onClick={() => onUpdateStatus(r.id, 'check-in')} />
           )}
           {(r.status === 'check-in' || r.status === 'checkin') && (
-            <button onClick={() => onUpdateStatus(r.id, 'checkout')} title="Fazer Check-out" aria-label="Check-out" className="w-8 h-8 flex items-center justify-center rounded-lg text-orange-500 hover:bg-orange-50 transition">
-              <LogOut className="h-4 w-4" />
-            </button>
+            <IconButton icon={LogOut} variant="ghost" label="Check-out" title="Fazer Check-out" onClick={() => onUpdateStatus(r.id, 'checkout')} className="text-orange-500 hover:bg-orange-50" />
           )}
           {(r.status === 'confirmada' || r.status === 'check-in' || r.status === 'checkin') && (
-            <button onClick={() => onUpdateStatus(r.id, 'cancelada')} title="Cancelar reserva" className="w-8 h-8 flex items-center justify-center rounded-lg text-red-400 hover:bg-red-50 transition">
-              <Ban className="h-4 w-4" />
-            </button>
+            <IconButton icon={Ban} variant="danger" label="Cancelar" title="Cancelar reserva" onClick={() => onUpdateStatus(r.id, 'cancelada')} />
           )}
         </div>
       </td>
