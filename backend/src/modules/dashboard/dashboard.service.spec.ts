@@ -95,10 +95,13 @@ describe('DashboardService', () => {
       // Act
       await service.getStats(EMPRESA_ID);
 
-      // Assert
-      expect(promiseAllSpy).toHaveBeenCalled();
-      const callArg = promiseAllSpy.mock.calls[0][0];
-      expect(callArg).toHaveLength(5);
+      // Assert — getStats uses Promise.all with 5 items,
+      // but getReceitaStats also uses Promise.all(2 items)
+      // internally. Find the call with 5 promises.
+      const fiveItemCall = promiseAllSpy.mock.calls.find(
+        ([arr]) => Array.isArray(arr) && arr.length === 5,
+      );
+      expect(fiveItemCall).toBeDefined();
 
       promiseAllSpy.mockRestore();
     });
