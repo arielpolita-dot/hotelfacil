@@ -4,6 +4,7 @@ import {
   Receipt, CreditCard, TrendingUp, Users,
   X, LogOut, ChevronRight, Building2, BarChart2, Settings,
 } from 'lucide-react';
+import { EmpresaSwitcher } from './EmpresaSwitcher';
 
 export const NAV_ITEMS = [
   { to: '/app', icon: LayoutDashboard, label: 'Dashboard' },
@@ -50,22 +51,8 @@ export function SidebarNav({ sidebarOpen, setSidebarOpen, currentUser, empresaAt
       </div>
 
       {/* Company switcher */}
-      <div className="p-4 border-b border-slate-700">
-        {companies && companies.length > 1 ? (
-          <select
-            value={empresaAtual?.id || ''}
-            onChange={(e) => switchEmpresa(e.target.value)}
-            className="w-full bg-slate-800 text-white text-sm rounded-lg px-3 py-2 border border-slate-600"
-          >
-            {companies.map(c => (
-              <option key={c.id} value={c.id}>{c.name || c.nome}</option>
-            ))}
-          </select>
-        ) : (
-          <div className="text-sm font-semibold text-white truncate">
-            {empresaAtual?.name || empresaAtual?.nome || 'Sistema Hoteleiro'}
-          </div>
-        )}
+      <div className="border-b border-white/10 py-2">
+        <EmpresaSwitcher />
       </div>
 
       {/* Navegacao */}
