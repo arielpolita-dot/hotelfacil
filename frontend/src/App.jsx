@@ -77,6 +77,7 @@ function AppLayout() {
           <Route path="configuracoes" element={<Configuracoes />} />
           <Route path="fornecedores" element={<Fornecedores />} />
           <Route path="admin" element={<AdminPanel />} />
+          <Route path="novo-hotel" element={<CreateEmpresa />} />
           <Route path="*" element={<Navigate to="/app" replace />} />
         </Routes>
       </Suspense>
