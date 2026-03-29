@@ -14,6 +14,7 @@ import { ConfigService } from '@nestjs/config';
 import type { Request, Response } from 'express';
 
 import { AuthBffService } from './auth.service';
+import { EmpresasService } from '../empresas/empresas.service';
 
 const COOKIE_NAME = 'ohospedeiro_access_token';
 const COOKIE_MAX_AGE = 24 * 60 * 60 * 1000; // 24h
@@ -26,6 +27,7 @@ export class AuthBffController {
   constructor(
     private readonly authBffService: AuthBffService,
     private readonly configService: ConfigService,
+    private readonly empresasService: EmpresasService,
   ) {
     this.frontendUrl = this.configService.getOrThrow('FRONTEND_URL');
   }
@@ -104,7 +106,16 @@ export class AuthBffController {
       await this.authBffService.validateAccessToken(accessToken);
     if (!user) return { authenticated: false };
 
-    return { authenticated: true, user };
+    const companies =
+      await this.empresasService.findAllByUser(user.id);
+    const activeCompanyId = companies[0]?.id ?? null;
+
+    return {
+      authenticated: true,
+      user,
+      companies,
+      activeCompanyId,
+    };
   }
 
   @Post('refresh')
