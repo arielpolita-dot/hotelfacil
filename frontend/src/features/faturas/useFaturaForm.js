@@ -57,12 +57,12 @@ export function useFaturaForm() {
   const handleInputChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
     if (name === 'quartosInclusos') {
-      const quartoId = parseInt(value);
+      const quartoNum = parseInt(value, 10);
       setFormData(prev => ({
         ...prev,
         quartosInclusos: checked
-          ? [...prev.quartosInclusos, quartoId]
-          : prev.quartosInclusos.filter(id => id !== quartoId)
+          ? [...prev.quartosInclusos.map(Number), quartoNum]
+          : prev.quartosInclusos.map(Number).filter(id => id !== quartoNum)
       }));
     } else {
       setFormData(prev => ({
@@ -91,7 +91,7 @@ export function useFaturaForm() {
       dataFim: fatura.dataFim,
       periodicidadeFatura: fatura.periodicidadeFatura,
       valorMensal: fatura.valorMensal.toString(),
-      quartosInclusos: fatura.quartosInclusos || [],
+      quartosInclusos: (fatura.quartosInclusos || []).map(Number),
       observacoes: fatura.observacoes || '',
       status: fatura.status,
     });

@@ -1,16 +1,17 @@
 import { toDate } from '../../utils/dateUtils';
 import { formatCurrency } from '../../utils/formatters';
 import { STATUS_BADGE_MAP } from './constants';
-import { BedDouble, Pencil, ShoppingCart, LogIn, LogOut, Ban } from 'lucide-react';
+import { BedDouble, Pencil, ShoppingCart, LogIn, LogOut, Ban, Printer } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { IconButton, Badge } from '../../components/ds';
 
-export function ReservaDesktopRow({ r, onEdit, onPagamento, onUpdateStatus }) {
+export function ReservaDesktopRow({ r, onEdit, onPagamento, onRecibo, onUpdateStatus }) {
   const ci = toDate(r.dataCheckIn);
   const co = toDate(r.dataCheckOut);
   const statusKey = r.status?.toLowerCase();
   const badge = STATUS_BADGE_MAP[statusKey] || STATUS_BADGE_MAP.confirmada;
+  const jaPago = !!r.dataPagamento;
 
   return (
     <tr className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
@@ -41,7 +42,17 @@ export function ReservaDesktopRow({ r, onEdit, onPagamento, onUpdateStatus }) {
       <td className="py-3 px-4">
         <div className="flex items-center justify-center gap-1">
           <IconButton icon={Pencil} variant="brand" label="Editar" title="Editar reserva" onClick={() => onEdit(r)} />
-          <IconButton icon={ShoppingCart} variant="ghost" label="Pagamento" title="Registrar pagamento" onClick={() => onPagamento(r)} className="text-violet-600 hover:bg-violet-50" />
+          {jaPago ? (
+            <IconButton
+              icon={Printer}
+              label="Imprimir Recibo"
+              title="Pagamento realizado — Imprimir recibo"
+              onClick={() => onRecibo(r)}
+              className="text-emerald-700 bg-emerald-100 hover:bg-emerald-200"
+            />
+          ) : (
+            <IconButton icon={ShoppingCart} variant="ghost" label="Pagamento" title="Registrar pagamento" onClick={() => onPagamento(r)} className="text-violet-600 hover:bg-violet-50" />
+          )}
           {r.status === 'confirmada' && (
             <IconButton icon={LogIn} variant="success" label="Check-in" title="Fazer Check-in" onClick={() => onUpdateStatus(r.id, 'check-in')} />
           )}

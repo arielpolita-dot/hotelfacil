@@ -12,7 +12,7 @@ import {
 } from '../../components/ds';
 
 function Faturas() {
-  const { faturas = [], adicionarFatura, atualizarFatura, removerFatura, quartos } = useHotel();
+  const { faturas = [], adicionarFatura, atualizarFatura, removerFatura, quartos, adicionarReserva, reservas, atualizarReserva } = useHotel();
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
@@ -28,10 +28,44 @@ function Faturas() {
   const handleSave = async () => {
     try {
       const faturaData = buildFaturaData();
+      let faturaId;
       if (editingFatura) {
         await atualizarFatura(editingFatura.id, faturaData);
+        faturaId = editingFatura.id;
+        // Cancelar reservas corporativas antigas deste contrato
+        const reservasContrato = reservas.filter(r => r.contratoId === faturaId);
+        for (const r of reservasContrato) {
+          await atualizarReserva(r.id, { status: 'cancelada' });
+        }
       } else {
-        await adicionarFatura(faturaData);
+        const result = await adicionarFatura(faturaData);
+        faturaId = result?.id || faturaData.id;
+      }
+      // Criar reservas corporativas para cada quarto incluído
+      if (faturaData.quartosInclusos && faturaData.quartosInclusos.length > 0) {
+        for (const quartoNum of faturaData.quartosInclusos) {
+          const quarto = quartos.find(q => Number(q.numero) === Number(quartoNum));
+          if (!quarto) continue;
+          await adicionarReserva({
+            quartoId: quarto.id,
+            numeroQuarto: quarto.numero,
+            quartoNumero: quarto.numero,
+            nomeHospede: faturaData.empresaCliente,
+            cpf: faturaData.cnpj,
+            telefone: faturaData.telefone || '',
+            email: faturaData.email || '',
+            dataCheckIn: faturaData.dataInicio,
+            dataCheckOut: faturaData.dataFim,
+            adultos: 1,
+            criancas: 0,
+            valorTotal: faturaData.valorMensal,
+            status: 'confirmada',
+            origem: 'contrato',
+            contratoId: faturaId,
+            observacoes: `Contrato corporativo: ${faturaData.empresaCliente}`,
+            criadoEm: new Date().toISOString(),
+          });
+        }
       }
       resetForm();
       setShowModal(false);
@@ -62,6 +96,26 @@ function Faturas() {
   };
 
   const closeModal = () => { setShowModal(false); resetForm(); };
+
+  const handleFaturar = async (fatura) => {
+    try {
+      const dias = fatura.periodicidadeFatura === 'Quinzenal' ? 15 :
+                   fatura.periodicidadeFatura === 'Mensal' ? 30 :
+                   fatura.periodicidadeFatura === 'Bimestral' ? 60 : 90;
+      const proxima = new Date();
+      proxima.setDate(proxima.getDate() + dias);
+      await atualizarFatura(fatura.id, {
+        ...fatura,
+        faturasPendentes: (fatura.faturasPendentes || 0) + 1,
+        ultimaFatura: new Date().toISOString().split('T')[0],
+        proximaFatura: proxima.toISOString().split('T')[0],
+      });
+      alert(`Fatura gerada com sucesso!\nEmpresa: ${fatura.empresaCliente}\nValor: R$ ${(fatura.valorMensal || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+    } catch (error) {
+      console.error('Erro ao faturar:', error);
+      alert('Erro ao gerar fatura. Tente novamente.');
+    }
+  };
 
   const filteredFaturas = faturas.filter(fatura => {
     const searchLower = searchTerm.toLowerCase();
@@ -188,7 +242,7 @@ function Faturas() {
                 <Button variant="secondary" size="sm" icon={Edit3} onClick={() => openEdit(fatura)} className="flex-1">
                   Editar
                 </Button>
-                <Button variant="success" size="sm" icon={Send}>
+                <Button variant="success" size="sm" icon={Send} onClick={() => handleFaturar(fatura)}>
                   Faturar
                 </Button>
                 <Button variant="danger" size="sm" icon={Trash2} onClick={() => confirmDelete(fatura.id)}>

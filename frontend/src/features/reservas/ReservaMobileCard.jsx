@@ -1,16 +1,17 @@
 import { toDate } from '../../utils/dateUtils';
 import { formatCurrency } from '../../utils/formatters';
 import { STATUS_BADGE_MAP } from './constants';
-import { BedDouble, Pencil, ShoppingCart, LogIn, LogOut, Ban } from 'lucide-react';
+import { BedDouble, Pencil, ShoppingCart, LogIn, LogOut, Ban, Printer } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Card, Badge, IconButton } from '../../components/ds';
 
-export function ReservaMobileCard({ r, onEdit, onPagamento, onUpdateStatus }) {
+export function ReservaMobileCard({ r, onEdit, onPagamento, onRecibo, onUpdateStatus }) {
   const ci = toDate(r.dataCheckIn);
   const co = toDate(r.dataCheckOut);
   const statusKey = r.status?.toLowerCase();
   const badge = STATUS_BADGE_MAP[statusKey] || STATUS_BADGE_MAP.confirmada;
+  const jaPago = !!r.dataPagamento;
 
   return (
     <Card padding="sm">
@@ -49,7 +50,18 @@ export function ReservaMobileCard({ r, onEdit, onPagamento, onUpdateStatus }) {
         <p className="font-bold text-slate-900 text-base">{formatCurrency(r.valorTotal || r.valor)}</p>
         <div className="flex items-center gap-1">
           <IconButton icon={Pencil} variant="brand" size="lg" label="Editar" title="Editar" onClick={() => onEdit(r)} className="bg-blue-50 hover:bg-blue-100 rounded-xl" />
-          <IconButton icon={ShoppingCart} variant="ghost" size="lg" label="Pagamento" title="Pagamento" onClick={() => onPagamento(r)} className="text-violet-600 bg-violet-50 hover:bg-violet-100 rounded-xl" />
+          {jaPago ? (
+            <IconButton
+              icon={Printer}
+              size="lg"
+              label="Imprimir Recibo"
+              title="Pagamento realizado — Imprimir recibo"
+              onClick={() => onRecibo(r)}
+              className="text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-xl"
+            />
+          ) : (
+            <IconButton icon={ShoppingCart} variant="ghost" size="lg" label="Pagamento" title="Pagamento" onClick={() => onPagamento(r)} className="text-violet-600 bg-violet-50 hover:bg-violet-100 rounded-xl" />
+          )}
           {r.status === 'confirmada' && (
             <IconButton icon={LogIn} variant="success" size="lg" label="Check-in" title="Check-in" onClick={() => onUpdateStatus(r.id, 'check-in')} className="bg-emerald-50 hover:bg-emerald-100 rounded-xl" />
           )}

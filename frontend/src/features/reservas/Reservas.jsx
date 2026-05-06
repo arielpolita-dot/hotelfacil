@@ -32,6 +32,30 @@ export default function Vendas() {
 
   const formHook = useReservaForm({ quartos, adicionarReserva, atualizarReserva, adicionarFatura });
 
+  const abrirRecibo = (r) => {
+    setReciboData({
+      reservaId: r.id,
+      nomeHospede: r.nomeHospede || r.hospede?.nome || '',
+      cpf: r.cpf || r.hospede?.cpf || '',
+      telefone: r.telefone || r.hospede?.telefone || '',
+      email: r.email || r.hospede?.email || '',
+      numeroQuarto: r.numeroQuarto || r.quartoNumero || '',
+      dataCheckIn: r.dataCheckIn,
+      dataCheckOut: r.dataCheckOut,
+      adultos: r.adultos || 1,
+      criancas: r.criancas || 0,
+      valorBase: parseFloat(r.valorBase || r.valorTotal || 0),
+      valorExtra: parseFloat(r.valorExtra || 0),
+      desconto: parseFloat(r.desconto || 0),
+      valorFinal: parseFloat(r.valorTotal || 0),
+      formaPagamento: r.formaPagamento || 'a_definir',
+      parcelas: r.parcelas || 1,
+      dataPagamento: r.dataPagamento,
+      observacoes: r.observacoes || '',
+    });
+    setModal('recibo');
+  };
+
   const atualizarStatus = async (id, status) => {
     if (status === 'cancelada') {
       setCancelando({ id });
@@ -108,7 +132,7 @@ export default function Vendas() {
           {/* Mobile: Cards */}
           <div className="md:hidden space-y-3">
             {reservasFiltradas.map(r => (
-              <ReservaMobileCard key={r.id} r={r} onEdit={r => formHook.abrirEditar(r, setModal)} onPagamento={r => formHook.abrirPagamento(r, setModal)} onUpdateStatus={atualizarStatus} />
+              <ReservaMobileCard key={r.id} r={r} onEdit={r => formHook.abrirEditar(r, setModal)} onPagamento={r => formHook.abrirPagamento(r, setModal)} onRecibo={abrirRecibo} onUpdateStatus={atualizarStatus} />
             ))}
           </div>
 
@@ -127,7 +151,7 @@ export default function Vendas() {
                 </TableHeader>
                 <tbody>
                   {reservasFiltradas.map(r => (
-                    <ReservaDesktopRow key={r.id} r={r} onEdit={r => formHook.abrirEditar(r, setModal)} onPagamento={r => formHook.abrirPagamento(r, setModal)} onUpdateStatus={atualizarStatus} />
+                    <ReservaDesktopRow key={r.id} r={r} onEdit={r => formHook.abrirEditar(r, setModal)} onPagamento={r => formHook.abrirPagamento(r, setModal)} onRecibo={abrirRecibo} onUpdateStatus={atualizarStatus} />
                   ))}
                 </tbody>
               </table>
