@@ -20,6 +20,7 @@ import {
 
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { CurrentToken } from '../../common/decorators/current-token.decorator';
 import { AuthUser } from '../auth/interfaces/jwt-payload.interface';
 import { EmpresasService } from './empresas.service';
 import { CreateEmpresaDto } from './dto/create-empresa.dto';
@@ -48,8 +49,9 @@ export class EmpresasController {
   create(
     @Body() dto: CreateEmpresaDto,
     @CurrentUser() user: AuthUser,
+    @CurrentToken() accessToken: string,
   ) {
-    return this.empresasService.create(user.id, dto);
+    return this.empresasService.create(user.id, dto, accessToken);
   }
 
   @Get(':id')
@@ -68,8 +70,9 @@ export class EmpresasController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateEmpresaDto,
     @CurrentUser() user: AuthUser,
+    @CurrentToken() accessToken: string,
   ) {
-    return this.empresasService.update(id, dto, user.id);
+    return this.empresasService.update(id, dto, user.id, accessToken);
   }
 
   @Delete(':id')

@@ -46,10 +46,10 @@ describe('EmpresasController', () => {
     expect(service.findAllByUser).toHaveBeenCalledWith('user-1');
   });
 
-  it('create delegates with user.id and dto', async () => {
+  it('create delegates with user.id, dto and accessToken', async () => {
     const dto = { nome: 'Hotel ABC' } as any;
-    await controller.create(dto, mockUser);
-    expect(service.create).toHaveBeenCalledWith('user-1', dto);
+    await controller.create(dto, mockUser, 'tok-abc');
+    expect(service.create).toHaveBeenCalledWith('user-1', dto, 'tok-abc');
   });
 
   it('findOne delegates with id', async () => {
@@ -57,13 +57,14 @@ describe('EmpresasController', () => {
     expect(service.findOne).toHaveBeenCalledWith('emp-1');
   });
 
-  it('update delegates with id, dto and user.id', async () => {
+  it('update delegates with id, dto, user.id and accessToken', async () => {
     const dto = { nome: 'Hotel XYZ' } as any;
-    await controller.update('emp-1', dto, mockUser);
+    await controller.update('emp-1', dto, mockUser, 'tok-xyz');
     expect(service.update).toHaveBeenCalledWith(
       'emp-1',
       dto,
       'user-1',
+      'tok-xyz',
     );
   });
 

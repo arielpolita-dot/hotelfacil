@@ -74,6 +74,8 @@ const buildAdminUser = (
   ...overrides,
 });
 
+const TOKEN = 'access-token-xyz';
+
 describe('EmpresasService', () => {
   let service: EmpresasService;
   let empresaRepo: ReturnType<typeof mockEmpresaRepo>;
@@ -163,7 +165,7 @@ describe('EmpresasService', () => {
     });
 
     it('should create empresa with membership and all permissions', async () => {
-      await service.create('owner-1', dto as any);
+      await service.create('owner-1', dto as any, TOKEN);
 
       expect(dataSource.transaction).toHaveBeenCalled();
 
@@ -232,7 +234,7 @@ describe('EmpresasService', () => {
       );
 
       await expect(
-        service.create('ghost-user', dto as any),
+        service.create('ghost-user', dto as any, TOKEN),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -242,17 +244,18 @@ describe('EmpresasService', () => {
       );
 
       await expect(
-        service.create('owner-1', dto as any),
+        service.create('owner-1', dto as any, TOKEN),
       ).rejects.toThrow('DB error');
     });
 
     it('should register context name in Authify after persisting', async () => {
-      const result = await service.create('owner-1', dto as any);
+      const result = await service.create('owner-1', dto as any, TOKEN);
 
       expect(authifyClient.registerContext).toHaveBeenCalledTimes(1);
       expect(authifyClient.registerContext).toHaveBeenCalledWith(
         result.id,
         'Hotel Novo',
+        TOKEN,
         expect.objectContaining({ type: 'company' }),
       );
     });
@@ -265,7 +268,7 @@ describe('EmpresasService', () => {
         .spyOn((service as any).logger, 'warn')
         .mockImplementation(() => undefined);
 
-      const result = await service.create('owner-1', dto as any);
+      const result = await service.create('owner-1', dto as any, TOKEN);
 
       expect(result.nome).toBe('Hotel Novo');
       expect(warnSpy).toHaveBeenCalled();
@@ -277,7 +280,7 @@ describe('EmpresasService', () => {
       );
 
       await expect(
-        service.create('owner-1', dto as any),
+        service.create('owner-1', dto as any, TOKEN),
       ).rejects.toThrow('DB error');
 
       expect(authifyClient.registerContext).not.toHaveBeenCalled();
@@ -537,6 +540,7 @@ describe('EmpresasService', () => {
         'emp-1',
         { nome: 'New Name' } as any,
         'owner-1',
+        TOKEN,
       );
 
       expect(result.nome).toBe('New Name');
@@ -556,6 +560,7 @@ describe('EmpresasService', () => {
           'emp-1',
           { nome: 'Updated' } as any,
           'admin-user',
+          TOKEN,
         ),
       ).resolves.toBeDefined();
     });
@@ -573,6 +578,7 @@ describe('EmpresasService', () => {
           'emp-1',
           { nome: 'X' } as any,
           'receptionist',
+          TOKEN,
         ),
       ).rejects.toThrow(ForbiddenException);
     });
@@ -588,6 +594,7 @@ describe('EmpresasService', () => {
           'emp-1',
           { nome: 'X' } as any,
           'stranger',
+          TOKEN,
         ),
       ).rejects.toThrow(ForbiddenException);
     });
@@ -606,12 +613,14 @@ describe('EmpresasService', () => {
         'emp-1',
         { nome: 'New Name' } as any,
         'owner-1',
+        TOKEN,
       );
 
       expect(authifyClient.registerContext).toHaveBeenCalledTimes(1);
       expect(authifyClient.registerContext).toHaveBeenCalledWith(
         'emp-1',
         'New Name',
+        TOKEN,
         expect.objectContaining({ type: 'company' }),
       );
     });
@@ -630,6 +639,7 @@ describe('EmpresasService', () => {
         'emp-1',
         { nome: 'Same Name' } as any,
         'owner-1',
+        TOKEN,
       );
 
       expect(authifyClient.registerContext).not.toHaveBeenCalled();
@@ -649,6 +659,7 @@ describe('EmpresasService', () => {
         'emp-1',
         { telefone: '11999999999' } as any,
         'owner-1',
+        TOKEN,
       );
 
       expect(authifyClient.registerContext).not.toHaveBeenCalled();
@@ -674,6 +685,7 @@ describe('EmpresasService', () => {
         'emp-1',
         { nome: 'New' } as any,
         'owner-1',
+        TOKEN,
       );
 
       expect(result.nome).toBe('New');

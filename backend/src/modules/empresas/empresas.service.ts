@@ -38,6 +38,7 @@ export class EmpresasService {
   async create(
     ownerId: string,
     dto: CreateEmpresaDto,
+    accessToken: string,
   ): Promise<Empresa> {
     await this.ensureUsuarioExists(ownerId);
 
@@ -75,7 +76,7 @@ export class EmpresasService {
       return created;
     });
 
-    await this.registerEmpresaContext(empresa);
+    await this.registerEmpresaContext(empresa, accessToken);
 
     return empresa;
   }
@@ -111,6 +112,7 @@ export class EmpresasService {
     id: string,
     dto: UpdateEmpresaDto,
     userId: string,
+    accessToken: string,
   ): Promise<Empresa> {
     const empresa = await this.findOne(id);
 
@@ -121,7 +123,7 @@ export class EmpresasService {
     const saved = await this.empresaRepo.save(empresa);
 
     if (saved.nome !== previousNome) {
-      await this.registerEmpresaContext(saved);
+      await this.registerEmpresaContext(saved, accessToken);
     }
 
     return saved;
@@ -322,11 +324,13 @@ export class EmpresasService {
 
   private async registerEmpresaContext(
     empresa: Empresa,
+    accessToken: string,
   ): Promise<void> {
     try {
       await this.authifyClient.registerContext(
         empresa.id,
         empresa.nome,
+        accessToken,
         {
           type: 'company',
           createdAt: empresa.createdAt,

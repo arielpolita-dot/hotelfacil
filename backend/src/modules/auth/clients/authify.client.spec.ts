@@ -8,11 +8,12 @@ const mockConfigService = () => ({
     const map: Record<string, string> = {
       AUTHIFY_URL: 'https://auth.test.com',
       AUTHIFY_API_KEY: 'test-api-key',
-      AUTHIFY_SERVICE_TOKEN: 'test-service-token',
     };
     return map[key];
   }),
 });
+
+const TOKEN = 'user-access-token-xyz';
 
 describe('AuthifyClient', () => {
   let client: AuthifyClient;
@@ -40,10 +41,10 @@ describe('AuthifyClient', () => {
   });
 
   describe('registerContext', () => {
-    it('PUTs to the correct URL with X-API-Key and Bearer headers', async () => {
+    it('PUTs to the correct URL with X-API-Key and Bearer of caller token', async () => {
       fetchSpy.mockResolvedValueOnce(new Response('{}', { status: 200 }));
 
-      await client.registerContext('emp-123', 'Hotel Beira Mar');
+      await client.registerContext('emp-123', 'Hotel Beira Mar', TOKEN);
 
       expect(fetchSpy).toHaveBeenCalledTimes(1);
       const [url, init] = fetchSpy.mock.calls[0];
@@ -52,15 +53,31 @@ describe('AuthifyClient', () => {
       expect(init.headers).toMatchObject({
         'Content-Type': 'application/json',
         'X-API-Key': 'test-api-key',
-        Authorization: 'Bearer test-service-token',
+        Authorization: `Bearer ${TOKEN}`,
       });
+    });
+
+    it('uses a different Bearer per call (token comes from request, not config)', async () => {
+      fetchSpy
+        .mockResolvedValueOnce(new Response('{}', { status: 200 }))
+        .mockResolvedValueOnce(new Response('{}', { status: 200 }));
+
+      await client.registerContext('emp-1', 'A', 'token-userA');
+      await client.registerContext('emp-2', 'B', 'token-userB');
+
+      expect(fetchSpy.mock.calls[0][1].headers.Authorization).toBe(
+        'Bearer token-userA',
+      );
+      expect(fetchSpy.mock.calls[1][1].headers.Authorization).toBe(
+        'Bearer token-userB',
+      );
     });
 
     it('sends name and metadata in body as JSON', async () => {
       fetchSpy.mockResolvedValueOnce(new Response('{}', { status: 200 }));
 
       const createdAt = new Date('2026-05-07T10:00:00Z');
-      await client.registerContext('emp-1', 'Hotel X', {
+      await client.registerContext('emp-1', 'Hotel X', TOKEN, {
         type: 'company',
         createdAt,
       });
@@ -76,7 +93,7 @@ describe('AuthifyClient', () => {
     it('omits metadata key when not provided', async () => {
       fetchSpy.mockResolvedValueOnce(new Response('{}', { status: 200 }));
 
-      await client.registerContext('emp-1', 'Hotel X');
+      await client.registerContext('emp-1', 'Hotel X', TOKEN);
 
       const body = JSON.parse(fetchSpy.mock.calls[0][1].body as string);
       expect(body).toEqual({ name: 'Hotel X' });
@@ -85,7 +102,7 @@ describe('AuthifyClient', () => {
     it('encodes the externalContextId in the URL', async () => {
       fetchSpy.mockResolvedValueOnce(new Response('{}', { status: 200 }));
 
-      await client.registerContext('emp/with spaces', 'Hotel');
+      await client.registerContext('emp/with spaces', 'Hotel', TOKEN);
 
       expect(fetchSpy.mock.calls[0][0]).toBe(
         'https://auth.test.com/auth/contexts/emp%2Fwith%20spaces',
@@ -98,7 +115,7 @@ describe('AuthifyClient', () => {
         .mockResolvedValueOnce(new Response('{}', { status: 200 }));
 
       await expect(
-        client.registerContext('emp-1', 'Hotel'),
+        client.registerContext('emp-1', 'Hotel', TOKEN),
       ).resolves.toBeUndefined();
 
       expect(fetchSpy).toHaveBeenCalledTimes(2);
@@ -109,7 +126,7 @@ describe('AuthifyClient', () => {
         .mockResolvedValueOnce(new Response('rate', { status: 429 }))
         .mockResolvedValueOnce(new Response('{}', { status: 200 }));
 
-      await client.registerContext('emp-1', 'Hotel');
+      await client.registerContext('emp-1', 'Hotel', TOKEN);
 
       expect(fetchSpy).toHaveBeenCalledTimes(2);
     });
@@ -119,7 +136,7 @@ describe('AuthifyClient', () => {
         .mockRejectedValueOnce(new Error('ECONNRESET'))
         .mockResolvedValueOnce(new Response('{}', { status: 200 }));
 
-      await client.registerContext('emp-1', 'Hotel');
+      await client.registerContext('emp-1', 'Hotel', TOKEN);
 
       expect(fetchSpy).toHaveBeenCalledTimes(2);
     });
@@ -130,7 +147,7 @@ describe('AuthifyClient', () => {
       );
 
       await expect(
-        client.registerContext('emp-1', 'Hotel'),
+        client.registerContext('emp-1', 'Hotel', TOKEN),
       ).rejects.toThrow(/503/);
 
       expect(fetchSpy).toHaveBeenCalledTimes(3);
@@ -142,7 +159,7 @@ describe('AuthifyClient', () => {
       );
 
       await expect(
-        client.registerContext('emp-1', ''),
+        client.registerContext('emp-1', '', TOKEN),
       ).rejects.toThrow(/400/);
 
       expect(fetchSpy).toHaveBeenCalledTimes(1);
@@ -154,7 +171,7 @@ describe('AuthifyClient', () => {
       );
 
       await expect(
-        client.registerContext('emp-1', 'Hotel'),
+        client.registerContext('emp-1', 'Hotel', TOKEN),
       ).rejects.toThrow(/401/);
 
       expect(fetchSpy).toHaveBeenCalledTimes(1);
@@ -166,7 +183,7 @@ describe('AuthifyClient', () => {
       );
 
       await expect(
-        client.registerContext('emp-1', 'Hotel'),
+        client.registerContext('emp-1', 'Hotel', TOKEN),
       ).rejects.toThrow(/404/);
 
       expect(fetchSpy).toHaveBeenCalledTimes(1);

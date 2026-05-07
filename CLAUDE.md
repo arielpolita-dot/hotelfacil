@@ -179,7 +179,6 @@ JWT_REFRESH_EXPIRATION=7d
 AUTHIFY_URL=https://auth.ohanax.com
 AUTHIFY_FRONTEND_URL=https://auth.ohanax.com
 AUTHIFY_API_KEY=ak_d30b2d4f5740d8a9d141e0c0cff7de1833f71bf797aac713
-AUTHIFY_SERVICE_TOKEN=(JWT bearer admin/service do Authify — ver Coolify)
 BILLING_API_URL=https://billing.ohanax.com
 BILLING_FRONTEND_URL=https://billing.ohanax.com
 BILLING_API_KEY=bk_6dd737d4b336cd22bb199cf4bc4010d63967818b9853d2e6
