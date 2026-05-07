@@ -15,10 +15,14 @@ export class AuthifyClient {
   private readonly logger = new Logger(AuthifyClient.name);
   private readonly authServiceUrl: string;
   private readonly apiKey: string;
+  private readonly serviceToken: string;
 
   constructor(private readonly configService: ConfigService) {
     this.authServiceUrl = this.configService.getOrThrow('AUTHIFY_URL');
     this.apiKey = this.configService.getOrThrow('AUTHIFY_API_KEY');
+    this.serviceToken = this.configService.getOrThrow(
+      'AUTHIFY_SERVICE_TOKEN',
+    );
   }
 
   async registerContext(
@@ -44,6 +48,7 @@ export class AuthifyClient {
           headers: {
             'Content-Type': 'application/json',
             'X-API-Key': this.apiKey,
+            Authorization: `Bearer ${this.serviceToken}`,
           },
           body,
         });

@@ -8,6 +8,7 @@ const mockConfigService = () => ({
     const map: Record<string, string> = {
       AUTHIFY_URL: 'https://auth.test.com',
       AUTHIFY_API_KEY: 'test-api-key',
+      AUTHIFY_SERVICE_TOKEN: 'test-service-token',
     };
     return map[key];
   }),
@@ -39,7 +40,7 @@ describe('AuthifyClient', () => {
   });
 
   describe('registerContext', () => {
-    it('PUTs to the correct URL with X-API-Key header (no Authorization)', async () => {
+    it('PUTs to the correct URL with X-API-Key and Bearer headers', async () => {
       fetchSpy.mockResolvedValueOnce(new Response('{}', { status: 200 }));
 
       await client.registerContext('emp-123', 'Hotel Beira Mar');
@@ -51,8 +52,8 @@ describe('AuthifyClient', () => {
       expect(init.headers).toMatchObject({
         'Content-Type': 'application/json',
         'X-API-Key': 'test-api-key',
+        Authorization: 'Bearer test-service-token',
       });
-      expect(init.headers).not.toHaveProperty('Authorization');
     });
 
     it('sends name and metadata in body as JSON', async () => {
