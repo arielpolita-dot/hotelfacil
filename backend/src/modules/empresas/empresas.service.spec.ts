@@ -11,6 +11,7 @@ import { EmpresasService } from './empresas.service';
 import { Empresa } from './entities/empresa.entity';
 import { EmpresaUsuario } from './entities/empresa-usuario.entity';
 import { AdminUser } from '../auth/entities/admin-user.entity';
+import { AuthifyClient } from '../auth/clients/authify.client';
 import { Usuario } from '../usuarios/entities/usuario.entity';
 import { Permissao } from '../usuarios/entities/permissao.entity';
 import {
@@ -81,12 +82,16 @@ describe('EmpresasService', () => {
   >;
   let mockManager: ReturnType<typeof buildMockManager>;
   let dataSource: ReturnType<typeof buildMockDataSource>;
+  let authifyClient: { registerContext: jest.Mock };
 
   beforeEach(async () => {
     empresaRepo = mockEmpresaRepo();
     empresaUsuarioRepo = mockEmpresaUsuarioRepo();
     mockManager = buildMockManager();
     dataSource = buildMockDataSource(mockManager);
+    authifyClient = {
+      registerContext: jest.fn().mockResolvedValue(undefined),
+    };
 
     // Default: getRepository returns mock repos
     const usuarioRepoMock = {
@@ -124,6 +129,7 @@ describe('EmpresasService', () => {
             useValue: empresaUsuarioRepo,
           },
           { provide: DataSource, useValue: dataSource },
+          { provide: AuthifyClient, useValue: authifyClient },
         ],
       }).compile();
 
@@ -238,6 +244,43 @@ describe('EmpresasService', () => {
       await expect(
         service.create('owner-1', dto as any),
       ).rejects.toThrow('DB error');
+    });
+
+    it('should register context name in Authify after persisting', async () => {
+      const result = await service.create('owner-1', dto as any);
+
+      expect(authifyClient.registerContext).toHaveBeenCalledTimes(1);
+      expect(authifyClient.registerContext).toHaveBeenCalledWith(
+        result.id,
+        'Hotel Novo',
+        expect.objectContaining({ type: 'company' }),
+      );
+    });
+
+    it('should still return created empresa when Authify fails', async () => {
+      authifyClient.registerContext.mockRejectedValueOnce(
+        new Error('Authify down'),
+      );
+      const warnSpy = jest
+        .spyOn((service as any).logger, 'warn')
+        .mockImplementation(() => undefined);
+
+      const result = await service.create('owner-1', dto as any);
+
+      expect(result.nome).toBe('Hotel Novo');
+      expect(warnSpy).toHaveBeenCalled();
+    });
+
+    it('should not call Authify when transaction fails', async () => {
+      dataSource.transaction.mockRejectedValueOnce(
+        new Error('DB error'),
+      );
+
+      await expect(
+        service.create('owner-1', dto as any),
+      ).rejects.toThrow('DB error');
+
+      expect(authifyClient.registerContext).not.toHaveBeenCalled();
     });
   });
 
@@ -547,6 +590,94 @@ describe('EmpresasService', () => {
           'stranger',
         ),
       ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('should call Authify registerContext when nome changes', async () => {
+      empresaRepo.findOne.mockResolvedValue(
+        buildEmpresa({
+          id: 'emp-1',
+          nome: 'Old Name',
+          proprietarioId: 'owner-1',
+        }),
+      );
+      empresaRepo.save.mockImplementation((e: any) => e);
+
+      await service.update(
+        'emp-1',
+        { nome: 'New Name' } as any,
+        'owner-1',
+      );
+
+      expect(authifyClient.registerContext).toHaveBeenCalledTimes(1);
+      expect(authifyClient.registerContext).toHaveBeenCalledWith(
+        'emp-1',
+        'New Name',
+        expect.objectContaining({ type: 'company' }),
+      );
+    });
+
+    it('should NOT call Authify when nome stays the same', async () => {
+      empresaRepo.findOne.mockResolvedValue(
+        buildEmpresa({
+          id: 'emp-1',
+          nome: 'Same Name',
+          proprietarioId: 'owner-1',
+        }),
+      );
+      empresaRepo.save.mockImplementation((e: any) => e);
+
+      await service.update(
+        'emp-1',
+        { nome: 'Same Name' } as any,
+        'owner-1',
+      );
+
+      expect(authifyClient.registerContext).not.toHaveBeenCalled();
+    });
+
+    it('should NOT call Authify when dto has no nome (telefone-only update)', async () => {
+      empresaRepo.findOne.mockResolvedValue(
+        buildEmpresa({
+          id: 'emp-1',
+          nome: 'Hotel A',
+          proprietarioId: 'owner-1',
+        }),
+      );
+      empresaRepo.save.mockImplementation((e: any) => e);
+
+      await service.update(
+        'emp-1',
+        { telefone: '11999999999' } as any,
+        'owner-1',
+      );
+
+      expect(authifyClient.registerContext).not.toHaveBeenCalled();
+    });
+
+    it('should still return updated empresa when Authify fails', async () => {
+      empresaRepo.findOne.mockResolvedValue(
+        buildEmpresa({
+          id: 'emp-1',
+          nome: 'Old',
+          proprietarioId: 'owner-1',
+        }),
+      );
+      empresaRepo.save.mockImplementation((e: any) => e);
+      authifyClient.registerContext.mockRejectedValueOnce(
+        new Error('Authify down'),
+      );
+      const warnSpy = jest
+        .spyOn((service as any).logger, 'warn')
+        .mockImplementation(() => undefined);
+
+      const result = await service.update(
+        'emp-1',
+        { nome: 'New' } as any,
+        'owner-1',
+      );
+
+      expect(result.nome).toBe('New');
+      expect(warnSpy).toHaveBeenCalled();
     });
   });
 

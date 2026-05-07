@@ -1,5 +1,9 @@
 # CLAUDE.md — Hotel Facil
 
+## User Rules (MUST FOLLOW)
+- **SEMPRE IMPLEMENTE A ALTERNATIVA CORRETA E NUNCA A MAIS FÁCIL** — se a escolha é entre um hack que resolve rápido e a solução estruturada que resolve de verdade, vai sempre com a segunda. Se precisar de tempo ou input do usuário, pede; não atalhe.
+
+
 ## Central Knowledge Base
 Shared knowledge across all Claude instances lives in `~/Documents/00-claude-knowledge/`:
 - `CLAUDE.md` — Global directives
@@ -62,6 +66,8 @@ Dashboard, Disponibilidade, Quartos, Vendas, Faturas, Despesas, Usuarios, FluxoC
 - Deploy: `firebase deploy` (Hosting)
 
 ## Infrastructure Config
+
+> Full server details in `config.md`
 
 ---
 

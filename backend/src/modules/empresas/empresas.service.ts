@@ -2,6 +2,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,6 +13,7 @@ import { EmpresaUsuario } from './entities/empresa-usuario.entity';
 import { Permissao } from '../usuarios/entities/permissao.entity';
 import { Usuario } from '../usuarios/entities/usuario.entity';
 import { AdminUser } from '../auth/entities/admin-user.entity';
+import { AuthifyClient } from '../auth/clients/authify.client';
 import { CreateEmpresaDto } from './dto/create-empresa.dto';
 import { UpdateEmpresaDto } from './dto/update-empresa.dto';
 import { AddMemberDto } from './dto/add-member.dto';
@@ -22,12 +24,15 @@ import {
 
 @Injectable()
 export class EmpresasService {
+  private readonly logger = new Logger(EmpresasService.name);
+
   constructor(
     @InjectRepository(Empresa)
     private readonly empresaRepo: Repository<Empresa>,
     @InjectRepository(EmpresaUsuario)
     private readonly empresaUsuarioRepo: Repository<EmpresaUsuario>,
     private readonly dataSource: DataSource,
+    private readonly authifyClient: AuthifyClient,
   ) {}
 
   async create(
@@ -36,18 +41,18 @@ export class EmpresasService {
   ): Promise<Empresa> {
     await this.ensureUsuarioExists(ownerId);
 
-    return this.dataSource.transaction(async (manager) => {
-      const empresa = manager.create(Empresa, {
+    const empresa = await this.dataSource.transaction(async (manager) => {
+      const created = manager.create(Empresa, {
         nome: dto.nome,
         cnpj: dto.cnpj,
         telefone: dto.telefone,
         endereco: dto.endereco,
         proprietarioId: ownerId,
       });
-      await manager.save(empresa);
+      await manager.save(created);
 
       const empresaUsuario = manager.create(EmpresaUsuario, {
-        empresaId: empresa.id,
+        empresaId: created.id,
         usuarioId: ownerId,
         role: RoleUsuario.ADMIN,
       });
@@ -67,8 +72,12 @@ export class EmpresasService {
       });
       await manager.save(permissao);
 
-      return empresa;
+      return created;
     });
+
+    await this.registerEmpresaContext(empresa);
+
+    return empresa;
   }
 
   async findAllByUser(
@@ -107,9 +116,15 @@ export class EmpresasService {
 
     await this.assertOwnerOrAdmin(id, userId);
 
+    const previousNome = empresa.nome;
     Object.assign(empresa, dto);
+    const saved = await this.empresaRepo.save(empresa);
 
-    return this.empresaRepo.save(empresa);
+    if (saved.nome !== previousNome) {
+      await this.registerEmpresaContext(saved);
+    }
+
+    return saved;
   }
 
   async remove(id: string, userId: string): Promise<void> {
@@ -303,6 +318,27 @@ export class EmpresasService {
     });
 
     await usuarioRepo.save(usuario);
+  }
+
+  private async registerEmpresaContext(
+    empresa: Empresa,
+  ): Promise<void> {
+    try {
+      await this.authifyClient.registerContext(
+        empresa.id,
+        empresa.nome,
+        {
+          type: 'company',
+          createdAt: empresa.createdAt,
+        },
+      );
+    } catch (error) {
+      this.logger.warn(
+        `Authify registerContext failed for empresa ${empresa.id}: ${
+          (error as Error).message
+        }`,
+      );
+    }
   }
 
   private async assertOwnerOrAdmin(
