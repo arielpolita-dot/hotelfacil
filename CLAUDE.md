@@ -1,4 +1,17 @@
 # CLAUDE.md — Hotel Facil
+<!-- telegram-notify-rule -->
+> **Telegram Notifications (OBRIGATÓRIO)** — Sempre que precisar de QUALQUER iteração do Diego (aprovação, decisão, esclarecimento, teste manual, autorização de ação destrutiva) **ou** ao final de implementação completa (testes + build + commit + push + deploy OK), notificar via bot `@cezimbra_claude_bot`. Comando curl pronto e regras completas em `~/Documents/00-claude-knowledge/CLAUDE.md` seção "Telegram Notifications". Silêncio é pior que ruído — chama no Telegram antes de parar de trabalhar esperando resposta.
+
+## Engineering Directives (canonical reference — MANDATORY)
+
+> **Canonical source**: `~/Documents/00-claude-knowledge/agents/tech/engineering-directives.md` — three mandatory pillars applied to every project: Engineering Principles (code reuse + SOLID + Clean Code + Design System First + DIP) · Task Planning & Deep Analysis · Isolated Workspaces.
+>
+> Read it before any non-trivial work. Local rules in this file are project-specific elaborations; the canonical file wins on conflicts and is the only place to update shared rules.
+
+### Project-specific bindings
+- **Workspace path**: `~/Documents/00-projetos/02-osolutions/workspaces/<feature-slug>-<YYYYMMDD-HHMMSS>/`
+- **Plan doc location**: `docs/features/<feature>.md` (or `docs/refactors/`, `docs/bugs/`)
+- **Design System reuse mandatory** — if a UI primitive doesn't exist in the DS, create it in the DS first and consume from there; never fork ad-hoc components inside `features/`.
 
 ## User Rules (MUST FOLLOW)
 - **SEMPRE IMPLEMENTE A ALTERNATIVA CORRETA E NUNCA A MAIS FÁCIL** — se a escolha é entre um hack que resolve rápido e a solução estruturada que resolve de verdade, vai sempre com a segunda. Se precisar de tempo ou input do usuário, pede; não atalhe.
